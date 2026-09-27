@@ -4,6 +4,8 @@
 
 Laporkan vulnerability secara privat kepada pemilik repository. Jangan membuka issue publik untuk dugaan secret exposure, SSRF, authentication bypass, atau kebocoran data pribadi.
 
+Machine-readable security contact tersedia di `/.well-known/security.txt`.
+
 ## Pilot constraints
 
 - Tidak mengunggah atau mengunduh file.

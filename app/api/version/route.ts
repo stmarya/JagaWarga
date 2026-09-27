@@ -4,11 +4,8 @@ import { runtimeConfig } from '@/lib/runtime/env';
 export function GET() {
   const config = runtimeConfig();
   return NextResponse.json({
-    status: 'ok',
     version: config.appVersion,
     environment: config.nodeEnv,
     policy: { existingLookupOnly: true, fileUpload: false, urlSubmission: false },
-    providers: ['cloudflare-dns', 'google-dns'],
-    uptimeSeconds: Math.round(process.uptime()),
-  });
+  }, { headers: { 'Cache-Control': 'no-store' } });
 }

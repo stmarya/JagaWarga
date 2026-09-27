@@ -4,7 +4,7 @@ JagaWarga adalah platform security lookup dan awareness untuk membantu pengguna 
 
 ## Status
 
-🚧 **Technical prototype / Fase 2–3 foundation.** Metadata lookup aktif melalui dua fixed-origin DNS providers. Pilot hanya memakai metadata dan existing lookup; URL baru tidak disubmit ke scanner.
+🚧 **Release candidate / Fase 4 technical hardening.** Metadata lookup aktif melalui dua fixed-origin DNS providers. URL baru tidak disubmit ke scanner dan file tidak pernah diunggah.
 
 ## MVP scope
 
@@ -21,6 +21,7 @@ JagaWarga adalah platform security lookup dan awareness untuk membantu pengguna 
 - Rate limiting dan provider budget controls.
 - PWA serta browser-extension foundation.
 - Status, methodology, transparency, privacy, dan emergency pages.
+- Security headers, CSP, payload limits, request IDs, consistent API errors, metrics, versioning, OpenAPI, container, and operational runbooks.
 
 ## Menjalankan lokal
 
@@ -34,6 +35,8 @@ Buka `http://localhost:3000`.
 Health endpoint tersedia di `/api/health`; lookup endpoint tersedia di `/api/lookups`.
 
 Alat tambahan tersedia di `/tools`; dashboard lokal tersedia di `/dashboard`.
+
+API specification tersedia di `/openapi.json`; operational endpoints tersedia di `/api/health`, `/api/version`, dan `/api/metrics`.
 
 ## Quality gates
 

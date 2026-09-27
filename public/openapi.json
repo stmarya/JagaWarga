@@ -1,0 +1,38 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "JagaWarga API", "version": "0.4.0", "description": "Existing-lookup-only security awareness API." },
+  "servers": [{ "url": "/" }],
+  "paths": {
+    "/api/health": { "get": { "summary": "Health status", "responses": { "200": { "description": "Healthy" } } } },
+    "/api/version": { "get": { "summary": "Version and policy", "responses": { "200": { "description": "Version" } } } },
+    "/api/metrics": { "get": { "summary": "Privacy-safe in-memory metrics", "responses": { "200": { "description": "Metrics" } } } },
+    "/api/lookups": {
+      "post": {
+        "summary": "Metadata lookup",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["indicator"], "properties": { "indicator": { "type": "string", "maxLength": 2048 } } } } } },
+        "responses": { "200": { "description": "Lookup result" }, "400": { "description": "Invalid input" }, "413": { "description": "Payload too large" }, "429": { "description": "Rate limited" } }
+      }
+    },
+    "/api/analyze/message": {
+      "post": {
+        "summary": "Explainable message analysis",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["text"], "properties": { "text": { "type": "string", "maxLength": 10000 } } } } } },
+        "responses": { "200": { "description": "Analysis" }, "400": { "description": "Invalid input" }, "429": { "description": "Rate limited" } }
+      }
+    },
+    "/api/analyze/email-header": {
+      "post": {
+        "summary": "Email-header analysis",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["headers"], "properties": { "headers": { "type": "string", "maxLength": 50000 } } } } } },
+        "responses": { "200": { "description": "Analysis" }, "400": { "description": "Invalid input" }, "429": { "description": "Rate limited" } }
+      }
+    },
+    "/api/feedback": {
+      "post": {
+        "summary": "Indicator-free feedback",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["helpful"], "properties": { "helpful": { "type": "boolean" }, "category": { "type": "string", "maxLength": 40 } } } } } },
+        "responses": { "200": { "description": "Accepted" }, "429": { "description": "Rate limited" } }
+      }
+    }
+  }
+}
