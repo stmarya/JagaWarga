@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "existingLookupOnly": true,
+  "noRawContentPersistence": true,
+  "noAutomaticNavigation": true,
+  "riskyFeaturesDefault": "disabled",
+  "fileUpload": false,
+  "urlSubmission": false,
+  "communityReporting": false,
+  "malwareDownload": false
+}

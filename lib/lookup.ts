@@ -6,12 +6,13 @@ import { TtlCache } from './runtime/cache';
 import { CircuitBreaker } from './runtime/circuit';
 import { BoundedQueue } from './runtime/queue';
 import { consumeBudget } from './runtime/budget';
+import { enabledProviderNames } from './runtime/features';
 import { canonicalizeIndicator } from './security/canonicalize';
 
 const cache = new TtlCache<Awaited<ReturnType<typeof buildLookupResult>>>();
 const queue = new BoundedQueue(4, 100);
 const circuits = new Map<string, CircuitBreaker>();
-const productionAdapters: ProviderAdapter[] = [new CloudflareDnsAdapter(), new GoogleDnsAdapter()];
+const allProductionAdapters: ProviderAdapter[] = [new CloudflareDnsAdapter(), new GoogleDnsAdapter()];
 
 async function buildLookupResult(raw: string, adapters: ProviderAdapter[]) {
   const indicator = canonicalizeIndicator(raw);
@@ -66,7 +67,7 @@ async function buildLookupResult(raw: string, adapters: ProviderAdapter[]) {
 
 export async function performLookup(
   raw: string,
-  adapters: ProviderAdapter[] = productionAdapters,
+  adapters: ProviderAdapter[] = allProductionAdapters.filter((adapter) => enabledProviderNames().includes(adapter.name)),
 ) {
   const indicator = canonicalizeIndicator(raw);
   const key = `${indicator.type}:${indicator.value}`;

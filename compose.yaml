@@ -3,7 +3,7 @@ services:
     build: .
     environment:
       NODE_ENV: production
-      APP_VERSION: 0.4.0
+      APP_VERSION: 0.6.0
     ports: ["3000:3000"]
     read_only: true
     tmpfs: ["/tmp", "/app/.next/cache"]

@@ -1,11 +1,14 @@
 {
   "openapi": "3.1.0",
-  "info": { "title": "JagaWarga API", "version": "0.4.0", "description": "Existing-lookup-only security awareness API." },
+  "info": { "title": "JagaWarga API", "version": "0.6.0", "description": "Existing-lookup-only security awareness API." },
   "servers": [{ "url": "/" }],
   "paths": {
+    "/api/live": { "get": { "summary": "Process liveness", "responses": { "200": { "description": "Alive" } } } },
+    "/api/ready": { "get": { "summary": "Runtime readiness", "responses": { "200": { "description": "Ready" }, "503": { "description": "Not ready" } } } },
     "/api/health": { "get": { "summary": "Health status", "responses": { "200": { "description": "Healthy" } } } },
     "/api/version": { "get": { "summary": "Version and policy", "responses": { "200": { "description": "Version" } } } },
-    "/api/metrics": { "get": { "summary": "Privacy-safe in-memory metrics", "responses": { "200": { "description": "Metrics" } } } },
+    "/api/policy": { "get": { "summary": "Feature and privacy policy", "responses": { "200": { "description": "Policy" } } } },
+    "/api/metrics": { "get": { "summary": "Protected privacy-safe metrics", "responses": { "200": { "description": "Metrics" }, "401": { "description": "Unauthorized" } } } },
     "/api/lookups": {
       "post": {
         "summary": "Metadata lookup",
