@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+- Redesigned the product interface with an original dark civic-cybersecurity visual system inspired by security analysis consoles.
+- Added a shared responsive header and footer, clearer scan hierarchy, richer result presentation, and semantic destructive actions.
+- Preserved all existing functionality while passing mobile UI smoke and serious/critical accessibility checks.
+
 ## 0.13.0-rc.2
 - Replaced the full-workspace runtime container with a minimal Next.js standalone image.
 - Removed npm, Corepack, development dependencies, and build-only binaries from the runtime image.

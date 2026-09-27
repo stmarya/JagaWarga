@@ -107,39 +107,81 @@ export default function Home() {
   }
 
   return (
-    <main>
-      <nav><span className="brand">🛡️ JagaWarga</span><span><a href="/tools">Alat</a> · <a href="/dashboard">Dashboard</a> · <a href="/status">Status</a></span></nav>
+    <main className="home">
       <section className="hero">
-        <p className="eyebrow">SECURITY LOOKUP & AWARENESS</p>
-        <h1>Ada link mencurigakan?<br />Cek sebelum klik.</h1>
-        <p className="lead">Periksa URL, domain, IP, atau hash—lalu pahami risikonya dengan bahasa sederhana.</p>
-        <form onSubmit={submit}>
-          <label htmlFor="indicator">Masukkan objek yang ingin diperiksa</label>
-          <div className="search">
-            <input id="indicator" value={value} onChange={(event) => setValue(event.target.value)} placeholder="https://contoh.id atau alamat IP" autoComplete="off" />
-            <button type="submit" disabled={!value.trim() || loading}>
-              {loading ? 'Memeriksa…' : 'Periksa'}
-            </button>
+        <div className="hero-copy">
+          <p className="eyebrow"><span className="pulse-dot" /> PUSAT CEK KEAMANAN WARGA</p>
+          <h1>Kenali risiko.<br /><span>Ambil langkah aman.</span></h1>
+          <p className="lead">Periksa link, domain, IP publik, atau hash file sebelum Anda berinteraksi. Hasil dijelaskan dengan bahasa yang mudah dipahami.</p>
+          <div className="hero-actions">
+            <a className="button button-secondary" href="#scanner">Mulai pemeriksaan <span aria-hidden="true">↓</span></a>
+            <a className="text-link" href="/emergency">Sudah terlanjur klik? <span aria-hidden="true">→</span></a>
           </div>
-          <small>Terdeteksi: <strong>{indicator.label}</strong>. Pemeriksaan hanya memakai metadata dan hasil provider yang sudah tersedia—tanpa submission otomatis.</small>
-          <label className="checkbox"><input type="checkbox" checked={saveLocal} onChange={(event) => setSaveLocal(event.target.checked)} /> Simpan hasil di perangkat ini</label>
-        </form>
-        {notice && <div className="notice" role="status">{notice}</div>}
-        {result && (
-          <section className="result" aria-live="polite">
-            <p className="eyebrow">HASIL PEMERIKSAAN</p>
-            <h2>{verdictCopy[result.verdict].title}</h2>
-            <p>{verdictCopy[result.verdict].description}</p>
-            {!result.evidence.some((item) => item.provider === 'virustotal') && (
-              <p className="warning">Provider reputasi belum aktif atau belum berhasil digunakan. Periksa <a href="/status">status konfigurasi provider</a>.</p>
-            )}
-            {result.partial && <p className="warning">Sebagian sumber tidak tersedia. Hasil tetap ditampilkan sebagai data parsial.</p>}
-            <dl>
-              <div><dt>Jenis</dt><dd>{result.indicator.type}</dd></div>
-              <div><dt>Confidence</dt><dd>{result.confidence}</dd></div>
-              <div><dt>Risk signal</dt><dd>{result.risk}/100</dd></div>
-              <div><dt>Submission</dt><dd>{result.policy.submissionOccurred ? 'Terjadi' : 'Tidak dilakukan'}</dd></div>
-            </dl>
+          <ul className="trust-list" aria-label="Prinsip pemeriksaan">
+            <li><span aria-hidden="true">✓</span> Tanpa upload file</li>
+            <li><span aria-hidden="true">✓</span> Tanpa submission otomatis</li>
+            <li><span aria-hidden="true">✓</span> Sumber dapat ditelusuri</li>
+          </ul>
+        </div>
+
+        <div className="scanner-shell" id="scanner">
+          <div className="scanner-topbar">
+            <span><i aria-hidden="true" /> Pemeriksaan baru</span>
+            <span className="system-online"><i aria-hidden="true" /> Sistem aktif</span>
+          </div>
+          <div className="scanner-body">
+            <div className="scanner-modes" aria-label="Jenis input yang didukung">
+              <span className="active">URL &amp; domain</span>
+              <span>IP publik</span>
+              <span>Hash file</span>
+            </div>
+            <p className="scanner-kicker">CEK INDIKATOR</p>
+            <h2>Apa yang ingin Anda periksa?</h2>
+            <p className="scanner-copy">Masukkan satu indikator. JagaWarga akan mengenali jenisnya secara otomatis.</p>
+            <form className="scan-form" onSubmit={submit}>
+              <label htmlFor="indicator">Link, domain, alamat IP, atau hash</label>
+              <div className="search">
+                <input id="indicator" value={value} onChange={(event) => setValue(event.target.value)} placeholder="contoh.id atau https://contoh.id" autoComplete="off" />
+                <button type="submit" disabled={!value.trim() || loading}>
+                  {loading ? 'Memeriksa…' : <>Periksa <span aria-hidden="true">→</span></>}
+                </button>
+              </div>
+              <div className="input-meta">
+                <small>Terdeteksi: <strong>{indicator.label}</strong></small>
+                <label className="checkbox"><input type="checkbox" checked={saveLocal} onChange={(event) => setSaveLocal(event.target.checked)} /> Simpan di perangkat ini</label>
+              </div>
+              <p className="privacy-note"><span aria-hidden="true">◇</span> Metadata dan hasil provider yang sudah tersedia saja. Tidak ada submission otomatis.</p>
+            </form>
+            {notice && <div className="notice" role="status">{notice}</div>}
+            {!result && requestId && <p className="notice">ID permintaan untuk dukungan: <code>{requestId}</code></p>}
+          </div>
+        </div>
+      </section>
+
+      {result && (
+        <section className={`result result-${result.verdict}`} aria-live="polite">
+          <header className="result-header">
+            <div>
+              <p className="eyebrow">HASIL PEMERIKSAAN</p>
+              <h2>{verdictCopy[result.verdict].title}</h2>
+              <p>{verdictCopy[result.verdict].description}</p>
+            </div>
+            <div className="risk-gauge" aria-label={`Risk signal ${result.risk} dari 100`}>
+              <strong>{result.risk}</strong><span>/100</span>
+              <small>risk signal</small>
+            </div>
+          </header>
+          {!result.evidence.some((item) => item.provider === 'virustotal') && (
+            <p className="warning">Provider reputasi belum aktif atau belum berhasil digunakan. Periksa <a href="/status">status konfigurasi provider</a>.</p>
+          )}
+          {result.partial && <p className="warning">Sebagian sumber tidak tersedia. Hasil tetap ditampilkan sebagai data parsial.</p>}
+          <dl>
+            <div><dt>Jenis</dt><dd>{result.indicator.type}</dd></div>
+            <div><dt>Confidence</dt><dd>{result.confidence}</dd></div>
+            <div><dt>Risk signal</dt><dd>{result.risk}/100</dd></div>
+            <div><dt>Submission</dt><dd>{result.policy.submissionOccurred ? 'Terjadi' : 'Tidak dilakukan'}</dd></div>
+          </dl>
+          <div className="result-columns">
             <details>
               <summary>Sumber pemeriksaan</summary>
               <ul>
@@ -157,24 +199,30 @@ export default function Home() {
               {result.providers.failed.length > 0 && <p>Provider gagal: {result.providers.failed.join(', ')}.</p>}
               <p>ID permintaan: <code>{result.requestId}</code></p>
             </details>
-            <strong>Tindakan aman:</strong>
-            <ul>{actions(result.verdict).map((action) => <li key={action}>{action}</li>)}</ul>
-            <div className="feedback">
-              <span>Apakah hasil ini membantu?</span>
-              <button type="button" onClick={async () => { await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ helpful: true, category: result.verdict }) }); setFeedback('Terima kasih atas feedback Anda.'); }}>Ya</button>
-              <button type="button" onClick={async () => { await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ helpful: false, category: result.verdict }) }); setFeedback('Feedback dicatat untuk peninjauan.'); }}>Tidak</button>
-            </div>
-            {feedback && <p role="status">{feedback}</p>}
-          </section>
-        )}
-        {!result && requestId && <p className="notice">ID permintaan untuk dukungan: <code>{requestId}</code></p>}
+            <aside className="safe-actions">
+              <strong>Tindakan aman berikutnya</strong>
+              <ol>{actions(result.verdict).map((action) => <li key={action}>{action}</li>)}</ol>
+            </aside>
+          </div>
+          <div className="feedback">
+            <span>Apakah hasil ini membantu?</span>
+            <button type="button" onClick={async () => { await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ helpful: true, category: result.verdict }) }); setFeedback('Terima kasih atas feedback Anda.'); }}>Ya</button>
+            <button type="button" className="button-quiet" onClick={async () => { await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ helpful: false, category: result.verdict }) }); setFeedback('Feedback dicatat untuk peninjauan.'); }}>Tidak</button>
+          </div>
+          {feedback && <p role="status">{feedback}</p>}
+        </section>
+      )}
+
+      <section className="principles-intro">
+        <p className="eyebrow">DIRANCANG UNTUK KEPUTUSAN YANG LEBIH AMAN</p>
+        <h2>Bukan sekadar skor teknis.</h2>
+        <p>Informasi penting disusun agar Anda tahu apa yang terjadi, seberapa yakin hasilnya, dan apa yang perlu dilakukan.</p>
       </section>
       <section id="prinsip" className="cards">
-        <article><span>1</span><h2>Cek</h2><p>Kami mengenali jenis input tanpa langsung mengirimkannya ke pihak ketiga.</p></article>
-        <article><span>2</span><h2>Pahami</h2><p>Hasil menampilkan alasan, sumber, freshness, dan tingkat keyakinan.</p></article>
-        <article><span>3</span><h2>Bertindak</h2><p>Dapatkan langkah aman berikutnya—bukan sekadar skor teknis.</p></article>
+        <article><span>01</span><h3>Periksa dengan minim data</h3><p>Jenis input dikenali lebih dulu dan tidak langsung dikirimkan ke pihak ketiga.</p><a href="/privacy">Prinsip privasi →</a></article>
+        <article><span>02</span><h3>Pahami bukti</h3><p>Lihat alasan, sumber, usia data, dan tingkat keyakinan di balik setiap hasil.</p><a href="/methodology">Lihat metodologi →</a></article>
+        <article><span>03</span><h3>Ambil tindakan</h3><p>Dapatkan langkah aman yang konkret, termasuk bantuan ketika insiden sudah terjadi.</p><a href="/emergency">Panduan darurat →</a></article>
       </section>
-      <footer>Belum ada indikasi berbahaya bukan berarti 100% aman. · <a href="/support">Dukungan</a></footer>
     </main>
   );
 }
