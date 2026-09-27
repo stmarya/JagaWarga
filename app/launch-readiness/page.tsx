@@ -18,9 +18,9 @@ const external = [
 export default function LaunchReadiness() {
   return <main className="page">
     <Link href="/">← Beranda</Link>
-    <p className="eyebrow">LAUNCH READINESS · v0.8.0</p>
-    <h1>NO-GO: kontrol teknis siap, persetujuan eksternal belum lengkap.</h1>
-    <p>Fase 8 selesai. Fase 9 baru dapat dimulai setelah seluruh evidence terverifikasi oleh launch gate.</p>
+    <p className="eyebrow">LAUNCH READINESS · v0.9.0</p>
+    <h1>Local acceptance READY. Public production NO-GO.</h1>
+    <p>Fase 10 local acceptance selesai. Public deployment baru dapat dimulai setelah seluruh evidence terverifikasi oleh launch gate.</p>
     <div className="grid">
       <section className="panel"><h2>Internal readiness</h2><ul>{internal.map((item) => <li key={item}>✅ {item}</li>)}</ul></section>
       <section className="panel"><h2>External gates</h2><ul>{external.map(([item, issue]) => <li key={item}>⏳ <a href={`https://github.com/stmarya/JagaWarga/issues/${issue}`}>{item}</a></li>)}</ul></section>

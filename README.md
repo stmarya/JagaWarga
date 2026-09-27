@@ -4,7 +4,7 @@ JagaWarga adalah platform security lookup dan awareness untuk membantu pengguna 
 
 ## Status
 
-⛔ **NO-GO / Fase 8 complete, Fase 9 blocked.** Kontrol peluncuran teknis v0.8.0 siap, tetapi public launch tetap diblokir sampai enam external gate memiliki evidence dan persetujuan sah. Metadata lookup aktif melalui fixed-origin DNS providers dengan kill switches. URL baru tidak disubmit ke scanner dan file tidak pernah diunggah.
+🟡 **Local acceptance READY / public production NO-GO.** Build v0.9.0 siap untuk penerimaan lokal loopback-only, tetapi public launch tetap diblokir sampai enam external gate memiliki evidence dan persetujuan sah. Metadata lookup aktif melalui fixed-origin DNS providers dengan kill switches. URL baru tidak disubmit ke scanner dan file tidak pernah diunggah.
 
 ## MVP scope
 
@@ -36,6 +36,12 @@ npm run dev
 Buka `http://localhost:3000`.
 
 Untuk acceptance self-hosted yang loopback-only, ikuti [`docs/LOCAL-DEPLOYMENT.md`](docs/LOCAL-DEPLOYMENT.md).
+
+Untuk menjalankan acceptance suite end-to-end tanpa Docker:
+
+```bash
+npm run acceptance:local
+```
 
 Health endpoint tersedia di `/api/health`; lookup endpoint tersedia di `/api/lookups`.
 

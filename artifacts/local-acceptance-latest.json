@@ -1,0 +1,34 @@
+{
+  "decision": "LOCAL-READY",
+  "publicProductionDecision": "NO-GO",
+  "version": "0.9.0",
+  "runtime": "native-nextjs-production",
+  "bind": "127.0.0.1:3100",
+  "startedAt": "2026-09-27T05:22:17.147Z",
+  "completedAt": "2026-09-27T05:22:20.180Z",
+  "checks": {
+    "build": "passed-before-run",
+    "preflight": {
+      "status": "passed",
+      "baseURL": "http://127.0.0.1:3100",
+      "version": "0.9.0",
+      "providers": [
+        "cloudflare-dns",
+        "google-dns"
+      ]
+    },
+    "uiSmoke": "Mobile UI and semantic smoke passed.",
+    "load": {
+      "total": 500,
+      "passed": 500,
+      "concurrency": 25,
+      "p95Ms": 51,
+      "maxMs": 136
+    }
+  },
+  "limitations": [
+    "Docker runtime was not available on the acceptance runner.",
+    "Public external evidence gates remain mandatory.",
+    "This report is not a public production approval."
+  ]
+}

@@ -1,8 +1,10 @@
 {
   "decision": "NO-GO",
-  "phase": "8 complete; 9 blocked",
-  "version": "0.8.0",
-  "reason": "External approvals and production infrastructure evidence are not complete.",
+  "phase": "10 local acceptance complete; public production blocked",
+  "version": "0.9.0",
+  "localAcceptance": "READY",
+  "publicProduction": "NO-GO",
+  "reason": "Local native production acceptance passed. Public external approvals remain unverified in the evidence gate.",
   "requiredGates": [
     { "id": "usability", "status": "pending", "issue": "https://github.com/stmarya/JagaWarga/issues/11" },
     { "id": "legal-privacy", "status": "pending", "issue": "https://github.com/stmarya/JagaWarga/issues/12" },
