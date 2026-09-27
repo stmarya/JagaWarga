@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { enabledProviderNames, featureFlags } from './features';
+import { enabledProviderNames, featureFlags, providerDiagnostics } from './features';
 
 describe('feature governance', () => {
   it('denies risky features by default', () => {
@@ -19,5 +19,15 @@ describe('feature governance', () => {
       FEATURE_PREMIUM_PROVIDERS: 'true',
       VIRUSTOTAL_API_KEY: 'test-key',
     })).toContain('virustotal');
+  });
+  it('rejects comma-separated key pools as misconfigured', () => {
+    expect(providerDiagnostics({
+      NODE_ENV: 'test',
+      FEATURE_PREMIUM_PROVIDERS: 'true',
+      VIRUSTOTAL_API_KEY: 'one,two',
+    }).find((provider) => provider.name === 'virustotal')).toMatchObject({
+      status: 'misconfigured',
+      reason: 'key-must-be-single-value',
+    });
   });
 });

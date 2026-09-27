@@ -43,3 +43,18 @@ Dokumen ini berisi rangkuman dari pengujian dan perbaikan yang telah dilakukan p
 - **Masalah**: Setelah Docker menyala di port `3000`, *browser* memuntahkan sangat banyak error kemerahan di konsol (seperti `TypeError: Failed to convert value to 'Response'` dan `net::ERR_FAILED` untuk file-file *Turbopack*).
 - **Analisis & Penyelesaian**: Ini **bukan *bug* pada aplikasi**. *Error* ini disebabkan oleh bergesernya status *environment* port `3000` (dari *Node JS Dev Server* beralih menjadi *Docker Production Build*). Service Worker dari mode pengembangan yang telah ter-*install* di browser terus mencoba meminta akses aset yang mana strukturnya kini sudah berubah di lingkungan produksi (Docker).
   - **Solusi Tuntas**: Melakukan **Hard Refresh** (`Ctrl + F5`) di browser, yang memaksa browser untuk membuang *cache* Service Worker lawas dan menarik *state* terbaru dari kontainer Docker.
+
+## 9. Audit Lanjutan dan Perbaikan v0.12.0
+
+- **Lookup terlihat selalu “Belum ada cukup data”**:
+  - DNS hanya menyediakan metadata dan memang tidak boleh diperlakukan sebagai reputasi.
+  - VirusTotal tidak aktif bila feature flag mati, key hilang, atau nilai berisi beberapa key yang dipisahkan koma.
+  - Cache lookup sebelumnya tidak membedakan kombinasi provider aktif.
+  - **Perbaikan**: menambahkan provider diagnostics, validasi single-key, cache key berbasis provider, partial-provider reporting, dan penjelasan hasil yang kontekstual.
+- **Pesan UI menyesatkan**: halaman selalu mengatakan provider produksi belum dikonfigurasi walaupun provider bisa aktif.
+  - **Perbaikan**: verdict, alasan, freshness, source link, risk signal, provider failure, dan rekomendasi tindakan sekarang berasal dari hasil aktual.
+- **Service worker**: fallback sebelumnya dapat mengembalikan `undefined`, yang memang dapat memicu `Failed to convert value to 'Response'`.
+  - **Perbaikan**: cache versioning, old-cache cleanup, explicit offline `Response`, network-first fallback, dan service-worker cleanup pada development.
+- **Windows verification**: script POSIX diganti dengan Node wrapper lintas platform.
+- **Environment lama**: `local:env` sekarang memperbaiki variabel wajib yang hilang tanpa menimpa secret atau konfigurasi yang sudah ada.
+- **Regression coverage**: browser acceptance sekarang mencakup lookup, status provider, message analyzer, email-header analyzer, local file hashing, dashboard, service-worker console errors, dan load smoke 500 request.

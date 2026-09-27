@@ -15,7 +15,7 @@ try {
     'PUBLIC_HOST=REPLACE_WITH_DNS_NAME',
     'ACME_EMAIL=REPLACE_WITH_OPERATOR_EMAIL',
     'IMAGE_REF=ghcr.io/stmarya/jagawarga@sha256:REPLACE_WITH_IMMUTABLE_DIGEST',
-    'APP_VERSION=0.11.0',
+    'APP_VERSION=0.12.0',
     `ADMIN_METRICS_TOKEN=${randomBytes(32).toString('base64url')}`,
     `POSTGRES_PASSWORD=${randomBytes(32).toString('base64url')}`,
     'FEATURE_PREMIUM_PROVIDERS=false',

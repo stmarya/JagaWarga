@@ -1,7 +1,7 @@
 {
   "name": "jagawarga",
   "private": true,
-  "version": "0.11.0",
+  "version": "0.12.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -12,9 +12,9 @@
     "launch:gate": "node scripts/launch-gate.mjs",
     "acceptance:local": "npm run build && node scripts/local-acceptance.mjs",
     "local:env": "node scripts/init-local-deploy.mjs",
-    "local:up": "docker compose --env-file .env.local-deploy up --build -d",
+    "local:up": "npm run local:env && docker compose --env-file .env.local-deploy up --build -d --wait",
     "local:down": "docker compose --env-file .env.local-deploy down",
-    "local:verify": "ALLOW_HTTP_PREFLIGHT=true BASE_URL=${BASE_URL:-http://127.0.0.1:3000} npm run preflight",
+    "local:verify": "node scripts/local-verify.mjs",
     "deploy:init": "node deploy/self-hosted/init-env.mjs",
     "deploy:verify": "node deploy/self-hosted/verify-config.mjs",
     "preflight": "node scripts/preflight.mjs",

@@ -1,29 +1,29 @@
 {
   "decision": "LOCAL-READY",
   "publicProductionDecision": "NO-GO",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "runtime": "native-nextjs-production",
   "bind": "127.0.0.1:3100",
-  "startedAt": "2026-09-27T06:32:26.353Z",
-  "completedAt": "2026-09-27T06:32:29.697Z",
+  "startedAt": "2026-09-27T07:06:51.558Z",
+  "completedAt": "2026-09-27T07:06:54.840Z",
   "checks": {
     "build": "passed-before-run",
     "preflight": {
       "status": "passed",
       "baseURL": "http://127.0.0.1:3100",
-      "version": "0.11.0",
+      "version": "0.12.0",
       "providers": [
         "cloudflare-dns",
         "google-dns"
       ]
     },
-    "uiSmoke": "Mobile UI and semantic smoke passed.",
+    "uiSmoke": "Mobile lookup, status, tools, dashboard, and service-worker smoke passed.",
     "load": {
       "total": 500,
       "passed": 500,
       "concurrency": 25,
-      "p95Ms": 48,
-      "maxMs": 129
+      "p95Ms": 53,
+      "maxMs": 236
     }
   },
   "limitations": [

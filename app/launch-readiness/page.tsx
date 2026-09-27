@@ -18,7 +18,7 @@ const external = [
 export default function LaunchReadiness() {
   return <main className="page">
     <Link href="/">← Beranda</Link>
-    <p className="eyebrow">LAUNCH READINESS · v0.11.0</p>
+    <p className="eyebrow">LAUNCH READINESS · v0.12.0</p>
     <h1>Local acceptance READY. Public production NO-GO.</h1>
     <p>Fase 10 local acceptance selesai. Public deployment baru dapat dimulai setelah seluruh evidence terverifikasi oleh launch gate.</p>
     <div className="grid">

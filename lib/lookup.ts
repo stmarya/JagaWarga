@@ -15,7 +15,7 @@ const queue = new BoundedQueue(4, 100);
 const circuits = new Map<string, CircuitBreaker>();
 function productionAdapters(env: NodeJS.ProcessEnv = process.env): ProviderAdapter[] {
   const adapters: ProviderAdapter[] = [new CloudflareDnsAdapter(), new GoogleDnsAdapter()];
-  if (env.FEATURE_PREMIUM_PROVIDERS?.toLowerCase() === 'true' && env.VIRUSTOTAL_API_KEY?.trim()) {
+  if (enabledProviderNames(env).includes('virustotal') && env.VIRUSTOTAL_API_KEY) {
     adapters.push(new VirusTotalAdapter(env.VIRUSTOTAL_API_KEY));
   }
   return adapters;
@@ -63,7 +63,12 @@ async function buildLookupResult(raw: string, adapters: ProviderAdapter[]) {
       indicator: { type: indicator.type, displayValue: indicator.displayValue },
       ...aggregateEvidence(evidence),
       evidence,
-      partial: evidence.some((item) => item.reasonCodes.includes('PROVIDER_ERROR')),
+      providers: {
+        requested: evidence.map((item) => item.provider),
+        succeeded: evidence.filter((item) => !item.reasonCodes.some((code) => ['PROVIDER_ERROR', 'PROVIDER_CIRCUIT_OPEN', 'PROVIDER_BUDGET_EXHAUSTED'].includes(code))).map((item) => item.provider),
+        failed: evidence.filter((item) => item.reasonCodes.some((code) => ['PROVIDER_ERROR', 'PROVIDER_CIRCUIT_OPEN', 'PROVIDER_BUDGET_EXHAUSTED'].includes(code))).map((item) => item.provider),
+      },
+      partial: evidence.some((item) => item.reasonCodes.some((code) => ['PROVIDER_ERROR', 'PROVIDER_CIRCUIT_OPEN', 'PROVIDER_BUDGET_EXHAUSTED'].includes(code))),
       policy: { existingLookupOnly: true, submissionOccurred: false },
       checkedAt: new Date().toISOString(),
     };
@@ -77,7 +82,8 @@ export async function performLookup(
   adapters: ProviderAdapter[] = productionAdapters().filter((adapter) => enabledProviderNames().includes(adapter.name)),
 ) {
   const indicator = canonicalizeIndicator(raw);
-  const key = `${indicator.type}:${indicator.value}`;
+  const adapterNames = adapters.map((adapter) => adapter.name).sort().join(',');
+  const key = `${indicator.type}:${indicator.value}:providers=${adapterNames}`;
   const cached = cache.get(key);
   if (cached) return { ...cached, cached: true };
   return queue.run(async () => {

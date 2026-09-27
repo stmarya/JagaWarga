@@ -2,7 +2,7 @@
 
 ## Outcome
 
-The repository contains a fail-closed self-hosted deployment kit for a Docker VPS. The v0.11.0 candidate also includes a feature-gated VirusTotal existing-lookup adapter. Technical preparation is complete; actual deployment remains blocked until infrastructure and external evidence are supplied.
+The repository contains a fail-closed self-hosted deployment kit for a Docker VPS. The v0.12.0 candidate includes provider diagnostics, resilient lookup UX, service-worker lifecycle fixes, cross-platform local verification, environment repair, and a feature-gated VirusTotal existing-lookup adapter. Actual public deployment remains blocked until infrastructure and external evidence are supplied.
 
 ## Delivered
 
