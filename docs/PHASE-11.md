@@ -1,0 +1,29 @@
+# Phase 11 — Self-hosted deployment readiness
+
+## Outcome
+
+The repository contains a fail-closed self-hosted deployment kit for a Docker VPS. Technical preparation is complete; actual deployment remains blocked until infrastructure and external evidence are supplied.
+
+## Delivered
+
+- Caddy automatic TLS reverse proxy.
+- Immutable GHCR digest enforcement.
+- Internal Redis/PostgreSQL network.
+- Non-published data-service ports.
+- Generated strong local secrets.
+- Configuration validator.
+- Launch-gated deployment script.
+- Post-deployment preflight.
+- Database backup retention script.
+- Immutable-image rollback script.
+- Operator runbook.
+
+## Remaining external inputs
+
+- VPS address and operator access.
+- Public DNS hostname and ACME email.
+- Published GHCR image digest.
+- Six attributable launch-evidence approvals.
+- Docker runtime verification, backup/restore drill, and operator incident drill.
+
+These items cannot be marked Done from repository automation alone.

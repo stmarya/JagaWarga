@@ -1,7 +1,7 @@
 {
   "decision": "NO-GO",
-  "phase": "10 local acceptance complete; public production blocked",
-  "version": "0.9.0",
+  "phase": "11 self-hosted deployment kit complete; deployment authorization blocked",
+  "version": "0.10.0",
   "localAcceptance": "READY",
   "publicProduction": "NO-GO",
   "reason": "Local native production acceptance passed. Public external approvals remain unverified in the evidence gate.",

@@ -6,7 +6,7 @@ const port = Number(process.env.ACCEPTANCE_PORT || 3100);
 const baseURL = `http://127.0.0.1:${port}`;
 const startedAt = new Date().toISOString();
 const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'start', '-p', String(port), '-H', '127.0.0.1'], {
-  env: { ...process.env, NODE_ENV: 'production', APP_VERSION: '0.9.0' },
+  env: { ...process.env, NODE_ENV: 'production', APP_VERSION: '0.10.0' },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
 
@@ -84,7 +84,7 @@ try {
   const report = {
     decision: 'LOCAL-READY',
     publicProductionDecision: 'NO-GO',
-    version: '0.9.0',
+    version: '0.10.0',
     runtime: 'native-nextjs-production',
     bind: `127.0.0.1:${port}`,
     startedAt,

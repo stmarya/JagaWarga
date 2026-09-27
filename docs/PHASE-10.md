@@ -2,7 +2,7 @@
 
 ## Outcome
 
-The v0.9.0 native production build is ready for loopback-only local acceptance. Public production remains NO-GO.
+The native production acceptance workflow remains the baseline for v0.10.0 and later release candidates. Public production remains NO-GO until its separate gates pass.
 
 ## Automated acceptance
 

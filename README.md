@@ -4,7 +4,7 @@ JagaWarga adalah platform security lookup dan awareness untuk membantu pengguna 
 
 ## Status
 
-🟡 **Local acceptance READY / public production NO-GO.** Build v0.9.0 siap untuk penerimaan lokal loopback-only, tetapi public launch tetap diblokir sampai enam external gate memiliki evidence dan persetujuan sah. Metadata lookup aktif melalui fixed-origin DNS providers dengan kill switches. URL baru tidak disubmit ke scanner dan file tidak pernah diunggah.
+🟡 **Deployment kit READY / public production NO-GO.** Build v0.10.0 memiliki local acceptance evidence dan fail-closed self-hosted VPS kit, tetapi public launch tetap diblokir sampai enam external gate memiliki evidence dan persetujuan sah. Metadata lookup aktif melalui fixed-origin DNS providers dengan kill switches. URL baru tidak disubmit ke scanner dan file tidak pernah diunggah.
 
 ## MVP scope
 
@@ -42,6 +42,8 @@ Untuk menjalankan acceptance suite end-to-end tanpa Docker:
 ```bash
 npm run acceptance:local
 ```
+
+Untuk menyiapkan deployment VPS, ikuti [`deploy/self-hosted/README.md`](deploy/self-hosted/README.md).
 
 Health endpoint tersedia di `/api/health`; lookup endpoint tersedia di `/api/lookups`.
 
