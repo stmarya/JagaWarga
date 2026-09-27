@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { FormEvent, useMemo, useState } from 'react';
 import { classifyInput } from '@/lib/input';
 import { addHistory, addXp } from '@/lib/client/storage';
@@ -64,8 +65,10 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [saveLocal, setSaveLocal] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [requestId, setRequestId] = useState('');
   const indicator = useMemo(() => classifyInput(value), [value]);
+  const canSubmit = Boolean(value.trim()) && indicator.type !== 'unknown' && !loading;
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -79,7 +82,7 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ indicator: value }),
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({ error: 'LOOKUP_FAILED' }));
       setRequestId(typeof data.requestId === 'string' ? data.requestId : '');
       if (!response.ok) throw new Error(data.error ?? 'LOOKUP_FAILED');
       setResult(data);
@@ -98,11 +101,33 @@ export default function Home() {
       const messages: Record<string, string> = {
         RATE_LIMITED: 'Terlalu banyak permintaan. Tunggu sebentar lalu coba kembali.',
         INDICATOR_UNSUPPORTED: 'Format input belum dikenali. Gunakan URL, domain, IP publik, atau hash.',
+        DOMAIN_INVALID: 'Domain tidak valid. Periksa kembali ejaan dan formatnya.',
+        URL_PROTOCOL_UNSUPPORTED: 'Gunakan URL dengan awalan http:// atau https://.',
+        URL_CREDENTIALS_NOT_ALLOWED: 'URL yang memuat username atau password tidak dapat diperiksa.',
         IP_NON_PUBLIC: 'Alamat jaringan internal tidak boleh diperiksa.',
+        INVALID_INPUT: 'Input tidak valid atau terlalu panjang.',
       };
       setNotice(messages[code] ?? 'Pemeriksaan gagal. Periksa konfigurasi provider atau coba kembali.');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function sendFeedback(helpful: boolean) {
+    if (!result || feedbackLoading || feedback) return;
+    setFeedbackLoading(true);
+    try {
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ helpful, category: result.verdict }),
+      });
+      if (!response.ok) throw new Error('FEEDBACK_FAILED');
+      setFeedback(helpful ? 'Terima kasih. Feedback Anda membantu.' : 'Feedback dicatat untuk peninjauan.');
+    } catch {
+      setFeedback('Feedback belum berhasil dikirim. Silakan coba lagi.');
+    } finally {
+      setFeedbackLoading(false);
     }
   }
 
@@ -130,10 +155,10 @@ export default function Home() {
             <span className="system-online"><i aria-hidden="true" /> Sistem aktif</span>
           </div>
           <div className="scanner-body">
-            <div className="scanner-modes" aria-label="Jenis input yang didukung">
-              <span className="active">URL &amp; domain</span>
-              <span>IP publik</span>
-              <span>Hash file</span>
+            <div className="scanner-modes" aria-label="Pilihan alat keamanan">
+              <a className="active" href="#indicator">Cek indikator</a>
+              <Link href="/tools/file-hash">Hash file lokal</Link>
+              <Link href="/tools/message">Analisis pesan</Link>
             </div>
             <p className="scanner-kicker">CEK INDIKATOR</p>
             <h2>Apa yang ingin Anda periksa?</h2>
@@ -141,13 +166,13 @@ export default function Home() {
             <form className="scan-form" onSubmit={submit}>
               <label htmlFor="indicator">Link, domain, alamat IP, atau hash</label>
               <div className="search">
-                <input id="indicator" value={value} onChange={(event) => setValue(event.target.value)} placeholder="contoh.id atau https://contoh.id" autoComplete="off" />
-                <button type="submit" disabled={!value.trim() || loading}>
+                <input id="indicator" value={value} onChange={(event) => setValue(event.target.value)} placeholder="contoh.id atau https://contoh.id" autoComplete="off" spellCheck="false" aria-describedby="indicator-help" />
+                <button type="submit" disabled={!canSubmit}>
                   {loading ? 'Memeriksa…' : <>Periksa <span aria-hidden="true">→</span></>}
                 </button>
               </div>
               <div className="input-meta">
-                <small>Terdeteksi: <strong>{indicator.label}</strong></small>
+                <small id="indicator-help">Terdeteksi: <strong>{indicator.label}</strong>{value.trim() && indicator.type === 'unknown' ? ' — periksa format input' : ''}</small>
                 <label className="checkbox"><input type="checkbox" checked={saveLocal} onChange={(event) => setSaveLocal(event.target.checked)} /> Simpan di perangkat ini</label>
               </div>
               <p className="privacy-note"><span aria-hidden="true">◇</span> Metadata dan hasil provider yang sudah tersedia saja. Tidak ada submission otomatis.</p>
@@ -206,8 +231,8 @@ export default function Home() {
           </div>
           <div className="feedback">
             <span>Apakah hasil ini membantu?</span>
-            <button type="button" onClick={async () => { await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ helpful: true, category: result.verdict }) }); setFeedback('Terima kasih atas feedback Anda.'); }}>Ya</button>
-            <button type="button" className="button-quiet" onClick={async () => { await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ helpful: false, category: result.verdict }) }); setFeedback('Feedback dicatat untuk peninjauan.'); }}>Tidak</button>
+            <button type="button" disabled={feedbackLoading || Boolean(feedback)} onClick={() => sendFeedback(true)}>Ya</button>
+            <button type="button" className="button-quiet" disabled={feedbackLoading || Boolean(feedback)} onClick={() => sendFeedback(false)}>Tidak</button>
           </div>
           {feedback && <p role="status">{feedback}</p>}
         </section>
