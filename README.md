@@ -4,7 +4,7 @@ JagaWarga adalah platform security lookup dan awareness untuk membantu pengguna 
 
 ## Status
 
-🟡 **Internal release candidate v0.13.0-rc.1 / public production NO-GO.**
+🟡 **Internal release candidate v0.13.0-rc.2 / public production NO-GO.**
 Repository controls through performance and operational proof are complete.
 Public launch remains blocked until staging execution and the six external gates
 have attributable evidence and valid approvals.

@@ -26,7 +26,7 @@ services:
     image: ${IMAGE_REF:?Set immutable IMAGE_REF}
     environment:
       NODE_ENV: production
-      APP_VERSION: ${APP_VERSION:-0.13.0-rc.1}
+      APP_VERSION: ${APP_VERSION:-0.13.0-rc.2}
       APP_IMAGE_DIGEST: ${APP_IMAGE_DIGEST:?Set APP_IMAGE_DIGEST}
       APP_URL: https://${PUBLIC_HOST:?Set PUBLIC_HOST}
       ADMIN_METRICS_TOKEN: ${ADMIN_METRICS_TOKEN:?Set ADMIN_METRICS_TOKEN}

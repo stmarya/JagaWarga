@@ -1,17 +1,17 @@
 {
   "decision": "LOCAL-READY",
   "publicProductionDecision": "NO-GO",
-  "version": "0.13.0-rc.1",
+  "version": "0.13.0-rc.2",
   "runtime": "native-nextjs-production",
   "bind": "127.0.0.1:3100",
-  "startedAt": "2026-09-27T12:17:43.537Z",
-  "completedAt": "2026-09-27T12:17:55.798Z",
+  "startedAt": "2026-09-27T12:49:19.193Z",
+  "completedAt": "2026-09-27T12:49:31.398Z",
   "checks": {
     "build": "passed-before-run",
     "preflight": {
       "status": "passed",
       "baseURL": "http://127.0.0.1:3100",
-      "version": "0.13.0-rc.1",
+      "version": "0.13.0-rc.2",
       "providers": [
         "cloudflare-dns",
         "google-dns"
@@ -22,16 +22,16 @@
       "total": 500,
       "passed": 500,
       "concurrency": 25,
-      "p95Ms": 56,
-      "maxMs": 109
+      "p95Ms": 53,
+      "maxMs": 83
     },
     "analyzerLoad": {
       "endpoint": "/api/analyze/message",
       "total": 10,
       "passed": 10,
       "concurrency": 5,
-      "p95Ms": 29,
-      "maxMs": 29
+      "p95Ms": 28,
+      "maxMs": 28
     }
   },
   "limitations": [

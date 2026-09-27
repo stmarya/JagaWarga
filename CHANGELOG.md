@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.13.0-rc.2
+- Replaced the full-workspace runtime container with a minimal Next.js standalone image.
+- Removed npm, Corepack, development dependencies, and build-only binaries from the runtime image.
+- Remediated the RC.1 Trivy findings without weakening the HIGH/CRITICAL vulnerability gate.
+- Preserved the INTERNAL-GO / public production NO-GO decision and immutable RC release history.
+
 ## 0.13.0-rc.1
 - Completed repository-controlled internal readiness stages 1–6.
 - Added distributed Redis runtime state, atomic limits, freshness policy, SLO alerts, performance and operational proofs.
