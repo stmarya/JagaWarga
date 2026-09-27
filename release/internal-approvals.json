@@ -1,6 +1,13 @@
 {
-  "engineering": {"status":"approved","approvedBy":"stmarya","approvedAt":"2026-09-27T12:22:44Z"},
-  "security": {"status":"approved","approvedBy":"stmarya","approvedAt":"2026-09-27T12:22:44Z"},
-  "product": {"status":"approved","approvedBy":"stmarya","approvedAt":"2026-09-27T12:22:44Z"},
-  "operations": {"status":"approved","approvedBy":"stmarya","approvedAt":"2026-09-27T12:22:44Z"}
+  "schemaVersion": 1,
+  "release": "0.13.0-rc.1",
+  "singleOwnerException": {
+    "accepted": true,
+    "acceptedBy": "stmarya",
+    "reason": "Single-owner internal release candidate approval; does not waive staging or external public-launch gates."
+  },
+  "engineering": {"status":"approved","approvedBy":"stmarya","approvedAt":"2026-09-27T12:31:45Z"},
+  "security": {"status":"approved","approvedBy":"stmarya","approvedAt":"2026-09-27T12:31:45Z"},
+  "product": {"status":"approved","approvedBy":"stmarya","approvedAt":"2026-09-27T12:31:45Z"},
+  "operations": {"status":"approved","approvedBy":"stmarya","approvedAt":"2026-09-27T12:31:45Z"}
 }

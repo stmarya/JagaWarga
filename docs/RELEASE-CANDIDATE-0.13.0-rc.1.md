@@ -26,9 +26,9 @@
 1. Commit the RC source tree and create tag `v0.13.0-rc.1`.
 2. Let the Release workflow build, scan, attest, and sign the immutable image.
 3. Deploy that digest to staging and attach `staging-verification.json`.
-4. Record approvals from engineering, security, product, and operations.
+4. Preserve the recorded engineering, security, product, and operations
+   approvals in `release/internal-approvals.json`.
 5. Keep public production `NO-GO` until the separate external launch gate passes.
 
-The current local manifest records a dirty-tree hash because the completed work
-has not yet been committed. A tagged release workflow regenerates the manifest
-from the clean immutable commit.
+The tagged release workflow regenerates the manifest from the clean immutable
+commit. Staging and public-production promotion remain separately fail-closed.

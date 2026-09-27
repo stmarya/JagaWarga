@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.13.0-rc.1
+- Completed repository-controlled internal readiness stages 1–6.
+- Added distributed Redis runtime state, atomic limits, freshness policy, SLO alerts, performance and operational proofs.
+- Added hardened container CI, immutable action/image pinning, SBOM, provenance, vulnerability scanning, and Sigstore signing.
+- Added feature inventory, PWA/accessibility coverage, OpenAPI contract tests, support escalation, MIT license, and RC evidence gates.
+- Internal RC is GO; staging, external approvals, and public production remain NO-GO.
+
+
 ## 0.7.0
 - Added launch preflight automation and cryptographic release manifest.
 - Added legal-review drafts, provider review template, penetration-test scope, usability protocol, incident drill, production infrastructure checklist, and go/no-go pack.
