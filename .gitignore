@@ -8,4 +8,5 @@ coverage/
 release-manifest.json
 launch-evidence/*.json
 !launch-evidence/*.example.json
+.env.local-deploy
 .DS_Store

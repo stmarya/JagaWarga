@@ -35,6 +35,8 @@ npm run dev
 
 Buka `http://localhost:3000`.
 
+Untuk acceptance self-hosted yang loopback-only, ikuti [`docs/LOCAL-DEPLOYMENT.md`](docs/LOCAL-DEPLOYMENT.md).
+
 Health endpoint tersedia di `/api/health`; lookup endpoint tersedia di `/api/lookups`.
 
 Alat tambahan tersedia di `/tools`; dashboard lokal tersedia di `/dashboard`.

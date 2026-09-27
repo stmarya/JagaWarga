@@ -2,7 +2,7 @@
 
 ## Decision
 
-Phase 8 technical launch controls are complete. Phase 9 is **NO-GO** until all external evidence exists and the production environment has been configured. This document does not waive any external gate.
+Phase 8 technical launch controls are complete. The selected next target is loopback-only self-hosted local acceptance. Public Phase 9 is **NO-GO** until all external evidence is attached and the production environment has been configured. This document does not waive any external gate.
 
 ## Phase 8 deliverables
 
@@ -26,6 +26,10 @@ Phase 8 technical launch controls are complete. Phase 9 is **NO-GO** until all e
 7. Verify the published image is deployed by the authorized infrastructure operator.
 8. Run post-deployment preflight, incident smoke test, and monitoring checks.
 9. Record the release decision, approvers, evidence, and rollback owner.
+
+## Local-first execution
+
+Use `npm run local:env`, `npm run local:up`, and `npm run local:verify`. The Compose port binds only to `127.0.0.1`; database/cache ports are not exposed. Local acceptance is not equivalent to a public production GO decision.
 
 ## Required attestation object
 
