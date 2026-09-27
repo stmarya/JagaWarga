@@ -8,7 +8,7 @@ Status saat ini: **belum siap melewati gate Fase 0–1**. Repository foundation 
 - [ ] Top 5 JTBD dan use case tervalidasi.
 - [ ] Provider license/ToS dan cache/redistribution rights dikonfirmasi.
 - [ ] Threat model dan privacy impact assessment disetujui.
-- [ ] Golden test dataset tersedia.
+- [x] Golden baseline sintetis tersedia; dataset reputasi provider nyata masih diperlukan.
 - [ ] Low-fidelity prototype diuji.
 - [ ] ≥80% partisipan memahami verdict dan tindakan.
 - [ ] Scope dan acceptance criteria dibekukan.

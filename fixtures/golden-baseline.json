@@ -1,0 +1,22 @@
+[
+  {"id":"url-public-01","input":"https://example.com/path","expectedType":"url","expectedPolicy":"existing-only"},
+  {"id":"url-redact-01","input":"https://example.com/reset?token=do-not-store","expectedType":"url","expectedDisplayContains":"[REDACTED]"},
+  {"id":"domain-01","input":"example.com","expectedType":"domain"},
+  {"id":"domain-idn-01","input":"contoh.id","expectedType":"domain"},
+  {"id":"ip-public-01","input":"8.8.8.8","expectedType":"ipv4"},
+  {"id":"ip-loopback-01","input":"127.0.0.1","expectedError":"IP_NON_PUBLIC"},
+  {"id":"ip-private-01","input":"10.0.0.1","expectedError":"IP_NON_PUBLIC"},
+  {"id":"ip-private-02","input":"192.168.1.10","expectedError":"IP_NON_PUBLIC"},
+  {"id":"ip-link-local-01","input":"169.254.169.254","expectedError":"IP_NON_PUBLIC"},
+  {"id":"ip-v6-loopback-01","input":"::1","expectedError":"IP_NON_PUBLIC"},
+  {"id":"url-loopback-01","input":"http://127.0.0.1/admin","expectedError":"IP_NON_PUBLIC"},
+  {"id":"url-private-01","input":"http://10.0.0.1","expectedError":"IP_NON_PUBLIC"},
+  {"id":"url-metadata-01","input":"http://169.254.169.254/latest/meta-data","expectedError":"IP_NON_PUBLIC"},
+  {"id":"url-credentials-01","input":"https://user:pass@example.com","expectedError":"URL_CREDENTIALS_NOT_ALLOWED"},
+  {"id":"hash-md5-01","input":"d41d8cd98f00b204e9800998ecf8427e","expectedType":"hash"},
+  {"id":"hash-sha1-01","input":"da39a3ee5e6b4b0d3255bfef95601890afd80709","expectedType":"hash"},
+  {"id":"hash-sha256-01","input":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","expectedType":"hash"},
+  {"id":"invalid-text-01","input":"tolong cek ini","expectedError":"INDICATOR_UNSUPPORTED"},
+  {"id":"invalid-empty-01","input":"","expectedError":"INDICATOR_UNSUPPORTED"},
+  {"id":"invalid-localhost-01","input":"localhost","expectedError":"INDICATOR_UNSUPPORTED"}
+]
