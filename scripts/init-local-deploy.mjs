@@ -12,6 +12,8 @@ try {
     'APP_PORT=3000',
     `ADMIN_METRICS_TOKEN=${randomBytes(32).toString('base64url')}`,
     `POSTGRES_PASSWORD=${randomBytes(32).toString('base64url')}`,
+    'FEATURE_PREMIUM_PROVIDERS=false',
+    'VIRUSTOTAL_API_KEY=',
     '',
   ].join('\n');
   const file = await open(path, 'wx', 0o600);

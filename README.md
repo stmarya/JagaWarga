@@ -4,7 +4,7 @@ JagaWarga adalah platform security lookup dan awareness untuk membantu pengguna 
 
 ## Status
 
-🟡 **Deployment kit READY / public production NO-GO.** Build v0.10.0 memiliki local acceptance evidence dan fail-closed self-hosted VPS kit, tetapi public launch tetap diblokir sampai enam external gate memiliki evidence dan persetujuan sah. Metadata lookup aktif melalui fixed-origin DNS providers dengan kill switches. URL baru tidak disubmit ke scanner dan file tidak pernah diunggah.
+🟡 **Deployment kit READY / public production NO-GO.** Build v0.11.0 memiliki local acceptance evidence, fail-closed self-hosted VPS kit, dan optional existing-lookup VirusTotal adapter. Public launch tetap diblokir sampai enam external gate memiliki evidence dan persetujuan sah. URL baru tidak disubmit ke scanner dan file tidak pernah diunggah.
 
 ## MVP scope
 
@@ -14,6 +14,7 @@ JagaWarga adalah platform security lookup dan awareness untuk membantu pengguna 
 - Micro-learning dan tindakan aman kontekstual.
 - Tidak ada upload/download file atau community reporting pada fase awal.
 - Fixed-origin provider gateway dengan DNS/IP validation, pinned lookup, timeout, response cap, circuit breaker, cache, dan bounded queue.
+- Feature-gated VirusTotal existing lookup untuk URL, domain, IPv4/IPv6, dan hash—tanpa submission endpoint.
 - Explainable message-phishing dan email-header analyzers.
 - Client-side QR decoding dan SHA-256 file hashing.
 - Local opt-in history, watchlist, export/delete, XP, dan badges.

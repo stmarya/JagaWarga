@@ -12,4 +12,12 @@ describe('feature governance', () => {
   it('supports provider kill switches', () => {
     expect(enabledProviderNames({ NODE_ENV: 'test', DISABLE_GOOGLE_DNS: 'true' })).toEqual(['cloudflare-dns']);
   });
+  it('enables VirusTotal only with the feature flag and key', () => {
+    expect(enabledProviderNames({ NODE_ENV: 'test', FEATURE_PREMIUM_PROVIDERS: 'true' })).not.toContain('virustotal');
+    expect(enabledProviderNames({
+      NODE_ENV: 'test',
+      FEATURE_PREMIUM_PROVIDERS: 'true',
+      VIRUSTOTAL_API_KEY: 'test-key',
+    })).toContain('virustotal');
+  });
 });

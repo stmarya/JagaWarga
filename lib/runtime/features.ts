@@ -27,5 +27,6 @@ export function enabledProviderNames(env: NodeJS.ProcessEnv = process.env) {
   return [
     !enabled(env.DISABLE_CLOUDFLARE_DNS) && 'cloudflare-dns',
     !enabled(env.DISABLE_GOOGLE_DNS) && 'google-dns',
+    enabled(env.FEATURE_PREMIUM_PROVIDERS) && Boolean(env.VIRUSTOTAL_API_KEY?.trim()) && 'virustotal',
   ].filter(Boolean) as string[];
 }

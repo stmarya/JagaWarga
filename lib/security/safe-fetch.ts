@@ -2,8 +2,13 @@ import { lookup } from 'node:dns/promises';
 import { request } from 'node:https';
 import { assertPublicIp } from './network';
 
-const ALLOWED_PROVIDER_HOSTS = new Set(['cloudflare-dns.com', 'dns.google']);
+const ALLOWED_PROVIDER_HOSTS = new Set(['cloudflare-dns.com', 'dns.google', 'www.virustotal.com']);
 const MAX_RESPONSE_BYTES = 512 * 1024;
+
+type SafeFetchOptions = {
+  accept?: string;
+  headers?: Record<string, string>;
+};
 
 export function validateProviderUrl(raw: string): URL {
   const url = new URL(raw);
@@ -13,8 +18,18 @@ export function validateProviderUrl(raw: string): URL {
   return url;
 }
 
-export async function safeFetchJson<T>(raw: string, signal?: AbortSignal): Promise<T> {
+export async function safeFetchJson<T>(
+  raw: string,
+  signal?: AbortSignal,
+  options: SafeFetchOptions = {},
+): Promise<T> {
   const url = validateProviderUrl(raw);
+  const extraHeaders = options.headers ?? {};
+  for (const [name, value] of Object.entries(extraHeaders)) {
+    if (name.toLowerCase() !== 'x-apikey' || !value || value.length > 512 || /[\r\n]/.test(value)) {
+      throw new Error('PROVIDER_HEADER_NOT_ALLOWED');
+    }
+  }
   const addresses = await lookup(url.hostname, { all: true, verbatim: true });
   if (!addresses.length) throw new Error('PROVIDER_DNS_EMPTY');
   const pinned = addresses.map((item) => ({ ...item, address: assertPublicIp(item.address) }))[0];
@@ -32,7 +47,11 @@ export async function safeFetchJson<T>(raw: string, signal?: AbortSignal): Promi
       url,
       {
         method: 'GET',
-        headers: { Accept: 'application/dns-json', 'User-Agent': 'JagaWarga/0.1' },
+        headers: {
+          Accept: options.accept ?? 'application/dns-json',
+          'User-Agent': 'JagaWarga/0.11',
+          ...extraHeaders,
+        },
         lookup: pinnedLookup as never,
         servername: url.hostname,
       },

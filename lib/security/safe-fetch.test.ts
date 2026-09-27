@@ -5,6 +5,7 @@ describe('validateProviderUrl', () => {
   it.each([
     'https://cloudflare-dns.com/dns-query?name=example.com&type=A',
     'https://dns.google/resolve?name=example.com&type=A',
+    'https://www.virustotal.com/api/v3/ip_addresses/8.8.8.8',
   ])('allows a fixed provider origin: %s', (value) => {
     expect(validateProviderUrl(value).protocol).toBe('https:');
   });

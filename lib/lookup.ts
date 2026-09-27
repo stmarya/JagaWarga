@@ -1,5 +1,6 @@
 import { aggregateEvidence } from './evidence';
 import { CloudflareDnsAdapter, GoogleDnsAdapter } from './providers/dns';
+import { VirusTotalAdapter } from './providers/virustotal';
 import { ExistingLookupOnlyAdapter, ProviderAdapter, Evidence } from './providers/types';
 import { safeLog } from './observability';
 import { TtlCache } from './runtime/cache';
@@ -12,7 +13,13 @@ import { canonicalizeIndicator } from './security/canonicalize';
 const cache = new TtlCache<Awaited<ReturnType<typeof buildLookupResult>>>();
 const queue = new BoundedQueue(4, 100);
 const circuits = new Map<string, CircuitBreaker>();
-const allProductionAdapters: ProviderAdapter[] = [new CloudflareDnsAdapter(), new GoogleDnsAdapter()];
+function productionAdapters(env: NodeJS.ProcessEnv = process.env): ProviderAdapter[] {
+  const adapters: ProviderAdapter[] = [new CloudflareDnsAdapter(), new GoogleDnsAdapter()];
+  if (env.FEATURE_PREMIUM_PROVIDERS?.toLowerCase() === 'true' && env.VIRUSTOTAL_API_KEY?.trim()) {
+    adapters.push(new VirusTotalAdapter(env.VIRUSTOTAL_API_KEY));
+  }
+  return adapters;
+}
 
 async function buildLookupResult(raw: string, adapters: ProviderAdapter[]) {
   const indicator = canonicalizeIndicator(raw);
@@ -67,7 +74,7 @@ async function buildLookupResult(raw: string, adapters: ProviderAdapter[]) {
 
 export async function performLookup(
   raw: string,
-  adapters: ProviderAdapter[] = allProductionAdapters.filter((adapter) => enabledProviderNames().includes(adapter.name)),
+  adapters: ProviderAdapter[] = productionAdapters().filter((adapter) => enabledProviderNames().includes(adapter.name)),
 ) {
   const indicator = canonicalizeIndicator(raw);
   const key = `${indicator.type}:${indicator.value}`;
