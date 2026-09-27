@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.0
+- Added launch preflight automation and cryptographic release manifest.
+- Added legal-review drafts, provider review template, penetration-test scope, usability protocol, incident drill, production infrastructure checklist, and go/no-go pack.
+- Added public launch-readiness page and external-gate tracking.
+
 ## 0.6.0
 - Added release automation, GHCR publishing workflow, SBOM artifacts, Dependabot, and CODEOWNERS.
 - Added liveness/readiness, protected metrics, policy endpoint, feature flags, provider kill switches, operations page, audit-event allowlist, and localization foundation.

@@ -1,13 +1,15 @@
 {
   "name": "jagawarga",
   "private": true,
-  "version": "0.6.0",
+  "version": "0.7.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
     "test:ui": "node scripts/ui-smoke.mjs",
+    "preflight": "node scripts/preflight.mjs",
+    "release:manifest": "node scripts/release-manifest.mjs",
     "security:secrets": "node scripts/check-secrets.mjs",
     "security:audit": "npm audit --omit=dev --audit-level=high"
   },

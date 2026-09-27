@@ -4,7 +4,7 @@ JagaWarga adalah platform security lookup dan awareness untuk membantu pengguna 
 
 ## Status
 
-🚧 **Governed release candidate / Fase 5–6.** Metadata lookup aktif melalui fixed-origin DNS providers dengan kill switches. URL baru tidak disubmit ke scanner dan file tidak pernah diunggah.
+🚧 **Launch-readiness candidate / Fase 7.** Metadata lookup aktif melalui fixed-origin DNS providers dengan kill switches. URL baru tidak disubmit ke scanner dan file tidak pernah diunggah.
 
 ## MVP scope
 
@@ -23,6 +23,7 @@ JagaWarga adalah platform security lookup dan awareness untuk membantu pengguna 
 - Status, methodology, transparency, privacy, dan emergency pages.
 - Security headers, CSP, payload limits, request IDs, consistent API errors, metrics, versioning, OpenAPI, container, and operational runbooks.
 - Release automation, GHCR workflow, SBOM, Dependabot, CODEOWNERS, readiness/liveness, protected metrics, deny-by-default feature flags, and launch governance.
+- Automated deployment preflight, cryptographic release manifest, legal/provider review pack, penetration-test scope, usability protocol, infrastructure checklist, incident drill, and go/no-go template.
 
 ## Menjalankan lokal
 

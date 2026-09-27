@@ -5,4 +5,5 @@ coverage/
 .env
 .env.local
 *.log
+release-manifest.json
 .DS_Store
