@@ -3,18 +3,39 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { classifyInput } from '@/lib/input';
 
+type LookupResult = {
+  verdict: 'high-risk' | 'suspicious' | 'no-indication' | 'insufficient-data';
+  confidence: 'low' | 'medium' | 'high';
+  indicator: { type: string; displayValue: string };
+  policy: { existingLookupOnly: boolean; submissionOccurred: boolean };
+};
+
 export default function Home() {
   const [value, setValue] = useState('');
   const [notice, setNotice] = useState('');
+  const [result, setResult] = useState<LookupResult | null>(null);
+  const [loading, setLoading] = useState(false);
   const indicator = useMemo(() => classifyInput(value), [value]);
 
-  function submit(event: FormEvent) {
+  async function submit(event: FormEvent) {
     event.preventDefault();
-    setNotice(
-      indicator.type === 'unknown'
-        ? 'Input belum dikenali. Gunakan URL, domain, IP, MD5, SHA-1, atau SHA-256.'
-        : `Siap memeriksa ${indicator.label}. Integrasi provider akan diaktifkan setelah readiness gate lulus.`,
-    );
+    setNotice('');
+    setResult(null);
+    setLoading(true);
+    try {
+      const response = await fetch('/api/lookups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ indicator: value }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'LOOKUP_FAILED');
+      setResult(data);
+    } catch {
+      setNotice('Input tidak dapat diperiksa. Pastikan format benar dan bukan alamat jaringan internal.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -28,11 +49,27 @@ export default function Home() {
           <label htmlFor="indicator">Masukkan objek yang ingin diperiksa</label>
           <div className="search">
             <input id="indicator" value={value} onChange={(event) => setValue(event.target.value)} placeholder="https://contoh.id atau alamat IP" autoComplete="off" />
-            <button type="submit" disabled={!value.trim()}>Periksa</button>
+            <button type="submit" disabled={!value.trim() || loading}>
+              {loading ? 'Memeriksa…' : 'Periksa'}
+            </button>
           </div>
           <small>Terdeteksi: <strong>{indicator.label}</strong>. Pilot hanya memakai metadata dan hasil yang sudah tersedia.</small>
         </form>
         {notice && <div className="notice" role="status">{notice}</div>}
+        {result && (
+          <section className="result" aria-live="polite">
+            <p className="eyebrow">HASIL PEMERIKSAAN</p>
+            <h2>{result.verdict === 'insufficient-data' ? 'Belum ada cukup data' : result.verdict}</h2>
+            <p>Ini bukan berarti aman. Belum ada provider produksi yang dikonfigurasi pada tahap ini.</p>
+            <dl>
+              <div><dt>Jenis</dt><dd>{result.indicator.type}</dd></div>
+              <div><dt>Confidence</dt><dd>{result.confidence}</dd></div>
+              <div><dt>Submission</dt><dd>{result.policy.submissionOccurred ? 'Terjadi' : 'Tidak dilakukan'}</dd></div>
+            </dl>
+            <strong>Tindakan aman:</strong>
+            <p>Jangan buka objek yang meragukan. Verifikasi pengirim melalui kanal lain yang sudah Anda kenal.</p>
+          </section>
+        )}
       </section>
       <section id="prinsip" className="cards">
         <article><span>1</span><h2>Cek</h2><p>Kami mengenali jenis input tanpa langsung mengirimkannya ke pihak ketiga.</p></article>

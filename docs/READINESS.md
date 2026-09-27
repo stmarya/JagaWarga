@@ -1,6 +1,6 @@
 # Phase Readiness
 
-Status saat ini: **belum siap melewati gate Fase 0–1**. Repository foundation boleh berjalan paralel, tetapi public beta tidak boleh dimulai sebelum seluruh blocker ditutup.
+Status saat ini: **belum siap melewati gate Fase 0–1**. Repository foundation dan safe no-provider lookup sudah berjalan, tetapi public beta tidak boleh dimulai sebelum seluruh blocker ditutup.
 
 ## Fase 0 gate
 
@@ -15,7 +15,7 @@ Status saat ini: **belum siap melewati gate Fase 0–1**. Repository foundation 
 
 ## Fase 1 gate
 
-- [ ] Input canonicalization dan redaction teruji.
+- [x] Input canonicalization dan redaction baseline teruji.
 - [ ] SSRF-safe lookup gateway lulus adversarial tests.
 - [ ] Minimal dua provider adapters memiliki contract tests dan kill switch.
 - [ ] Cache, queue, quota, timeout, dan partial-result states teruji.

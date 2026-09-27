@@ -18,5 +18,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm install
+      - run: npm run security:secrets
       - run: npm test
       - run: npm run build
