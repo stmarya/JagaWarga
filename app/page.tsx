@@ -11,7 +11,17 @@ type LookupResult = {
   indicator: { type: string; displayValue: string };
   partial: boolean;
   cached: boolean;
-  evidence: Array<{ provider: string; reasonCodes: string[]; observedAt: string | null; fetchedAt: string; sourceUrl?: string }>;
+  requestId: string;
+  evidence: Array<{
+    provider: string;
+    reasonCodes: string[];
+    observedAt: string | null;
+    fetchedAt: string;
+    sourceUrl?: string;
+    freshness: 'fresh' | 'stale' | 'unknown';
+    ageSeconds: number | null;
+    maxAgeSeconds: number;
+  }>;
   providers: { requested: string[]; succeeded: string[]; failed: string[] };
   policy: { existingLookupOnly: boolean; submissionOccurred: boolean };
   checkedAt: string;
@@ -37,6 +47,7 @@ const reasonLabels: Record<string, string> = {
   PROVIDER_CIRCUIT_OPEN: 'Provider dihentikan sementara setelah beberapa kegagalan.',
   PROVIDER_BUDGET_EXHAUSTED: 'Kuota provider untuk periode ini telah habis.',
   NO_PROVIDER_CONFIGURED: 'Belum ada provider yang mendukung jenis input ini.',
+  STALE_BENIGN_EVIDENCE: 'Data bersih dari provider sudah terlalu lama dan tidak digunakan untuk menyatakan aman.',
 };
 
 function actions(verdict: LookupResult['verdict']) {
@@ -53,12 +64,14 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [saveLocal, setSaveLocal] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const [requestId, setRequestId] = useState('');
   const indicator = useMemo(() => classifyInput(value), [value]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     setNotice('');
     setResult(null);
+    setRequestId('');
     setLoading(true);
     try {
       const response = await fetch('/api/lookups', {
@@ -67,6 +80,7 @@ export default function Home() {
         body: JSON.stringify({ indicator: value }),
       });
       const data = await response.json();
+      setRequestId(typeof data.requestId === 'string' ? data.requestId : '');
       if (!response.ok) throw new Error(data.error ?? 'LOOKUP_FAILED');
       setResult(data);
       if (saveLocal) {
@@ -134,12 +148,14 @@ export default function Home() {
                     <strong>{item.provider}</strong>
                     <ul>{item.reasonCodes.map((code) => <li key={code}>{reasonLabels[code] ?? code}</li>)}</ul>
                     <small>Diperiksa: {new Date(item.fetchedAt).toLocaleString('id-ID')}{item.observedAt ? ` · Data: ${new Date(item.observedAt).toLocaleString('id-ID')}` : ''}</small>
+                    <p>Freshness: <strong>{item.freshness}</strong>{item.ageSeconds === null ? '' : ` · usia ${Math.round(item.ageSeconds / 3600)} jam`}</p>
                     {item.sourceUrl && <p><a href={item.sourceUrl} target="_blank" rel="noreferrer">Buka laporan sumber</a></p>}
                   </li>
                 ))}
               </ul>
               <p>{result.cached ? 'Hasil berasal dari cache sementara.' : 'Hasil diperiksa langsung pada metadata provider.'}</p>
               {result.providers.failed.length > 0 && <p>Provider gagal: {result.providers.failed.join(', ')}.</p>}
+              <p>ID permintaan: <code>{result.requestId}</code></p>
             </details>
             <strong>Tindakan aman:</strong>
             <ul>{actions(result.verdict).map((action) => <li key={action}>{action}</li>)}</ul>
@@ -151,13 +167,14 @@ export default function Home() {
             {feedback && <p role="status">{feedback}</p>}
           </section>
         )}
+        {!result && requestId && <p className="notice">ID permintaan untuk dukungan: <code>{requestId}</code></p>}
       </section>
       <section id="prinsip" className="cards">
         <article><span>1</span><h2>Cek</h2><p>Kami mengenali jenis input tanpa langsung mengirimkannya ke pihak ketiga.</p></article>
         <article><span>2</span><h2>Pahami</h2><p>Hasil menampilkan alasan, sumber, freshness, dan tingkat keyakinan.</p></article>
         <article><span>3</span><h2>Bertindak</h2><p>Dapatkan langkah aman berikutnya—bukan sekadar skor teknis.</p></article>
       </section>
-      <footer>Belum ada indikasi berbahaya bukan berarti 100% aman.</footer>
+      <footer>Belum ada indikasi berbahaya bukan berarti 100% aman. · <a href="/support">Dukungan</a></footer>
     </main>
   );
 }

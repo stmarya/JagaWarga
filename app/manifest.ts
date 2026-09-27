@@ -9,6 +9,10 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: '#f6f8f3',
     theme_color: '#14231d',
     lang: 'id',
-    icons: [],
+    icons: [
+      { src: '/icons/jagawarga-192.png', sizes: '192x192', type: 'image/png' },
+      { src: '/icons/jagawarga-512.png', sizes: '512x512', type: 'image/png' },
+      { src: '/icons/jagawarga-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+    ],
   };
 }

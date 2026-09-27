@@ -1,0 +1,6 @@
+{
+  "engineering": {"status":"pending","approvedBy":"","approvedAt":""},
+  "security": {"status":"pending","approvedBy":"","approvedAt":""},
+  "product": {"status":"pending","approvedBy":"","approvedAt":""},
+  "operations": {"status":"pending","approvedBy":"","approvedAt":""}
+}

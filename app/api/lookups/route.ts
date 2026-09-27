@@ -3,13 +3,14 @@ import { apiError, errorStatus, jsonBody, requestId } from '@/lib/api/request';
 import { performLookup } from '@/lib/lookup';
 import { withMetric } from '@/lib/runtime/metrics';
 import { clientKey, rateLimit } from '@/lib/runtime/rate-limit';
+import { CAPACITY_LIMITS } from '@/lib/runtime/capacity';
 
 export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
   const id = requestId(request);
   try {
-    const limit = rateLimit(`lookup:${clientKey(request)}`, 30);
+    const limit = await rateLimit(`lookup:${clientKey(request)}`, CAPACITY_LIMITS.lookupRequestsPerClientPerMinute);
     if (!limit.allowed) return NextResponse.json({ error: 'RATE_LIMITED', resetsAt: limit.resetsAt, requestId: id }, { status: 429, headers: { 'Cache-Control': 'no-store', 'X-Request-ID': id } });
     const body = await jsonBody<{ indicator?: unknown }>(request, 4_096);
     if (typeof body.indicator !== 'string' || body.indicator.length > 2_048) return apiError('INVALID_INPUT', 400, id);

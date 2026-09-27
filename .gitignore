@@ -11,6 +11,9 @@ launch-evidence/*.json
 .env.local-deploy
 artifacts/*
 !artifacts/local-acceptance-latest.json
+!artifacts/performance-proof-latest.json
+!artifacts/operational-proof-latest.json
+!artifacts/reproducibility-proof-latest.json
 deploy/self-hosted/.env.production
 deploy/self-hosted/backups/
 .DS_Store

@@ -4,7 +4,10 @@ JagaWarga adalah platform security lookup dan awareness untuk membantu pengguna 
 
 ## Status
 
-🟡 **User-ready local candidate / public production NO-GO.** Build v0.12.1 memperbaiki lookup UX, provider diagnostics, stale cache isolation, service worker lifecycle, cross-platform verification, environment repair, dan verifikasi wajib provider reputasi saat premium mode aktif. Public launch tetap diblokir sampai enam external gate memiliki evidence dan persetujuan sah.
+🟡 **Internal release candidate v0.13.0-rc.1 / public production NO-GO.**
+Repository controls through performance and operational proof are complete.
+Public launch remains blocked until staging execution and the six external gates
+have attributable evidence and valid approvals.
 
 ## MVP scope
 
@@ -20,7 +23,8 @@ JagaWarga adalah platform security lookup dan awareness untuk membantu pengguna 
 - Local opt-in history, watchlist, export/delete, XP, dan badges.
 - Feedback API tanpa indikator mentah.
 - Rate limiting dan provider budget controls.
-- PWA serta browser-extension foundation.
+- Installable PWA; browser extension remains an experimental developer preview
+  and is excluded from launch scope.
 - Status, methodology, transparency, privacy, dan emergency pages.
 - Security headers, CSP, payload limits, request IDs, consistent API errors, metrics, versioning, OpenAPI, container, and operational runbooks.
 - Release automation, GHCR workflow, SBOM, Dependabot, CODEOWNERS, readiness/liveness, protected metrics, deny-by-default feature flags, and launch governance.
@@ -61,3 +65,7 @@ Lihat [`docs/READINESS.md`](docs/READINESS.md), [`docs/PHASE-8-9.md`](docs/PHASE
 ## Security
 
 Jangan kirim vulnerability atau secret melalui issue publik. Ikuti [`SECURITY.md`](SECURITY.md).
+
+## License
+
+MIT. Lihat [`LICENSE`](LICENSE).

@@ -1,0 +1,64 @@
+{
+  "decision": "PASSED",
+  "generatedAt": "2026-09-27T12:17:56.671Z",
+  "mode": "approved-provider-mocks",
+  "capacityLimits": {
+    "lookupConcurrencyPerReplica": 4,
+    "lookupMaxPendingPerReplica": 100,
+    "lookupRequestsPerClientPerMinute": 30,
+    "providerRequestsPerDay": 1000,
+    "providerTimeoutMs": 5000,
+    "providerRetryAttempts": 2
+  },
+  "lookup": {
+    "uncached": {
+      "samples": 100,
+      "p95Ms": 2.28,
+      "targetP95Ms": 5000
+    },
+    "cached": {
+      "samples": 100,
+      "p95Ms": 0.02,
+      "targetP95Ms": 1500,
+      "providerCalls": 0
+    }
+  },
+  "controls": {
+    "queueFullRejected": true,
+    "rateLimitBlockedSixthRequest": true,
+    "circuitOpened": true,
+    "circuitRecovered": true,
+    "providerTimeoutAttempts": 2,
+    "providerTimeoutDegradedSafely": true
+  },
+  "slo": {
+    "status": "healthy",
+    "evaluatedAt": "2026-09-27T12:17:56.671Z",
+    "minimumSamples": 20,
+    "objectives": [
+      {
+        "metric": "lookup.cached",
+        "label": "Cached lookup P95",
+        "maxP95Ms": 1500,
+        "maxErrorRate": 0.005,
+        "status": "healthy",
+        "samples": 100,
+        "p95UpperBoundMs": 100,
+        "errorRate": 0,
+        "breaches": []
+      },
+      {
+        "metric": "lookup.uncached",
+        "label": "Uncached lookup P95",
+        "maxP95Ms": 5000,
+        "maxErrorRate": 0.005,
+        "status": "healthy",
+        "samples": 102,
+        "p95UpperBoundMs": 100,
+        "errorRate": 0,
+        "breaches": []
+      }
+    ],
+    "alerts": []
+  }
+}

@@ -31,4 +31,59 @@ describe('provider contract', () => {
       policy: { existingLookupOnly: true, submissionOccurred: false },
     });
   });
+
+  it('retries one transient provider failure and then succeeds', async () => {
+    let attempts = 0;
+    const adapter: ProviderAdapter = {
+      name: `retry-${crypto.randomUUID()}`,
+      supports: () => true,
+      lookup: async () => {
+        attempts += 1;
+        if (attempts === 1) throw new Error('PROVIDER_TIMEOUT');
+        return { ...base, provider: 'retry-fixture', verdict: 'benign' };
+      },
+    };
+    const result = await performLookup(`retry-${crypto.randomUUID()}.example`, [adapter]);
+    expect(attempts).toBe(2);
+    expect(result.partial).toBe(false);
+  });
+
+  it('degrades to partial evidence after retryable failures are exhausted', async () => {
+    let attempts = 0;
+    const adapter: ProviderAdapter = {
+      name: `failure-${crypto.randomUUID()}`,
+      supports: () => true,
+      lookup: async () => {
+        attempts += 1;
+        throw new Error('PROVIDER_TIMEOUT');
+      },
+    };
+    const result = await performLookup(`failure-${crypto.randomUUID()}.example`, [adapter]);
+    expect(attempts).toBe(2);
+    expect(result).toMatchObject({
+      verdict: 'insufficient-data',
+      partial: true,
+      providers: { succeeded: [], failed: [adapter.name] },
+    });
+  });
+
+  it('coalesces concurrent identical lookups within a process', async () => {
+    let calls = 0;
+    const adapter: ProviderAdapter = {
+      name: `coalesce-${crypto.randomUUID()}`,
+      supports: () => true,
+      lookup: async () => {
+        calls += 1;
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        return { ...base, provider: 'coalesce-fixture', verdict: 'benign' };
+      },
+    };
+    const indicator = `coalesce-${crypto.randomUUID()}.example`;
+    const [first, second] = await Promise.all([
+      performLookup(indicator, [adapter]),
+      performLookup(indicator, [adapter]),
+    ]);
+    expect(calls).toBe(1);
+    expect([first.coalesced, second.coalesced].sort()).toEqual([false, true]);
+  });
 });

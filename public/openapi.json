@@ -1,40 +1,539 @@
 {
   "openapi": "3.1.0",
-  "info": { "title": "JagaWarga API", "version": "0.12.1", "description": "Existing-lookup-only security awareness API." },
-  "servers": [{ "url": "/" }],
+  "info": {
+    "title": "JagaWarga API",
+    "version": "0.13.0-rc.1",
+    "description": "Existing-lookup-only security awareness API."
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
   "paths": {
-    "/api/live": { "get": { "summary": "Process liveness", "responses": { "200": { "description": "Alive" } } } },
-    "/api/ready": { "get": { "summary": "Runtime readiness", "responses": { "200": { "description": "Ready" }, "503": { "description": "Not ready" } } } },
-    "/api/health": { "get": { "summary": "Health status", "responses": { "200": { "description": "Healthy" } } } },
-    "/api/version": { "get": { "summary": "Version and policy", "responses": { "200": { "description": "Version" } } } },
-    "/api/policy": { "get": { "summary": "Feature and privacy policy", "responses": { "200": { "description": "Policy" } } } },
-    "/api/metrics": { "get": { "summary": "Protected privacy-safe metrics", "responses": { "200": { "description": "Metrics" }, "401": { "description": "Unauthorized" } } } },
-    "/api/lookups": {
+    "/api/analyze/email-header": {
       "post": {
-        "summary": "Metadata lookup",
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["indicator"], "properties": { "indicator": { "type": "string", "maxLength": 2048 } } } } } },
-        "responses": { "200": { "description": "Lookup result" }, "400": { "description": "Invalid input" }, "413": { "description": "Payload too large" }, "429": { "description": "Rate limited" } }
+        "summary": "Email-header analysis",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "headers"
+                ],
+                "properties": {
+                  "headers": {
+                    "type": "string",
+                    "maxLength": 50000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Analysis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/analyze/message": {
       "post": {
         "summary": "Explainable message analysis",
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["text"], "properties": { "text": { "type": "string", "maxLength": 10000 } } } } } },
-        "responses": { "200": { "description": "Analysis" }, "400": { "description": "Invalid input" }, "429": { "description": "Rate limited" } }
-      }
-    },
-    "/api/analyze/email-header": {
-      "post": {
-        "summary": "Email-header analysis",
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["headers"], "properties": { "headers": { "type": "string", "maxLength": 50000 } } } } } },
-        "responses": { "200": { "description": "Analysis" }, "400": { "description": "Invalid input" }, "429": { "description": "Rate limited" } }
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "text"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "maxLength": 10000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Analysis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/feedback": {
       "post": {
         "summary": "Indicator-free feedback",
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["helpful"], "properties": { "helpful": { "type": "boolean" }, "category": { "type": "string", "maxLength": 40 } } } } } },
-        "responses": { "200": { "description": "Accepted" }, "429": { "description": "Rate limited" } }
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "helpful"
+                ],
+                "properties": {
+                  "helpful": {
+                    "type": "boolean"
+                  },
+                  "category": {
+                    "type": "string",
+                    "maxLength": 40
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedbackAccepted"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "summary": "Health status",
+        "responses": {
+          "200": {
+            "description": "Healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/live": {
+      "get": {
+        "summary": "Process liveness",
+        "responses": {
+          "200": {
+            "description": "Alive",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/lookups": {
+      "post": {
+        "summary": "Metadata lookup",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "indicator"
+                ],
+                "properties": {
+                  "indicator": {
+                    "type": "string",
+                    "maxLength": 2048
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lookup result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LookupResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/metrics": {
+      "get": {
+        "summary": "Protected privacy-safe metrics",
+        "responses": {
+          "200": {
+            "description": "Metrics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/policy": {
+      "get": {
+        "summary": "Feature and privacy policy",
+        "responses": {
+          "200": {
+            "description": "Policy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ready": {
+      "get": {
+        "summary": "Runtime readiness",
+        "responses": {
+          "200": {
+            "description": "Ready",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Not ready",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/slo": {
+      "get": {
+        "summary": "Public aggregate SLO status and active alerts",
+        "responses": {
+          "200": {
+            "description": "SLO status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "objectives",
+                    "alerts"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "healthy",
+                        "warming",
+                        "breached"
+                      ]
+                    },
+                    "objectives": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "alerts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/version": {
+      "get": {
+        "summary": "Version and policy",
+        "responses": {
+          "200": {
+            "description": "Version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Version"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": [
+          "error",
+          "requestId"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "LookupResult": {
+        "type": "object",
+        "required": [
+          "risk",
+          "verdict",
+          "confidence",
+          "evidence",
+          "requestId"
+        ],
+        "properties": {
+          "risk": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "high-risk",
+              "suspicious",
+              "no-indication",
+              "insufficient-data"
+            ]
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "AnalysisResult": {
+        "type": "object",
+        "required": [
+          "risk",
+          "verdict",
+          "reasonCodes",
+          "requestId"
+        ],
+        "properties": {
+          "risk": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "verdict": {
+            "type": "string"
+          },
+          "reasonCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "FeedbackAccepted": {
+        "type": "object",
+        "required": [
+          "accepted",
+          "requestId"
+        ],
+        "properties": {
+          "accepted": {
+            "const": true
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "Version": {
+        "type": "object",
+        "required": [
+          "version",
+          "imageDigest",
+          "environment",
+          "policy"
+        ],
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "imageDigest": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "policy": {
+            "type": "object"
+          }
+        }
       }
     }
   }

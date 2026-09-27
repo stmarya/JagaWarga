@@ -1,5 +1,17 @@
 # Operator Incident Drill
 
+Repository-level failure simulations run with:
+
+```bash
+npm run performance:proof
+npm run operations:proof
+```
+
+These cover provider timeout degradation, queue saturation, rate limiting,
+circuit opening/recovery, Redis distributed-state behavior, fail-closed launch
+evidence, and immutable rollback validation. The named-operator infrastructure
+drill remains an external launch gate.
+
 ## Scenario
 A provider returns widespread incorrect results while a dependency advisory is published and the metrics endpoint receives unauthorized attempts.
 

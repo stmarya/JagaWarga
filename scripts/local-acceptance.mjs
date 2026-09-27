@@ -1,12 +1,13 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 const port = Number(process.env.ACCEPTANCE_PORT || 3100);
 const baseURL = `http://127.0.0.1:${port}`;
+const version = JSON.parse(await readFile('package.json', 'utf8')).version;
 const startedAt = new Date().toISOString();
 const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'start', '-p', String(port), '-H', '127.0.0.1'], {
-  env: { ...process.env, NODE_ENV: 'production', APP_VERSION: '0.12.1' },
+  env: { ...process.env, NODE_ENV: 'production', APP_VERSION: version },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
 
@@ -62,6 +63,36 @@ async function loadSmoke(total = 500, concurrency = 25) {
   };
 }
 
+async function analyzerLoadSmoke(total = 10, concurrency = 5) {
+  let next = 0;
+  let passed = 0;
+  const durations = [];
+  async function worker() {
+    while (next < total) {
+      next += 1;
+      const start = performance.now();
+      const response = await fetch(`${baseURL}/api/analyze/message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: 'Segera kirim OTP Anda untuk menghindari pemblokiran rekening.' }),
+      });
+      const body = await response.json().catch(() => ({}));
+      durations.push(performance.now() - start);
+      if (response.ok && typeof body.risk === 'number' && Array.isArray(body.reasonCodes)) passed += 1;
+    }
+  }
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  durations.sort((a, b) => a - b);
+  return {
+    endpoint: '/api/analyze/message',
+    total,
+    passed,
+    concurrency,
+    p95Ms: Math.round(durations[Math.floor(durations.length * 0.95)]),
+    maxMs: Math.round(durations.at(-1)),
+  };
+}
+
 try {
   await waitUntilReady();
   const preflight = run(process.execPath, ['scripts/preflight.mjs'], {
@@ -80,11 +111,15 @@ try {
   });
   const load = await loadSmoke();
   if (load.passed !== load.total) throw new Error(`Load smoke failed: ${load.passed}/${load.total}`);
+  const analyzerLoad = await analyzerLoadSmoke();
+  if (analyzerLoad.passed !== analyzerLoad.total) {
+    throw new Error(`Analyzer load smoke failed: ${analyzerLoad.passed}/${analyzerLoad.total}`);
+  }
 
   const report = {
     decision: 'LOCAL-READY',
     publicProductionDecision: 'NO-GO',
-    version: '0.12.1',
+    version,
     runtime: 'native-nextjs-production',
     bind: `127.0.0.1:${port}`,
     startedAt,
@@ -94,6 +129,7 @@ try {
       preflight: JSON.parse(preflight),
       uiSmoke,
       load,
+      analyzerLoad,
     },
     limitations: [
       'Docker runtime was not available on the acceptance runner.',

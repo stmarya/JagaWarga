@@ -6,15 +6,22 @@ if [[ -z "${ROLLBACK_IMAGE_REF:-}" || ! "$ROLLBACK_IMAGE_REF" =~ ^ghcr\.io/stmar
   exit 1
 fi
 
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+  printf '{"status":"validated","imageRef":"%s","digest":"%s"}\n' \
+    "$ROLLBACK_IMAGE_REF" "${ROLLBACK_IMAGE_REF##*@}"
+  exit 0
+fi
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 DEPLOY_DIR="$ROOT/deploy/self-hosted"
 ENV_FILE="$DEPLOY_DIR/.env.production"
+ROLLBACK_DIGEST="${ROLLBACK_IMAGE_REF##*@}"
 cd "$ROOT"
 
-IMAGE_REF="$ROLLBACK_IMAGE_REF" docker compose --env-file "$ENV_FILE" -f "$DEPLOY_DIR/compose.yaml" pull app
-IMAGE_REF="$ROLLBACK_IMAGE_REF" docker compose --env-file "$ENV_FILE" -f "$DEPLOY_DIR/compose.yaml" up -d --wait app
+IMAGE_REF="$ROLLBACK_IMAGE_REF" APP_IMAGE_DIGEST="$ROLLBACK_DIGEST" docker compose --env-file "$ENV_FILE" -f "$DEPLOY_DIR/compose.yaml" pull app
+IMAGE_REF="$ROLLBACK_IMAGE_REF" APP_IMAGE_DIGEST="$ROLLBACK_DIGEST" docker compose --env-file "$ENV_FILE" -f "$DEPLOY_DIR/compose.yaml" up -d --wait app
 
 PUBLIC_HOST="$(sed -n 's/^PUBLIC_HOST=//p' "$ENV_FILE")"
 ADMIN_METRICS_TOKEN="$(sed -n 's/^ADMIN_METRICS_TOKEN=//p' "$ENV_FILE")"
-BASE_URL="https://$PUBLIC_HOST" ADMIN_METRICS_TOKEN="$ADMIN_METRICS_TOKEN" NODE_ENV=production npm run preflight
+BASE_URL="https://$PUBLIC_HOST" ADMIN_METRICS_TOKEN="$ADMIN_METRICS_TOKEN" EXPECTED_IMAGE_DIGEST="$ROLLBACK_DIGEST" NODE_ENV=production npm run preflight
 echo "Rollback verified at https://$PUBLIC_HOST"

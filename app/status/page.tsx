@@ -8,6 +8,7 @@ type Health = {
   providers: string[];
   policy: Record<string, boolean>;
   providerDiagnostics: Array<{ name: string; kind: string; status: string; reason: string }>;
+  reputationPolicy: { acceptedSingleProviderLimitation: boolean; limitation: string };
 };
 const diagnosticReason: Record<string, string> = {
   configured: 'siap digunakan',
@@ -21,5 +22,5 @@ export default function StatusPage() {
   const [failed, setFailed] = useState(false);
   useEffect(() => { fetch('/api/health').then((response) => { if (!response.ok) throw new Error('HEALTH_FAILED'); return response.json(); }).then(setHealth).catch(() => setFailed(true)); }, []);
   const reputationReady = health?.providerDiagnostics.some((provider) => provider.kind === 'reputation' && provider.status === 'enabled');
-  return <main className="page"><Link href="/">← Beranda</Link><p className="eyebrow">STATUS</p><h1>{failed ? 'Status tidak dapat dimuat.' : !health ? 'Memeriksa status…' : reputationReady ? 'Lookup reputasi aktif.' : 'Metadata aktif; provider reputasi belum siap.'}</h1>{health && <><section className="panel"><p>Versi {health.version}</p><p>Provider aktif: {health.providers.join(', ') || 'Tidak ada'}</p><p>URL submission: {health.policy.urlSubmission ? 'aktif' : 'nonaktif'}</p><p>File upload: {health.policy.fileUpload ? 'aktif' : 'nonaktif'}</p></section><section className="panel"><h2>Provider</h2><ul>{health.providerDiagnostics.map((provider) => <li key={provider.name}><strong>{provider.name}</strong>: {provider.status} — {diagnosticReason[provider.reason] ?? provider.reason}</li>)}</ul></section></>}</main>;
+  return <main className="page"><Link href="/">← Beranda</Link><p className="eyebrow">STATUS</p><h1>{failed ? 'Status tidak dapat dimuat.' : !health ? 'Memeriksa status…' : reputationReady ? 'Lookup reputasi aktif.' : 'Metadata aktif; provider reputasi belum siap.'}</h1>{health && <><section className="panel"><p>Versi {health.version}</p><p>Provider aktif: {health.providers.join(', ') || 'Tidak ada'}</p><p>URL submission: {health.policy.urlSubmission ? 'aktif' : 'nonaktif'}</p><p>File upload: {health.policy.fileUpload ? 'aktif' : 'nonaktif'}</p></section><section className="panel"><h2>Provider</h2><ul>{health.providerDiagnostics.map((provider) => <li key={provider.name}><strong>{provider.name}</strong>: {provider.status} — {diagnosticReason[provider.reason] ?? provider.reason}</li>)}</ul><p><strong>Batasan:</strong> {health.reputationPolicy.limitation}</p></section></>}</main>;
 }

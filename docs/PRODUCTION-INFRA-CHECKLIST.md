@@ -5,7 +5,8 @@
 - [ ] DNS, TLS, HSTS, CDN/WAF, and DDoS controls.
 - [ ] Immutable GHCR image digest and vulnerability scan.
 - [ ] Read-only container, non-root user, dropped capabilities, network egress policy.
-- [ ] Redis/PostgreSQL encryption, backups, restore test, and retention.
+- [ ] Redis isolation, authentication/network policy, memory limits, and failure recovery.
+- [ ] No persistence service is deployed until a privacy-reviewed feature requires it.
 - [ ] Central logs with redaction, metrics, alerts, and on-call routing.
 - [ ] Provider egress allowlist and kill switches verified.
 - [ ] Staging and production separation.

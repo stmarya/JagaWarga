@@ -3,11 +3,11 @@ services:
     build: .
     environment:
       NODE_ENV: production
-      APP_VERSION: 0.12.1
+      APP_VERSION: 0.13.0-rc.1
       APP_URL: http://127.0.0.1:${APP_PORT:-3000}
       ADMIN_METRICS_TOKEN: ${ADMIN_METRICS_TOKEN:?Run npm run local:env first}
-      DATABASE_URL: postgresql://jagawarga:${POSTGRES_PASSWORD:?Run npm run local:env first}@postgres:5432/jagawarga
       REDIS_URL: redis://redis:6379
+      RUNTIME_TOPOLOGY: distributed
       ALLOW_RISKY_FEATURES: "false"
       FEATURE_COMMUNITY_REPORTING: "false"
       FEATURE_FILE_UPLOAD: "false"
@@ -24,9 +24,8 @@ services:
     restart: unless-stopped
     depends_on:
       redis: { condition: service_healthy }
-      postgres: { condition: service_healthy }
   redis:
-    image: redis:7-alpine
+    image: redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
     command: ["redis-server", "--save", "", "--appendonly", "no"]
     read_only: true
     tmpfs: ["/data"]
@@ -34,18 +33,10 @@ services:
     cap_drop: ["ALL"]
     cap_add: ["CHOWN", "SETGID", "SETUID"]
     restart: unless-stopped
-    healthcheck: { test: ["CMD", "redis-cli", "ping"], interval: 10s, timeout: 3s, retries: 5 }
-  postgres:
-    image: postgres:17-alpine
-    environment:
-      POSTGRES_DB: jagawarga
-      POSTGRES_USER: jagawarga
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run npm run local:env first}
-    volumes: ["postgres-data:/var/lib/postgresql/data"]
-    security_opt: ["no-new-privileges:true"]
-    cap_drop: ["ALL"]
-    cap_add: ["CHOWN", "DAC_OVERRIDE", "FOWNER", "SETGID", "SETUID"]
-    restart: unless-stopped
-    healthcheck: { test: ["CMD-SHELL", "pg_isready -U jagawarga"], interval: 10s, timeout: 3s, retries: 5 }
-volumes:
-  postgres-data:
+    healthcheck:
+      {
+        test: ["CMD", "redis-cli", "ping"],
+        interval: 10s,
+        timeout: 3s,
+        retries: 5,
+      }

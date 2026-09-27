@@ -1,5 +1,6 @@
 const baseURL = (process.env.BASE_URL ?? '').replace(/\/$/, '');
 const token = process.env.ADMIN_METRICS_TOKEN;
+const expectedImageDigest = process.env.EXPECTED_IMAGE_DIGEST;
 if (!baseURL) throw new Error('BASE_URL is required');
 if (!baseURL.startsWith('https://') && process.env.ALLOW_HTTP_PREFLIGHT !== 'true') {
   throw new Error('HTTPS is required unless ALLOW_HTTP_PREFLIGHT=true');
@@ -15,6 +16,12 @@ const homepage = await fetch(baseURL + '/');
 if (!homepage.ok) throw new Error(`Homepage failed: ${homepage.status}`);
 for (const header of ['content-security-policy', 'x-content-type-options', 'x-frame-options', 'permissions-policy', 'referrer-policy']) {
   if (!homepage.headers.get(header)) throw new Error(`Missing security header: ${header}`);
+}
+if (baseURL.startsWith('https://')) {
+  const hsts = homepage.headers.get('strict-transport-security') ?? '';
+  if (!/max-age=(?:[3-9]\d{7,}|\d{9,})/.test(hsts)) {
+    throw new Error('Missing or insufficient Strict-Transport-Security max-age');
+  }
 }
 
 const live = await json('/api/live');
@@ -34,6 +41,9 @@ for (const flag of ['fileUpload', 'urlSubmission', 'communityReporting']) {
 }
 const version = await json('/api/version');
 if (!version.response.ok || !version.body.version) throw new Error('Version failed');
+if (expectedImageDigest && version.body.imageDigest !== expectedImageDigest) {
+  throw new Error(`Image digest mismatch: expected ${expectedImageDigest}, received ${version.body.imageDigest ?? 'missing'}`);
+}
 const unauthorizedMetrics = await json('/api/metrics');
 if (process.env.NODE_ENV === 'production' && unauthorizedMetrics.response.status !== 401) {
   throw new Error('Metrics endpoint is not protected');

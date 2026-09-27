@@ -1,0 +1,85 @@
+name: Staging verification
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_ref:
+        description: Signed GHCR image reference pinned by sha256 digest
+        required: true
+        type: string
+      target_url:
+        description: HTTPS staging URL already running this image
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: staging
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate immutable image
+        env:
+          IMAGE_REF: ${{ inputs.image_ref }}
+        shell: bash
+        run: '[[ "$IMAGE_REF" =~ ^ghcr\.io/stmarya/jagawarga@sha256:[a-f0-9]{64}$ ]]'
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac # v3
+      - name: Verify keyless release signature
+        env:
+          IMAGE_REF: ${{ inputs.image_ref }}
+        run: >-
+          cosign verify "$IMAGE_REF"
+          --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+          --certificate-identity-regexp='^https://github.com/stmarya/JagaWarga/.github/workflows/release.yml@refs/tags/v'
+      - name: Scan staging image
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ inputs.image_ref }}
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+      - name: Verify deployed digest and runtime
+        env:
+          BASE_URL: ${{ inputs.target_url }}
+          ADMIN_METRICS_TOKEN: ${{ secrets.ADMIN_METRICS_TOKEN }}
+          IMAGE_REF: ${{ inputs.image_ref }}
+        shell: bash
+        run: |
+          export EXPECTED_IMAGE_DIGEST="${IMAGE_REF##*@}"
+          npm run preflight
+      - name: Write staging evidence
+        env:
+          IMAGE_REF: ${{ inputs.image_ref }}
+          TARGET_URL: ${{ inputs.target_url }}
+        shell: bash
+        run: |
+          jq -n \
+            --arg image "$IMAGE_REF" \
+            --arg target "$TARGET_URL" \
+            --arg run "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --arg verifiedAt "$(date -u +%FT%TZ)" \
+            '{status:"verified", imageRef:$image, target:$target, runUrl:$run, verifiedAt:$verifiedAt}' \
+            > staging-verification.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: staging-verification
+          path: staging-verification.json

@@ -6,13 +6,31 @@ export type LocalHistoryItem = {
   checkedAt: string;
 };
 
-const HISTORY = 'jagawarga:history:v1';
-const WATCHLIST = 'jagawarga:watchlist:v1';
-const PROGRESS = 'jagawarga:progress:v1';
+const SCHEMA_VERSION = 2;
+const HISTORY = 'jagawarga:history:v2';
+const WATCHLIST = 'jagawarga:watchlist:v2';
+const PROGRESS = 'jagawarga:progress:v2';
+const LEGACY = {
+  [HISTORY]: 'jagawarga:history:v1',
+  [WATCHLIST]: 'jagawarga:watchlist:v1',
+  [PROGRESS]: 'jagawarga:progress:v1',
+} as const;
 
 function read<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
-  try { return JSON.parse(localStorage.getItem(key) ?? '') as T; } catch { return fallback; }
+  try {
+    const current = localStorage.getItem(key);
+    if (current) return JSON.parse(current) as T;
+    const legacyKey = LEGACY[key as keyof typeof LEGACY];
+    const legacy = legacyKey ? localStorage.getItem(legacyKey) : null;
+    if (!legacy) return fallback;
+    const migrated = JSON.parse(legacy) as T;
+    write(key, migrated);
+    localStorage.removeItem(legacyKey);
+    return migrated;
+  } catch {
+    return fallback;
+  }
 }
 
 function write<T>(key: string, value: T) {
@@ -25,7 +43,10 @@ export function addHistory(item: LocalHistoryItem) {
 }
 export function clearHistory() { localStorage.removeItem(HISTORY); }
 export function exportLocalData() {
-  return JSON.stringify({ history: getHistory(), watchlist: getWatchlist(), progress: getProgress() }, null, 2);
+  return JSON.stringify({ schemaVersion: SCHEMA_VERSION, exportedAt: new Date().toISOString(), history: getHistory(), watchlist: getWatchlist(), progress: getProgress() }, null, 2);
+}
+export function clearAllLocalData() {
+  [...Object.keys(LEGACY), ...Object.values(LEGACY)].forEach((key) => localStorage.removeItem(key));
 }
 
 export function getWatchlist() { return read<string[]>(WATCHLIST, []); }

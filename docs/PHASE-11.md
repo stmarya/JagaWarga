@@ -8,13 +8,13 @@ The repository contains a fail-closed self-hosted deployment kit for a Docker VP
 
 - Caddy automatic TLS reverse proxy.
 - Immutable GHCR digest enforcement.
-- Internal Redis/PostgreSQL network.
+- Internal Redis network for disposable distributed runtime state.
 - Non-published data-service ports.
 - Generated strong local secrets.
 - Configuration validator.
 - Launch-gated deployment script.
 - Post-deployment preflight.
-- Database backup retention script.
+- Unused PostgreSQL runtime removed; the SQL schema remains an inactive future foundation.
 - Immutable-image rollback script.
 - Operator runbook.
 
@@ -24,6 +24,6 @@ The repository contains a fail-closed self-hosted deployment kit for a Docker VP
 - Public DNS hostname and ACME email.
 - Published GHCR image digest.
 - Six attributable launch-evidence approvals.
-- Docker runtime verification, backup/restore drill, and operator incident drill.
+- Docker runtime verification, Redis failure-recovery drill, and operator incident drill.
 
 These items cannot be marked Done from repository automation alone.

@@ -49,7 +49,7 @@ export async function safeFetchJson<T>(
         method: 'GET',
         headers: {
           Accept: options.accept ?? 'application/dns-json',
-          'User-Agent': 'JagaWarga/0.12.1',
+          'User-Agent': `JagaWarga/${process.env.APP_VERSION?.trim() || '0.13.0-rc.1'}`,
           ...extraHeaders,
         },
         lookup: pinnedLookup as never,

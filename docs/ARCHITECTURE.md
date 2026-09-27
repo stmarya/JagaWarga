@@ -31,7 +31,17 @@ Technical prototype menggunakan dua fixed-origin metadata providers: Cloudflare 
 
 Timeout per provider, circuit breaker, bounded retry, per-source cache TTL, idempotency key, partial results, quota metrics, budget alerts, dan kill switch.
 
-Implementasi Fase 1 mencakup in-memory TTL cache, bounded work queue, per-provider circuit breaker, dan partial evidence. Distributed cache/queue ditunda sampai deployment multi-instance.
+Implementasi mendukung dua topologi eksplisit:
+
+- `single`: state rate limit, provider budget, cache, circuit breaker, dan metrics
+  berada di memori proses untuk local acceptance.
+- `distributed`: state tersebut disimpan di Redis untuk konsistensi lintas
+  replica. Readiness gagal tertutup bila Redis tidak dapat dihubungi.
+
+Deployment Compose menggunakan topologi `distributed`. Lookup identik yang
+berlangsung bersamaan pada satu proses digabungkan, provider retry dibatasi
+untuk error sementara, dan setiap provider tetap dapat gagal secara independen
+menjadi partial result.
 
 ## Data minimization
 

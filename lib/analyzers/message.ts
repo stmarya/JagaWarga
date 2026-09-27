@@ -6,11 +6,11 @@ export type MessageAnalysis = {
 };
 
 const RULES = [
-  { code: 'URGENCY', weight: 20, pattern: /\b(segera|sekarang|hari ini|akan diblokir|kedaluwarsa|terakhir)\b/i },
-  { code: 'CREDENTIAL_REQUEST', weight: 35, pattern: /\b(password|kata sandi|pin|otp|kode verifikasi)\b/i },
-  { code: 'MONEY_REQUEST', weight: 30, pattern: /\b(transfer|rekening|bayar|biaya|dana|saldo)\b/i },
-  { code: 'PRIZE_OR_REFUND', weight: 20, pattern: /\b(hadiah|menang|refund|pengembalian dana|bonus)\b/i },
-  { code: 'IMPERSONATION', weight: 20, pattern: /\b(bank|kurir|bea cukai|atasan|direktur|polisi)\b/i },
+  { code: 'URGENCY', weight: 20, pattern: /\b(segera|sekarang|hari ini|akan diblokir|kedaluwarsa|terakhir|urgent|immediately|verify now|account (?:will be )?(?:blocked|suspended))\b/i },
+  { code: 'CREDENTIAL_REQUEST', weight: 35, pattern: /\b(password|kata sandi|pin|otp|kode verifikasi|verification code|passcode|cvv|seed phrase)\b/i },
+  { code: 'MONEY_REQUEST', weight: 30, pattern: /\b((?:transfer|kirim|send|wire).{0,24}(?:uang|dana|biaya|saldo|rekening|money|funds|payment)|bayar|make a payment)\b/i },
+  { code: 'PRIZE_OR_REFUND', weight: 20, pattern: /\b(hadiah|menang|refund|pengembalian dana|bonus|prize|winner|cashback)\b/i },
+  { code: 'IMPERSONATION', weight: 20, pattern: /\b(bank|kurir|bea cukai|atasan|direktur|polisi|courier|customs|manager|director|police|support team)\b/i },
   { code: 'SHORT_LINK', weight: 25, pattern: /https?:\/\/(?:bit\.ly|tinyurl\.com|t\.co|s\.id|cutt\.ly)\b/i },
 ] as const;
 

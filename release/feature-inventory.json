@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "features": [
+    {"id":"lookup","state":"implemented","enabled":true,"publicPromise":true,"testEvidence":"lib/providers/contract.test.ts","documentation":"docs/FEATURE-SCOPE.md","metrics":"lookup.cached, lookup.uncached, provider.*.lookup","rollback":"provider kill switches and immutable image rollback"},
+    {"id":"message-email-tools","state":"implemented","enabled":true,"publicPromise":true,"testEvidence":"lib/analyzers/*.test.ts and scripts/ui-smoke.mjs","documentation":"docs/FEATURE-SCOPE.md","metrics":"message_analysis, email_header_analysis","rollback":"immutable image rollback"},
+    {"id":"local-qr-hash","state":"implemented","enabled":true,"publicPromise":true,"testEvidence":"scripts/ui-smoke.mjs","documentation":"docs/FEATURE-SCOPE.md","metrics":"browser acceptance only; no user content telemetry","rollback":"immutable image rollback"},
+    {"id":"pwa-local-data","state":"implemented","enabled":true,"publicPromise":true,"testEvidence":"scripts/ui-smoke.mjs and lib/client/storage.test.ts","documentation":"docs/FEATURE-SCOPE.md","metrics":"browser acceptance only","rollback":"service-worker cache versioning and local schema migration"},
+    {"id":"operations","state":"implemented","enabled":true,"publicPromise":true,"testEvidence":"scripts/performance-proof.ts and scripts/operational-proof.mjs","documentation":"docs/CAPACITY.md","metrics":"/api/metrics and /api/slo","rollback":"deploy/self-hosted/rollback.sh"},
+    {"id":"community-reporting","state":"deferred","enabled":false,"publicPromise":false,"failClosedEvidence":"FEATURE_COMMUNITY_REPORTING=false and ALLOW_RISKY_FEATURES=false"},
+    {"id":"file-upload-url-submission","state":"deferred","enabled":false,"publicPromise":false,"failClosedEvidence":"FEATURE_FILE_UPLOAD=false and FEATURE_URL_SUBMISSION=false"},
+    {"id":"organization-workspaces","state":"deferred","enabled":false,"publicPromise":false,"failClosedEvidence":"FEATURE_ORGANIZATION_WORKSPACES=false; PostgreSQL is not deployed"},
+    {"id":"external-notifications","state":"deferred","enabled":false,"publicPromise":false,"failClosedEvidence":"FEATURE_EXTERNAL_NOTIFICATIONS=false"},
+    {"id":"browser-extension","state":"experimental","enabled":false,"publicPromise":false,"failClosedEvidence":"manifest and feature scope identify developer preview outside launch scope"},
+    {"id":"additional-locales","state":"deferred","enabled":false,"publicPromise":false,"failClosedEvidence":"release scope declares id-ID only"}
+  ]
+}

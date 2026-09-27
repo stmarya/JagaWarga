@@ -12,8 +12,8 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
@@ -21,6 +21,45 @@ jobs:
       - run: npm run security:secrets
       - run: npm run security:audit
       - run: npm test
+      - run: npm run test:coverage
       - run: npm run test:launch-gate
+      - run: npm run test:openapi
       - run: npm run build
+      - run: npm run acceptance:runtime
+      - run: npm run performance:proof
+      - run: npm run operations:proof
       - run: node -e "JSON.parse(require('fs').readFileSync('public/openapi.json')); JSON.parse(require('fs').readFileSync('public/launch-status.json')); JSON.parse(require('fs').readFileSync('extension/manifest.json'))"
+      - name: Build production container
+        run: docker build --tag jagawarga:ci .
+      - name: Scan production container
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: jagawarga:ci
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+      - name: Smoke production container
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker network create jagawarga-ci
+          redis_container="$(docker run -d --name jagawarga-ci-redis \
+            --network jagawarga-ci --read-only --tmpfs /data \
+            --cap-drop ALL --cap-add CHOWN --cap-add SETGID --cap-add SETUID \
+            redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499)"
+          container="$(docker run -d --read-only --tmpfs /tmp --tmpfs /app/.next/cache \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --network jagawarga-ci \
+            -e ADMIN_METRICS_TOKEN=ci-only-token-with-at-least-32-characters \
+            -e RUNTIME_TOPOLOGY=distributed \
+            -e REDIS_URL=redis://jagawarga-ci-redis:6379 \
+            -p 127.0.0.1:3101:3000 jagawarga:ci)"
+          trap 'docker logs "$container" || true; docker rm -f "$container" "$redis_container" || true; docker network rm jagawarga-ci || true' EXIT
+          for attempt in {1..40}; do
+            if curl --fail --silent http://127.0.0.1:3101/api/live >/dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:3101/api/ready |
+            jq -e '.status == "ready" and .checks.runtimeState.backend == "redis"'
+          curl --fail --silent --head http://127.0.0.1:3101/ | grep -qi '^strict-transport-security:'

@@ -38,6 +38,13 @@ export type ProviderDiagnostic = {
   reason: string;
 };
 
+export const reputationPolicy = {
+  minimumConfiguredProviders: 1,
+  acceptedSingleProviderLimitation: true,
+  limitation: 'VirusTotal is the only enabled reputation source; DNS providers supply metadata only.',
+  staleBenignEvidenceCanProduceSafeVerdict: false,
+} as const;
+
 export function providerDiagnostics(env: NodeJS.ProcessEnv = process.env): ProviderDiagnostic[] {
   const premiumEnabled = enabled(env.FEATURE_PREMIUM_PROVIDERS);
   const virusTotalStatus: ProviderDiagnostic = !premiumEnabled

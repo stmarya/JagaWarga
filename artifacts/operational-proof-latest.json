@@ -1,0 +1,22 @@
+{
+  "decision": "PASSED",
+  "generatedAt": "2026-09-27T12:17:57.611Z",
+  "checks": {
+    "shellSyntax": [
+      {
+        "path": "deploy/self-hosted/deploy.sh",
+        "passed": true
+      },
+      {
+        "path": "deploy/self-hosted/rollback.sh",
+        "passed": true
+      }
+    ],
+    "mutableRollbackRejected": true,
+    "immutableRollbackValidated": true,
+    "launchGateFailsClosedWithoutEvidence": true,
+    "redisFailureAndRecoveryTestsPassed": true,
+    "persistenceBackupNotRequired": true,
+    "persistenceReason": "The active release stores no durable server-side user data; Redis contains disposable TTL-bound coordination state."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "decision": "PASSED",
+  "generatedAt": "2026-09-27T12:18:21.240Z",
+  "version": "0.13.0-rc.1",
+  "sourceFiles": 188,
+  "commands": [
+    "npm ci",
+    "npm test",
+    "npm run test:openapi",
+    "npm run build"
+  ]
+}

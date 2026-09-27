@@ -17,7 +17,10 @@ npm ci
 npm run deploy:init
 ```
 
-Edit `deploy/self-hosted/.env.production`, replacing the DNS name, operator email, and immutable image digest. Do not use a mutable tag.
+Edit `deploy/self-hosted/.env.production`, replacing the DNS name, operator
+email, immutable image reference, and matching `APP_IMAGE_DIGEST`. Do not use a
+mutable tag. The runtime exposes this digest through `/api/version`, and
+preflight rejects a deployment that reports a different digest.
 
 Place the six approved attestation files in `launch-evidence/` or set `LAUNCH_ATTESTATIONS_JSON`. Then validate:
 
@@ -32,14 +35,6 @@ npm run launch:gate
 bash deploy/self-hosted/deploy.sh
 ```
 
-## Backup
-
-```bash
-bash deploy/self-hosted/backup.sh
-```
-
-Backups are mode `0600`, retained locally for 14 days, and ignored by Git. Copy encrypted backups to an approved off-host location and perform a restore drill before public launch.
-
 ## Rollback
 
 ```bash
@@ -49,7 +44,9 @@ ROLLBACK_IMAGE_REF='ghcr.io/stmarya/jagawarga@sha256:…' \
 
 ## Safety notes
 
-- PostgreSQL and Redis have no host ports.
+- Redis has no host port and stores only disposable runtime coordination state.
+- PostgreSQL is intentionally not deployed until a persistence-backed feature
+  passes privacy review and is enabled.
 - The data network is internal.
 - Risky features remain disabled.
 - Secrets stay in an ignored mode-`0600` file.

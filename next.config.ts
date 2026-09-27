@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   turbopack: { root: process.cwd() },
   async headers() {
+    const productionOnlyHeaders = process.env.NODE_ENV === 'production'
+      ? [{ key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' }]
+      : [];
     const contentSecurityPolicy = [
       "default-src 'self'",
       "base-uri 'self'",
@@ -28,6 +31,7 @@ const nextConfig: NextConfig = {
         { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
         { key: 'X-Content-Type-Options', value: 'nosniff' },
         { key: 'X-Frame-Options', value: 'DENY' },
+        ...productionOnlyHeaders,
       ],
     }];
   },

@@ -11,7 +11,7 @@ const values = Object.fromEntries(text.split(/\r?\n/).filter((line) => line && !
 }));
 
 const errors = [];
-for (const key of ['PUBLIC_HOST', 'ACME_EMAIL', 'IMAGE_REF', 'ADMIN_METRICS_TOKEN', 'POSTGRES_PASSWORD']) {
+for (const key of ['PUBLIC_HOST', 'ACME_EMAIL', 'IMAGE_REF', 'APP_IMAGE_DIGEST', 'ADMIN_METRICS_TOKEN']) {
   if (!values[key]) errors.push(`${key} is required`);
 }
 if (text.includes('REPLACE_')) errors.push('Replace every REPLACE_* placeholder');
@@ -22,8 +22,13 @@ if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(values.ACME_EMAIL || '')) errors.push('AC
 if (!/^ghcr\.io\/stmarya\/jagawarga@sha256:[a-f0-9]{64}$/.test(values.IMAGE_REF || '')) {
   errors.push('IMAGE_REF must be the immutable GHCR sha256 digest');
 }
+if (!/^sha256:[a-f0-9]{64}$/.test(values.APP_IMAGE_DIGEST || '')) {
+  errors.push('APP_IMAGE_DIGEST must be a sha256 digest');
+}
+if (values.IMAGE_REF && values.APP_IMAGE_DIGEST && !values.IMAGE_REF.endsWith(`@${values.APP_IMAGE_DIGEST}`)) {
+  errors.push('APP_IMAGE_DIGEST must match IMAGE_REF');
+}
 if ((values.ADMIN_METRICS_TOKEN || '').length < 32) errors.push('ADMIN_METRICS_TOKEN is too short');
-if ((values.POSTGRES_PASSWORD || '').length < 32) errors.push('POSTGRES_PASSWORD is too short');
 
 if (errors.length) {
   console.error(JSON.stringify({ status: 'invalid', errors }, null, 2));

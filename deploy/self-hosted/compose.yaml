@@ -1,6 +1,6 @@
 services:
   proxy:
-    image: caddy:2.10-alpine
+    image: caddy:2.10-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d
     environment:
       PUBLIC_HOST: ${PUBLIC_HOST:?Set PUBLIC_HOST}
       ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL}
@@ -26,11 +26,12 @@ services:
     image: ${IMAGE_REF:?Set immutable IMAGE_REF}
     environment:
       NODE_ENV: production
-      APP_VERSION: ${APP_VERSION:-0.12.1}
+      APP_VERSION: ${APP_VERSION:-0.13.0-rc.1}
+      APP_IMAGE_DIGEST: ${APP_IMAGE_DIGEST:?Set APP_IMAGE_DIGEST}
       APP_URL: https://${PUBLIC_HOST:?Set PUBLIC_HOST}
       ADMIN_METRICS_TOKEN: ${ADMIN_METRICS_TOKEN:?Set ADMIN_METRICS_TOKEN}
-      DATABASE_URL: postgresql://jagawarga:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/jagawarga
       REDIS_URL: redis://redis:6379
+      RUNTIME_TOPOLOGY: distributed
       ALLOW_RISKY_FEATURES: "false"
       FEATURE_COMMUNITY_REPORTING: "false"
       FEATURE_FILE_UPLOAD: "false"
@@ -55,38 +56,19 @@ services:
       retries: 5
     depends_on:
       redis: { condition: service_healthy }
-      postgres: { condition: service_healthy }
     networks: [edge, data]
 
   redis:
-    image: redis:7-alpine
+    image: redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
     command: ["redis-server", "--save", "", "--appendonly", "no"]
     read_only: true
     tmpfs: ["/data"]
     security_opt: ["no-new-privileges:true"]
     cap_drop: ["ALL"]
+    cap_add: ["CHOWN", "SETGID", "SETUID"]
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-    networks: [data]
-
-  postgres:
-    image: postgres:17-alpine
-    environment:
-      POSTGRES_DB: jagawarga
-      POSTGRES_USER: jagawarga
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    security_opt: ["no-new-privileges:true"]
-    cap_drop: ["ALL"]
-    cap_add: ["CHOWN", "DAC_OVERRIDE", "FOWNER", "SETGID", "SETUID"]
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U jagawarga"]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -100,4 +82,3 @@ networks:
 volumes:
   caddy-data:
   caddy-config:
-  postgres-data:

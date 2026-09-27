@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "JagaWarga — Cek sebelum klik",
+  "name": "JagaWarga Experimental — Cek sebelum klik",
   "version": "0.1.0",
-  "description": "Browser extension foundation untuk membuka pemeriksaan JagaWarga.",
+  "description": "Developer preview untuk menyalin URL tab aktif tanpa mengirimkannya otomatis. Tidak termasuk launch scope.",
   "permissions": ["activeTab"],
   "action": { "default_popup": "popup.html" }
 }

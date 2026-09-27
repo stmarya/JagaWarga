@@ -6,7 +6,7 @@ import { clientKey, rateLimit } from '@/lib/runtime/rate-limit';
 
 export async function POST(request: Request) {
   const id = requestId(request);
-  if (!rateLimit(`message:${clientKey(request)}`, 20).allowed) return apiError('RATE_LIMITED', 429, id);
+  if (!(await rateLimit(`message:${clientKey(request)}`, 20)).allowed) return apiError('RATE_LIMITED', 429, id);
   try {
     const body = await jsonBody<{ text?: unknown }>(request, 12_000);
     if (typeof body.text !== 'string' || !body.text.trim() || body.text.length > 10_000) return apiError('INVALID_INPUT', 400, id);
