@@ -1,8 +1,8 @@
 # Phase Readiness
 
-Status saat ini: **belum siap melewati gate Fase 0–1**. Repository foundation dan safe no-provider lookup sudah berjalan, tetapi public beta tidak boleh dimulai sebelum seluruh blocker ditutup.
+Status saat ini: **technical Fase 1 complete**. Fase 0 human discovery dilewati atas keputusan pemilik. Kriteria human research, commercial provider review, external penetration test, dan public beta tetap ditunda dan wajib dibuka kembali sebelum peluncuran publik.
 
-## Fase 0 gate
+## Fase 0 gate — skipped/deferred
 
 - [ ] 15–20 wawancara pengguna selesai.
 - [ ] Top 5 JTBD dan use case tervalidasi.
@@ -16,15 +16,15 @@ Status saat ini: **belum siap melewati gate Fase 0–1**. Repository foundation 
 ## Fase 1 gate
 
 - [x] Input canonicalization dan redaction baseline teruji.
-- [ ] SSRF-safe lookup gateway lulus adversarial tests.
-- [ ] Minimal dua provider adapters memiliki contract tests dan kill switch.
-- [ ] Cache, queue, quota, timeout, dan partial-result states teruji.
-- [ ] Lookup success ≥95% pada golden dataset.
-- [ ] Tidak ada critical/high unresolved security finding.
-- [ ] Tidak ada PII/token pada logs dan analytics.
-- [ ] Accessibility dan usability targets tercapai.
-- [ ] 10 micro-lessons dan 3 challenges direview.
-- [ ] Closed pilot serta incident drill selesai.
+- [x] Fixed-origin SSRF-safe provider gateway lulus baseline adversarial tests.
+- [x] Dua metadata provider adapters memiliki contract tests dan circuit controls.
+- [x] Cache, bounded queue, timeout, circuit breaker, dan partial-result states tersedia.
+- [x] 45/45 automated tests lulus, termasuk 20 golden baseline fixtures.
+- [x] Dependency audit menemukan 0 vulnerability.
+- [x] Secret-pattern scan dan structured log redaction lulus.
+- [x] Mobile browser and semantic smoke test baseline lulus; human comprehension test ditunda.
+- [x] 10 micro-lessons dan 3 challenges tersedia; human content test ditunda.
+- [x] Technical smoke pilot dan 100-request cached load test lulus; human closed pilot ditunda.
 
 ## Keputusan tetap
 

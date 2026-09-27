@@ -7,6 +7,9 @@ type LookupResult = {
   verdict: 'high-risk' | 'suspicious' | 'no-indication' | 'insufficient-data';
   confidence: 'low' | 'medium' | 'high';
   indicator: { type: string; displayValue: string };
+  partial: boolean;
+  cached: boolean;
+  evidence: Array<{ provider: string; reasonCodes: string[] }>;
   policy: { existingLookupOnly: boolean; submissionOccurred: boolean };
 };
 
@@ -61,11 +64,21 @@ export default function Home() {
             <p className="eyebrow">HASIL PEMERIKSAAN</p>
             <h2>{result.verdict === 'insufficient-data' ? 'Belum ada cukup data' : result.verdict}</h2>
             <p>Ini bukan berarti aman. Belum ada provider produksi yang dikonfigurasi pada tahap ini.</p>
+            {result.partial && <p className="warning">Sebagian sumber tidak tersedia. Hasil tetap ditampilkan sebagai data parsial.</p>}
             <dl>
               <div><dt>Jenis</dt><dd>{result.indicator.type}</dd></div>
               <div><dt>Confidence</dt><dd>{result.confidence}</dd></div>
               <div><dt>Submission</dt><dd>{result.policy.submissionOccurred ? 'Terjadi' : 'Tidak dilakukan'}</dd></div>
             </dl>
+            <details>
+              <summary>Sumber pemeriksaan</summary>
+              <ul>
+                {result.evidence.map((item) => (
+                  <li key={item.provider}><strong>{item.provider}</strong>: {item.reasonCodes.join(', ')}</li>
+                ))}
+              </ul>
+              <p>{result.cached ? 'Hasil berasal dari cache sementara.' : 'Hasil diperiksa langsung pada metadata provider.'}</p>
+            </details>
             <strong>Tindakan aman:</strong>
             <p>Jangan buka objek yang meragukan. Verifikasi pengirim melalui kanal lain yang sudah Anda kenal.</p>
           </section>

@@ -4,7 +4,7 @@ JagaWarga adalah platform security lookup dan awareness untuk membantu pengguna 
 
 ## Status
 
-🚧 **Foundation / pre-MVP.** Integrasi provider belum diaktifkan. Pilot diputuskan non-komersial dan hanya memakai metadata serta existing lookup; URL baru tidak disubmit ke provider.
+🚧 **Technical prototype / Fase 1.** Metadata lookup aktif melalui dua fixed-origin DNS providers. Pilot hanya memakai metadata dan existing lookup; URL baru tidak disubmit ke scanner.
 
 ## MVP scope
 
@@ -13,6 +13,7 @@ JagaWarga adalah platform security lookup dan awareness untuk membantu pengguna 
 - Empat status: bahaya tinggi, mencurigakan, belum ada indikasi, tidak cukup data.
 - Micro-learning dan tindakan aman kontekstual.
 - Tidak ada upload/download file atau community reporting pada fase awal.
+- Fixed-origin provider gateway dengan DNS/IP validation, pinned lookup, timeout, response cap, circuit breaker, cache, dan bounded queue.
 
 ## Menjalankan lokal
 
@@ -22,6 +23,8 @@ npm run dev
 ```
 
 Buka `http://localhost:3000`.
+
+Health endpoint tersedia di `/api/health`; lookup endpoint tersedia di `/api/lookups`.
 
 ## Quality gates
 
