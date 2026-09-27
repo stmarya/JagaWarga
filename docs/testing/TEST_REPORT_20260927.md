@@ -28,3 +28,18 @@ Dokumen ini berisi rangkuman dari pengujian dan perbaikan yang telah dilakukan p
 - **Governance**: Adapter hanya aktif ketika `FEATURE_PREMIUM_PROVIDERS=true` dan `VIRUSTOTAL_API_KEY` tersedia.
 - **Keamanan**: API key dikirim melalui header `x-apikey`, tidak melalui URL atau log. Origin tetap dibatasi ke `www.virustotal.com`, dengan DNS pinning, public-IP validation, timeout, content-type check, dan response-size cap.
 - **Testing**: Normalisasi malicious/benign/no-record, URL lookup ID, serta kebijakan no-submission ditutup dengan unit tests.
+
+## 6. Kendala Deploy Lokal via Docker Compose
+- **Masalah 1 (`POSTGRES_PASSWORD is missing`)**: Perintah `npm run local:up` gagal dengan *error interpolation* `DATABASE_URL` karena file `.env.local-deploy` kehilangan variabel lingkungan `POSTGRES_PASSWORD`.
+  - **Penyelesaian**: Menambahkan secara manual `POSTGRES_PASSWORD=postgres` di dalam file `.env.local-deploy`.
+- **Masalah 2 (`chown: Operation not permitted` pada Redis)**: Container Redis terus menerus berstatus *unhealthy* dan gagal berjalan (*Crash Loop*) di dalam Docker karena aplikasi tidak diberikan hak akses (kapabilitas) *user/group ownership*. Ini adalah akibat dari fitur pengaman `cap_drop: ["ALL"]` yang ditulis di `compose.yaml`.
+  - **Penyelesaian**: Mengedit `compose.yaml` pada bagian *service redis* dengan menyuntikkan (menambahkan) `cap_add: ["CHOWN", "SETGID", "SETUID"]` agar kontainer memiliki izin akses *storage* yang memadai.
+
+## 7. Penanganan *Error Script* di Windows
+- **Masalah (`ALLOW_HTTP_PREFLIGHT is not recognized`)**: Saat menjalankan skrip validasi lokal `npm run local:verify`, muncul error syntax karena CMD/PowerShell Windows tidak membaca format perintah penugasan variabel linux seperti `VAR=val npm run ...`.
+  - **Penyelesaian**: Menjalankan skrip validasi dengan penulisan berformat PowerShell asli secara manual: `$env:ALLOW_HTTP_PREFLIGHT="true"; $env:BASE_URL="http://127.0.0.1:3000"; npm run preflight`. Hasilnya lolos validasi (Passed).
+
+## 8. Kendala Service Worker (PWA) Transisi Server
+- **Masalah**: Setelah Docker menyala di port `3000`, *browser* memuntahkan sangat banyak error kemerahan di konsol (seperti `TypeError: Failed to convert value to 'Response'` dan `net::ERR_FAILED` untuk file-file *Turbopack*).
+- **Analisis & Penyelesaian**: Ini **bukan *bug* pada aplikasi**. *Error* ini disebabkan oleh bergesernya status *environment* port `3000` (dari *Node JS Dev Server* beralih menjadi *Docker Production Build*). Service Worker dari mode pengembangan yang telah ter-*install* di browser terus mencoba meminta akses aset yang mana strukturnya kini sudah berubah di lingkungan produksi (Docker).
+  - **Solusi Tuntas**: Melakukan **Hard Refresh** (`Ctrl + F5`) di browser, yang memaksa browser untuk membuang *cache* Service Worker lawas dan menarik *state* terbaru dari kontainer Docker.
