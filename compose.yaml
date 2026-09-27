@@ -3,7 +3,7 @@ services:
     build: .
     environment:
       NODE_ENV: production
-      APP_VERSION: 0.12.0
+      APP_VERSION: 0.12.1
       APP_URL: http://127.0.0.1:${APP_PORT:-3000}
       ADMIN_METRICS_TOKEN: ${ADMIN_METRICS_TOKEN:?Run npm run local:env first}
       DATABASE_URL: postgresql://jagawarga:${POSTGRES_PASSWORD:?Run npm run local:env first}@postgres:5432/jagawarga

@@ -1,7 +1,7 @@
 {
   "name": "jagawarga",
   "private": true,
-  "version": "0.12.0",
+  "version": "0.12.1",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -12,7 +12,7 @@
     "launch:gate": "node scripts/launch-gate.mjs",
     "acceptance:local": "npm run build && node scripts/local-acceptance.mjs",
     "local:env": "node scripts/init-local-deploy.mjs",
-    "local:up": "npm run local:env && docker compose --env-file .env.local-deploy up --build -d --wait",
+    "local:up": "npm run local:env && docker compose --env-file .env.local-deploy up --build -d --wait --force-recreate",
     "local:down": "docker compose --env-file .env.local-deploy down",
     "local:verify": "node scripts/local-verify.mjs",
     "deploy:init": "node deploy/self-hosted/init-env.mjs",

@@ -116,6 +116,9 @@ export default function Home() {
             <p className="eyebrow">HASIL PEMERIKSAAN</p>
             <h2>{verdictCopy[result.verdict].title}</h2>
             <p>{verdictCopy[result.verdict].description}</p>
+            {!result.evidence.some((item) => item.provider === 'virustotal') && (
+              <p className="warning">Provider reputasi belum aktif atau belum berhasil digunakan. Periksa <a href="/status">status konfigurasi provider</a>.</p>
+            )}
             {result.partial && <p className="warning">Sebagian sumber tidak tersedia. Hasil tetap ditampilkan sebagai data parsial.</p>}
             <dl>
               <div><dt>Jenis</dt><dd>{result.indicator.type}</dd></div>

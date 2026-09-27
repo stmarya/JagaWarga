@@ -21,6 +21,13 @@ const live = await json('/api/live');
 if (!live.response.ok || live.body.status !== 'alive') throw new Error('Liveness failed');
 const ready = await json('/api/ready');
 if (!ready.response.ok || ready.body.status !== 'ready') throw new Error('Readiness failed');
+if (ready.body.warnings?.length) {
+  throw new Error(`Provider configuration warnings: ${ready.body.warnings.map((item) => `${item.name}:${item.reason}`).join(', ')}`);
+}
+if (process.env.REQUIRE_REPUTATION_PROVIDER === 'true') {
+  const reputationReady = ready.body.providerDiagnostics?.some((provider) => provider.kind === 'reputation' && provider.status === 'enabled');
+  if (!reputationReady) throw new Error('Reputation provider is required but not enabled');
+}
 const policy = await json('/api/policy');
 for (const flag of ['fileUpload', 'urlSubmission', 'communityReporting']) {
   if (policy.body.features?.[flag]) throw new Error(`Risky feature enabled: ${flag}`);

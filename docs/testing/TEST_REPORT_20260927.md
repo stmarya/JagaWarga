@@ -58,3 +58,11 @@ Dokumen ini berisi rangkuman dari pengujian dan perbaikan yang telah dilakukan p
 - **Windows verification**: script POSIX diganti dengan Node wrapper lintas platform.
 - **Environment lama**: `local:env` sekarang memperbaiki variabel wajib yang hilang tanpa menimpa secret atau konfigurasi yang sudah ada.
 - **Regression coverage**: browser acceptance sekarang mencakup lookup, status provider, message analyzer, email-header analyzer, local file hashing, dashboard, service-worker console errors, dan load smoke 500 request.
+
+## 10. Diagnosis Hasil DNS-only dan Perbaikan v0.12.1
+
+- Screenshot terbaru menunjukkan hanya `cloudflare-dns` dan `google-dns`; artinya proses aplikasi belum mengaktifkan VirusTotal.
+- Pada Docker lokal, sumber environment adalah `.env.local-deploy`, bukan `.env`.
+- `local:verify` sekarang membaca konfigurasi Docker lokal tanpa menampilkan secret, menolak key kosong atau daftar key yang dipisahkan koma, dan gagal bila premium mode aktif tetapi tidak ada provider reputasi enabled.
+- Halaman hasil kini menampilkan tautan langsung ke `/status` ketika provider reputasi belum aktif.
+- `local:up` menjalankan environment repair dan `--force-recreate` agar perubahan environment benar-benar diterapkan ke container.

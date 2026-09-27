@@ -1,17 +1,17 @@
 {
   "decision": "LOCAL-READY",
   "publicProductionDecision": "NO-GO",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "runtime": "native-nextjs-production",
   "bind": "127.0.0.1:3100",
-  "startedAt": "2026-09-27T07:06:51.558Z",
-  "completedAt": "2026-09-27T07:06:54.840Z",
+  "startedAt": "2026-09-27T07:14:20.029Z",
+  "completedAt": "2026-09-27T07:14:23.344Z",
   "checks": {
     "build": "passed-before-run",
     "preflight": {
       "status": "passed",
       "baseURL": "http://127.0.0.1:3100",
-      "version": "0.12.0",
+      "version": "0.12.1",
       "providers": [
         "cloudflare-dns",
         "google-dns"
@@ -22,8 +22,8 @@
       "total": 500,
       "passed": 500,
       "concurrency": 25,
-      "p95Ms": 53,
-      "maxMs": 236
+      "p95Ms": 61,
+      "maxMs": 120
     }
   },
   "limitations": [
