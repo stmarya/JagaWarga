@@ -4,7 +4,7 @@ JagaWarga adalah platform security lookup dan awareness untuk membantu pengguna 
 
 ## Status
 
-🚧 **Launch-readiness candidate / Fase 7.** Metadata lookup aktif melalui fixed-origin DNS providers dengan kill switches. URL baru tidak disubmit ke scanner dan file tidak pernah diunggah.
+⛔ **NO-GO / Fase 8 complete, Fase 9 blocked.** Kontrol peluncuran teknis v0.8.0 siap, tetapi public launch tetap diblokir sampai enam external gate memiliki evidence dan persetujuan sah. Metadata lookup aktif melalui fixed-origin DNS providers dengan kill switches. URL baru tidak disubmit ke scanner dan file tidak pernah diunggah.
 
 ## MVP scope
 
@@ -24,6 +24,7 @@ JagaWarga adalah platform security lookup dan awareness untuk membantu pengguna 
 - Security headers, CSP, payload limits, request IDs, consistent API errors, metrics, versioning, OpenAPI, container, and operational runbooks.
 - Release automation, GHCR workflow, SBOM, Dependabot, CODEOWNERS, readiness/liveness, protected metrics, deny-by-default feature flags, and launch governance.
 - Automated deployment preflight, cryptographic release manifest, legal/provider review pack, penetration-test scope, usability protocol, infrastructure checklist, incident drill, and go/no-go template.
+- Fail-closed launch evidence validator, protected production workflow, immutable-tag validation, and machine-readable launch status.
 
 ## Menjalankan lokal
 
@@ -42,7 +43,9 @@ API specification tersedia di `/openapi.json`; operational endpoints tersedia di
 
 ## Quality gates
 
-Lihat [`docs/READINESS.md`](docs/READINESS.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), dan [`SECURITY.md`](SECURITY.md).
+Lihat [`docs/READINESS.md`](docs/READINESS.md), [`docs/PHASE-8-9.md`](docs/PHASE-8-9.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), dan [`SECURITY.md`](SECURITY.md).
+
+`npm run launch:gate` sengaja menghasilkan **NO-GO** sampai seluruh evidence eksternal tersedia. Status publik tersedia di `/launch-readiness` dan `/launch-status.json`.
 
 ## Security
 

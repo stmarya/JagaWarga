@@ -1,0 +1,68 @@
+name: Production release control
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing immutable release tag (for example v0.8.0)
+        required: true
+        type: string
+      target_url:
+        description: HTTPS production URL used for post-deployment verification
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run security:secrets
+      - run: npm run security:audit
+      - run: npm test
+      - run: npm run test:launch-gate
+      - run: npm run build
+      - name: Verify external launch evidence
+        env:
+          LAUNCH_ATTESTATIONS_JSON: ${{ secrets.LAUNCH_ATTESTATIONS_JSON }}
+        run: npm run launch:gate
+      - name: Validate immutable release tag
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          test "$(git describe --tags --exact-match)" = "$RELEASE_TAG"
+          test "v$(node -p "require('./package.json').version")" = "$RELEASE_TAG"
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ inputs.release_tag }}
+          provenance: true
+          sbom: true
+      - name: Post-deployment preflight
+        env:
+          BASE_URL: ${{ inputs.target_url }}
+          ADMIN_METRICS_TOKEN: ${{ secrets.ADMIN_METRICS_TOKEN }}
+        run: npm run preflight

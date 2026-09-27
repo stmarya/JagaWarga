@@ -6,4 +6,6 @@ coverage/
 .env.local
 *.log
 release-manifest.json
+launch-evidence/*.json
+!launch-evidence/*.example.json
 .DS_Store

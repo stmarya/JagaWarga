@@ -21,5 +21,6 @@ jobs:
       - run: npm run security:secrets
       - run: npm run security:audit
       - run: npm test
+      - run: npm run test:launch-gate
       - run: npm run build
-      - run: node -e "JSON.parse(require('fs').readFileSync('public/openapi.json')); JSON.parse(require('fs').readFileSync('extension/manifest.json'))"
+      - run: node -e "JSON.parse(require('fs').readFileSync('public/openapi.json')); JSON.parse(require('fs').readFileSync('public/launch-status.json')); JSON.parse(require('fs').readFileSync('extension/manifest.json'))"
