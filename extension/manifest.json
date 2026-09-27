@@ -1,0 +1,8 @@
+{
+  "manifest_version": 3,
+  "name": "JagaWarga — Cek sebelum klik",
+  "version": "0.1.0",
+  "description": "Browser extension foundation untuk membuka pemeriksaan JagaWarga.",
+  "permissions": ["activeTab"],
+  "action": { "default_popup": "popup.html" }
+}

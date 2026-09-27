@@ -5,6 +5,7 @@ import { safeLog } from './observability';
 import { TtlCache } from './runtime/cache';
 import { CircuitBreaker } from './runtime/circuit';
 import { BoundedQueue } from './runtime/queue';
+import { consumeBudget } from './runtime/budget';
 import { canonicalizeIndicator } from './security/canonicalize';
 
 const cache = new TtlCache<Awaited<ReturnType<typeof buildLookupResult>>>();
@@ -25,6 +26,12 @@ async function buildLookupResult(raw: string, adapters: ProviderAdapter[]) {
           return {
             provider: adapter.name, verdict: 'unknown', confidence: 0, observedAt: null,
             fetchedAt: new Date().toISOString(), reasonCodes: ['PROVIDER_CIRCUIT_OPEN'], submissionOccurred: false,
+          };
+        }
+        if (!consumeBudget(adapter.name)) {
+          return {
+            provider: adapter.name, verdict: 'unknown', confidence: 0, observedAt: null,
+            fetchedAt: new Date().toISOString(), reasonCodes: ['PROVIDER_BUDGET_EXHAUSTED'], submissionOccurred: false,
           };
         }
         try {

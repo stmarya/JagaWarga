@@ -1,0 +1,2 @@
+import Link from 'next/link';
+export default function Privacy() { return <main className="page"><Link href="/">← Beranda</Link><p className="eyebrow">PRIVASI</p><h1>Minimalkan data, berikan kontrol.</h1><section className="panel"><ul><li>Raw anonymous input tidak disimpan.</li><li>Feedback tidak membawa indikator mentah.</li><li>IP rate-limit di-hash dan disimpan sementara di memori.</li><li>Riwayat lokal dapat diekspor atau dihapus.</li><li>File tidak pernah diunggah.</li></ul></section></main>; }

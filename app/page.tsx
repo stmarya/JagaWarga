@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from 'react';
 import { classifyInput } from '@/lib/input';
+import { addHistory, addXp } from '@/lib/client/storage';
 
 type LookupResult = {
   verdict: 'high-risk' | 'suspicious' | 'no-indication' | 'insufficient-data';
@@ -11,6 +12,7 @@ type LookupResult = {
   cached: boolean;
   evidence: Array<{ provider: string; reasonCodes: string[] }>;
   policy: { existingLookupOnly: boolean; submissionOccurred: boolean };
+  checkedAt: string;
 };
 
 export default function Home() {
@@ -18,6 +20,8 @@ export default function Home() {
   const [notice, setNotice] = useState('');
   const [result, setResult] = useState<LookupResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [saveLocal, setSaveLocal] = useState(false);
+  const [feedback, setFeedback] = useState('');
   const indicator = useMemo(() => classifyInput(value), [value]);
 
   async function submit(event: FormEvent) {
@@ -34,6 +38,16 @@ export default function Home() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? 'LOOKUP_FAILED');
       setResult(data);
+      if (saveLocal) {
+        addHistory({
+          id: crypto.randomUUID(),
+          type: data.indicator.type,
+          displayValue: data.indicator.displayValue,
+          verdict: data.verdict,
+          checkedAt: data.checkedAt,
+        });
+      }
+      addXp(10);
     } catch {
       setNotice('Input tidak dapat diperiksa. Pastikan format benar dan bukan alamat jaringan internal.');
     } finally {
@@ -43,7 +57,7 @@ export default function Home() {
 
   return (
     <main>
-      <nav><span className="brand">🛡️ JagaWarga</span><a href="#prinsip">Cara kerja</a></nav>
+      <nav><span className="brand">🛡️ JagaWarga</span><span><a href="/tools">Alat</a> · <a href="/dashboard">Dashboard</a> · <a href="/status">Status</a></span></nav>
       <section className="hero">
         <p className="eyebrow">SECURITY LOOKUP & AWARENESS</p>
         <h1>Ada link mencurigakan?<br />Cek sebelum klik.</h1>
@@ -57,6 +71,7 @@ export default function Home() {
             </button>
           </div>
           <small>Terdeteksi: <strong>{indicator.label}</strong>. Pilot hanya memakai metadata dan hasil yang sudah tersedia.</small>
+          <label className="checkbox"><input type="checkbox" checked={saveLocal} onChange={(event) => setSaveLocal(event.target.checked)} /> Simpan hasil di perangkat ini</label>
         </form>
         {notice && <div className="notice" role="status">{notice}</div>}
         {result && (
@@ -81,6 +96,12 @@ export default function Home() {
             </details>
             <strong>Tindakan aman:</strong>
             <p>Jangan buka objek yang meragukan. Verifikasi pengirim melalui kanal lain yang sudah Anda kenal.</p>
+            <div className="feedback">
+              <span>Apakah hasil ini membantu?</span>
+              <button type="button" onClick={async () => { await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ helpful: true, category: result.verdict }) }); setFeedback('Terima kasih atas feedback Anda.'); }}>Ya</button>
+              <button type="button" onClick={async () => { await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ helpful: false, category: result.verdict }) }); setFeedback('Feedback dicatat untuk peninjauan.'); }}>Tidak</button>
+            </div>
+            {feedback && <p role="status">{feedback}</p>}
           </section>
         )}
       </section>

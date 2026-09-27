@@ -1,0 +1,2 @@
+import Link from 'next/link';
+export default function Methodology() { return <main className="page"><Link href="/">← Beranda</Link><p className="eyebrow">METODOLOGI</p><h1>Evidence lebih penting daripada satu skor.</h1><section className="panel"><h2>Prinsip</h2><ul><li>Risk dan confidence dipisahkan.</li><li>Tidak ada data tidak pernah berarti aman.</li><li>DNS yang aktif tidak membuktikan sebuah domain terpercaya.</li><li>Hasil provider menampilkan sumber dan alasan.</li><li>Submission URL dan file dinonaktifkan.</li></ul></section></main>; }

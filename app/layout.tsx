@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { ServiceWorkerRegister } from './sw-register';
 
 export const metadata: Metadata = {
   title: 'JagaWarga — Cek sebelum klik',
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="id">
-      <body>{children}</body>
+      <body><ServiceWorkerRegister />{children}</body>
     </html>
   );
 }
