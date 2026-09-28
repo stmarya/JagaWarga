@@ -1,0 +1,26 @@
+.intakeText {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 10rem;
+  resize: vertical;
+  border: 1px solid currentColor;
+  border-radius: 0;
+  padding: 1rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 1.5;
+}
+
+.intakeText:focus {
+  outline: 3px solid color-mix(in srgb, currentColor 30%, transparent);
+  outline-offset: 2px;
+}
+
+.fileButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-align: center;
+}

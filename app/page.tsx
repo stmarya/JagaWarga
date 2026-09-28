@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
-import { classifyInput } from '@/lib/input';
+import { ChangeEvent, DragEvent, FormEvent, useEffect, useMemo, useState } from 'react';
+import { classifySmartInput } from '@/lib/input';
 import { addHistory, addXp } from '@/lib/client/storage';
+import styles from './smart-intake.module.css';
 
 type LookupResult = {
   risk: number;
@@ -15,6 +16,20 @@ type LookupResult = {
   providers: { requested: string[]; succeeded: string[]; failed: string[] };
   policy: { existingLookupOnly: boolean; submissionOccurred: boolean };
   checkedAt: string;
+};
+
+type AnalysisResult = {
+  kind: 'message' | 'email-header';
+  risk: number;
+  verdict: string;
+  reasonCodes: string[];
+  actions?: string[];
+  authentication?: Record<string, string>;
+  requestId: string;
+};
+
+type BarcodeDetectorType = new (options: { formats: string[] }) => {
+  detect(source: ImageBitmap): Promise<Array<{ rawValue: string }>>;
 };
 
 const verdictCopy = {
@@ -32,6 +47,17 @@ const reasonLabels: Record<string, string> = {
   PROVIDER_ERROR: 'Sumber gagal merespons.', PROVIDER_CIRCUIT_OPEN: 'Sumber dihentikan sementara.',
   PROVIDER_BUDGET_EXHAUSTED: 'Kuota sumber habis.', NO_PROVIDER_CONFIGURED: 'Belum ada sumber untuk input ini.',
   STALE_BENIGN_EVIDENCE: 'Data bersih sudah terlalu lama.',
+  URGENCY: 'Pesan mendorong tindakan yang sangat mendesak.',
+  CREDENTIAL_REQUEST: 'Pesan meminta password, PIN, OTP, atau kode rahasia.',
+  MONEY_REQUEST: 'Pesan meminta uang atau transaksi.',
+  PRIZE_OR_REFUND: 'Pesan menawarkan hadiah, bonus, atau pengembalian dana.',
+  IMPERSONATION: 'Pesan mengaku sebagai pihak berwenang atau organisasi tepercaya.',
+  SHORT_LINK: 'Pesan memakai tautan pendek yang menyamarkan tujuan.',
+  SPF_FAIL: 'Pemeriksaan SPF gagal.',
+  DKIM_FAIL: 'Pemeriksaan DKIM gagal.',
+  DMARC_FAIL: 'Pemeriksaan DMARC gagal.',
+  FROM_REPLY_TO_MISMATCH: 'Alamat balasan berbeda dari domain pengirim.',
+  NO_RECEIVED_CHAIN: 'Rantai server penerima tidak ditemukan.',
 };
 
 function actions(verdict: LookupResult['verdict']) {
@@ -42,42 +68,82 @@ function actions(verdict: LookupResult['verdict']) {
 }
 
 export default function Home() {
-  const [mode, setMode] = useState<'file' | 'url' | 'search'>('search');
   const [fileName, setFileName] = useState('');
   const [value, setValue] = useState(''); const [notice, setNotice] = useState('');
   const [result, setResult] = useState<LookupResult | null>(null); const [loading, setLoading] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [saveLocal, setSaveLocal] = useState(true); const [feedback, setFeedback] = useState('');
   const [feedbackLoading, setFeedbackLoading] = useState(false); const [requestId, setRequestId] = useState('');
-  const indicator = useMemo(() => classifyInput(value), [value]);
-  const canSubmit = Boolean(value.trim()) && indicator.type !== 'unknown' && !loading;
+  const indicator = useMemo(() => classifySmartInput(value), [value]);
+  const canSubmit = Boolean(value.trim()) && indicator.endpoint !== null && !loading;
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search).get('ioc');
     if (query) {
       setValue(query);
-      setMode(query.startsWith('http') ? 'url' : 'search');
     }
   }, []);
 
-  async function selectFile(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  async function ingestFile(file: File) {
     setFileName(file.name);
     setNotice('');
+    setResult(null);
+    setAnalysisResult(null);
+    if (file.type.startsWith('image/')) {
+      const Detector = (window as unknown as { BarcodeDetector?: BarcodeDetectorType }).BarcodeDetector;
+      if (Detector) {
+        try {
+          const codes = await new Detector({ formats: ['qr_code'] }).detect(await createImageBitmap(file));
+          if (codes[0]?.rawValue) {
+            setValue(codes[0].rawValue);
+            setFileName(`QR · ${file.name}`);
+            return;
+          }
+        } catch {
+          // If the image cannot be decoded as QR, safely fall back to local hashing.
+        }
+      }
+    }
     const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
     setValue([...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join(''));
   }
 
+  async function selectFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (file) await ingestFile(file);
+  }
+
+  async function dropFile(event: DragEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const file = event.dataTransfer.files?.[0];
+    if (file) await ingestFile(file);
+  }
+
   async function submit(event: FormEvent) {
-    event.preventDefault(); setNotice(''); setResult(null); setRequestId(''); setLoading(true);
+    event.preventDefault(); setNotice(''); setResult(null); setAnalysisResult(null); setRequestId(''); setLoading(true);
     try {
-      const response = await fetch('/api/lookups', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ indicator: value }) });
+      const endpoint = indicator.endpoint === 'message'
+        ? '/api/analyze/message'
+        : indicator.endpoint === 'email-header'
+          ? '/api/analyze/email-header'
+          : '/api/lookups';
+      const body = indicator.endpoint === 'message'
+        ? { text: value }
+        : indicator.endpoint === 'email-header'
+          ? { headers: value }
+          : { indicator: value };
+      const response = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const data = await response.json().catch(() => ({ error: 'LOOKUP_FAILED' }));
       setRequestId(typeof data.requestId === 'string' ? data.requestId : '');
       if (!response.ok) throw new Error(data.error ?? 'LOOKUP_FAILED');
-      setResult(data);
-      if (saveLocal) addHistory({ id: crypto.randomUUID(), type: data.indicator.type, displayValue: data.indicator.displayValue, verdict: data.verdict, checkedAt: data.checkedAt });
-      addXp(10);
+      if (indicator.endpoint === 'message' || indicator.endpoint === 'email-header') {
+        setAnalysisResult({ ...data, kind: indicator.endpoint });
+        addXp(15);
+      } else {
+        setResult(data);
+        if (saveLocal) addHistory({ id: crypto.randomUUID(), type: data.indicator.type, displayValue: data.indicator.displayValue, verdict: data.verdict, checkedAt: data.checkedAt });
+        addXp(10);
+      }
       window.setTimeout(() => document.getElementById('lookup-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
     } catch (error) {
       const code = error instanceof Error ? error.message : 'LOOKUP_FAILED';
@@ -103,33 +169,35 @@ export default function Home() {
       <div className="desk-console">
         <header className="console-bar"><span>CHECKPOINT_01</span><span className="console-status">● SISTEM AKTIF</span></header>
         <div className="console-grid">
-          <div className="mode-rail" role="tablist" aria-label="Jenis pemeriksaan">
-            <button type="button" role="tab" aria-selected={mode === 'search'} className={mode === 'search' ? 'active' : ''} onClick={() => setMode('search')}><b>01</b><span>IOC</span><small>IP / HASH</small></button>
-            <button type="button" role="tab" aria-selected={mode === 'url'} className={mode === 'url' ? 'active' : ''} onClick={() => setMode('url')}><b>02</b><span>URL</span><small>LINK / DOMAIN</small></button>
-            <button type="button" role="tab" aria-selected={mode === 'file'} className={mode === 'file' ? 'active' : ''} onClick={() => setMode('file')}><b>03</b><span>FILE</span><small>HASH LOKAL</small></button>
-            <Link href="/tools/message"><b>04</b><span>PESAN</span><small>TEKS</small></Link>
+          <div className="mode-rail" aria-label="Jenis yang dideteksi otomatis">
+            <button type="button" className="active" aria-disabled="true"><b>01</b><span>OTOMATIS</span><small>URL / IP / DOMAIN</small></button>
+            <button type="button" aria-disabled="true"><b>02</b><span>FILE / QR</span><small>PROSES LOKAL</small></button>
+            <button type="button" aria-disabled="true"><b>03</b><span>PESAN</span><small>PHISHING</small></button>
+            <button type="button" aria-disabled="true"><b>04</b><span>EMAIL</span><small>HEADER</small></button>
           </div>
           <div className="console-stage">
-            <div className="stage-heading"><p>{mode === 'file' ? 'HASH FILE LOKAL' : mode === 'url' ? 'CEK LINK' : 'CEK INDIKATOR'}</p><h2>{mode === 'file' ? 'Pilih file. Kami hitung hash.' : mode === 'url' ? 'Link ini aman?' : 'Apa yang ingin dicek?'}</h2></div>
-            <form className="scan-form desk-form" onSubmit={submit}>
-              {mode === 'file' ? (
-                <div className="file-mode">
-                  <label className="file-picker" htmlFor="indicator-file">
-                    <span className="file-icon" aria-hidden="true">+</span>
-                    <strong>{fileName || 'Tarik atau pilih file'}</strong>
-                    <small>File tidak diunggah. Hanya SHA-256 yang diperiksa.</small>
-                    <b>{fileName ? 'GANTI FILE' : 'PILIH FILE'}</b>
-                    <input id="indicator-file" type="file" onChange={selectFile} />
-                  </label>
-                  {value && <div className="file-ready"><span>HASH SIAP</span><code>{value}</code><button type="submit" disabled={!canSubmit}>{loading ? 'MENGECEK…' : 'CEK HASH →'}</button></div>}
+            <div className="stage-heading"><p>SMART INTAKE</p><h2>Tempel atau masukkan apa saja.</h2></div>
+            <form className="scan-form desk-form" onSubmit={submit} onDrop={dropFile} onDragOver={(event) => event.preventDefault()}>
+              <div className="direct-mode">
+                <label htmlFor="indicator">URL, DOMAIN, IP, HASH, PESAN, ATAU EMAIL HEADER</label>
+                <textarea
+                  id="indicator"
+                  className={styles.intakeText}
+                  value={value}
+                  onChange={(event) => { setValue(event.target.value); setFileName(''); }}
+                  placeholder="Tempel link, indikator, pesan, atau header email di sini"
+                  autoComplete="off"
+                  spellCheck="false"
+                  rows={6}
+                />
+                <div className="search">
+                  <label className={`${styles.fileButton} button-quiet`} htmlFor="indicator-file">{fileName ? 'GANTI FILE / QR' : 'PILIH ATAU TARIK FILE / QR'}</label>
+                  <input id="indicator-file" type="file" onChange={selectFile} hidden />
+                  <button type="submit" disabled={!canSubmit}>{loading ? 'MENGANALISIS…' : 'ANALISIS →'}</button>
                 </div>
-              ) : (
-                <div className="direct-mode">
-                  <label htmlFor="indicator">{mode === 'url' ? 'TEMPEL URL ATAU DOMAIN' : 'IP, DOMAIN, ATAU HASH'}</label>
-                  <div className="search"><input id="indicator" value={value} onChange={(e) => setValue(e.target.value)} placeholder={mode === 'url' ? 'https://contoh.id' : '8.8.8.8 atau SHA-256'} autoComplete="off" spellCheck="false" /><button type="submit" disabled={!canSubmit}>{loading ? 'MENGECEK…' : 'CEK →'}</button></div>
-                  <small className="detected-type">TERDETEKSI / <strong>{indicator.label}</strong></small>
-                </div>
-              )}
+                <small className="detected-type">TERDETEKSI / <strong>{indicator.label}</strong>{fileName && <> · {fileName}</>}</small>
+                <small>File dan gambar QR diproses di browser. Data tidak dikirim sebelum Anda menekan Analisis.</small>
+              </div>
               <div className="lookup-options"><label className="checkbox"><input type="checkbox" checked={saveLocal} onChange={(e) => setSaveLocal(e.target.checked)} /> Simpan di perangkat</label><span>Tanpa submission otomatis</span></div>
             </form>
             {notice && <div className="notice" role="status">{notice}</div>}{!result && requestId && <p className="notice">ID: <code>{requestId}</code></p>}
@@ -145,6 +213,22 @@ export default function Home() {
       <dl><div><dt>TIPE</dt><dd>{result.indicator.type}</dd></div><div><dt>KEYAKINAN</dt><dd>{result.confidence}</dd></div><div><dt>RISIKO</dt><dd>{result.risk}/100</dd></div><div><dt>SUBMISSION</dt><dd>{result.policy.submissionOccurred ? 'YA' : 'TIDAK'}</dd></div></dl>
       <div className="result-columns"><details open><summary>BUKTI PEMERIKSAAN</summary><ul>{result.evidence.map((item) => <li key={item.provider}><strong>{item.provider.toUpperCase()}</strong><ul>{item.reasonCodes.map((code) => <li key={code}>{reasonLabels[code] ?? code}</li>)}</ul><small>{new Date(item.fetchedAt).toLocaleString('id-ID')} · {item.freshness}</small>{item.sourceUrl && <p><a href={item.sourceUrl} target="_blank" rel="noreferrer">BUKA SUMBER ↗</a></p>}</li>)}</ul><p>ID: <code>{result.requestId}</code></p></details><aside className="safe-actions"><strong>LANGKAH BERIKUTNYA</strong><ol>{actions(result.verdict).map((a) => <li key={a}>{a}</li>)}</ol></aside></div>
       <div className="feedback"><span>HASIL INI MEMBANTU?</span><button disabled={feedbackLoading || Boolean(feedback)} onClick={() => sendFeedback(true)}>YA</button><button className="button-quiet" disabled={feedbackLoading || Boolean(feedback)} onClick={() => sendFeedback(false)}>TIDAK</button></div>{feedback && <p role="status">{feedback}</p>}
+    </section>}
+
+    {analysisResult && <section id="lookup-result" className="result result-suspicious" aria-live="polite">
+      <header className="result-header">
+        <div><p className="eyebrow">/// HASIL {analysisResult.kind === 'message' ? 'PESAN' : 'EMAIL HEADER'}</p><h2>{analysisResult.verdict.toUpperCase().replace('-', ' ')}</h2><p>Ini adalah sinyal risiko, bukan vonis otomatis.</p></div>
+        <div className="risk-gauge"><strong>{analysisResult.risk}</strong><span>/100</span><small>RISIKO</small></div>
+      </header>
+      <div className="result-columns">
+        <details open><summary>ALASAN</summary><ul>{analysisResult.reasonCodes.length
+          ? analysisResult.reasonCodes.map((code) => <li key={code}>{reasonLabels[code] ?? code}</li>)
+          : <li>Tidak ada pola risiko kuat yang terdeteksi.</li>}</ul>
+          {analysisResult.authentication && <dl>{Object.entries(analysisResult.authentication).map(([key, state]) => <div key={key}><dt>{key.toUpperCase()}</dt><dd>{state}</dd></div>)}</dl>}
+          <p>ID: <code>{analysisResult.requestId}</code></p>
+        </details>
+        <aside className="safe-actions"><strong>LANGKAH BERIKUTNYA</strong><ol>{(analysisResult.actions ?? ['Verifikasi pengirim melalui kanal resmi.', 'Jangan membagikan data sensitif sebelum terverifikasi.']).map((action) => <li key={action}>{action}</li>)}</ol></aside>
+      </div>
     </section>}
 
     <section className="quick-links"><Link href="/dashboard"><strong>RIWAYAT</strong><span>Lihat hasil tersimpan →</span></Link><Link href="/methodology"><strong>CARA KERJA</strong><span>Pahami sumber dan skor →</span></Link><Link href="/emergency"><strong>TERLANJUR KLIK?</strong><span>Buka panduan darurat →</span></Link></section>

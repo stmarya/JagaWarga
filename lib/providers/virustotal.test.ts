@@ -53,4 +53,29 @@ describe('VirusTotalAdapter', () => {
       reasonCodes: ['VT_NO_RECORD'],
     });
   });
+
+  it('rolls over to the next API key immediately when a key is rate limited', async () => {
+    const suppliedKeys: string[] = [];
+    const adapter = new VirusTotalAdapter(['quota-exhausted-key', 'backup-key'], async (_url, _signal, key) => {
+      suppliedKeys.push(key);
+      if (key === 'quota-exhausted-key') throw new Error('PROVIDER_HTTP_429');
+      return { data: { attributes: { last_analysis_stats: { harmless: 12, undetected: 3 } } } };
+    });
+
+    await expect(adapter.lookup(canonicalizeIndicator('example.com'), signal)).resolves.toMatchObject({
+      provider: 'virustotal',
+      verdict: 'benign',
+    });
+    expect(suppliedKeys).toEqual(['quota-exhausted-key', 'backup-key']);
+  });
+
+  it('accepts a comma-separated key pool for environment compatibility', async () => {
+    let suppliedKey = '';
+    const adapter = new VirusTotalAdapter('pool-key-1,pool-key-2', async (_url, _signal, key) => {
+      suppliedKey = key;
+      return { data: { attributes: { last_analysis_stats: { harmless: 1 } } } };
+    });
+    await adapter.lookup(canonicalizeIndicator('example.org'), signal);
+    expect(['pool-key-1', 'pool-key-2']).toContain(suppliedKey);
+  });
 });
