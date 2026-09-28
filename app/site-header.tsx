@@ -1,19 +1,32 @@
+'use client';
+
 import Link from 'next/link';
+import { FormEvent, useState } from 'react';
 
 export function SiteHeader() {
+  const [query, setQuery] = useState('');
+  function search(event: FormEvent) {
+    event.preventDefault();
+    const value = query.trim();
+    if (value) window.location.href = `/?ioc=${encodeURIComponent(value)}#scanner`;
+  }
   return (
     <header className="site-header">
       <nav className="site-nav" aria-label="Navigasi utama">
         <Link className="wordmark" href="/" aria-label="JagaWarga, beranda">
           <span className="wordmark-mark" aria-hidden="true">JW</span>
-          <span><strong>JAGA/WARGA</strong><small>cek sebelum klik</small></span>
+          <span><strong>JAGA/WARGA</strong></span>
         </Link>
+        <form className="global-search" onSubmit={search}>
+          <label className="sr-only" htmlFor="global-ioc">Cari URL, domain, IP, atau hash</label>
+          <span aria-hidden="true">⌕</span>
+          <input id="global-ioc" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="URL, domain, IP, atau hash" />
+        </form>
         <div className="nav-links">
-          <Link href="/#scanner">Cek IoC</Link>
-          <Link href="/tools/file-hash">Cek file</Link>
-          <Link href="/dashboard">Ruang saya</Link>
+          <Link href="/dashboard">Riwayat</Link>
+          <Link href="/status">Status</Link>
         </div>
-        <Link className="nav-emergency" href="/emergency"><span aria-hidden="true">!</span> Darurat</Link>
+        <Link className="nav-emergency" href="/emergency" aria-label="Bantuan darurat"><span aria-hidden="true">!</span></Link>
       </nav>
     </header>
   );
