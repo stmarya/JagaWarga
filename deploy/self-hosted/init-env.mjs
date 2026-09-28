@@ -19,6 +19,7 @@ try {
     'APP_VERSION=0.13.0-rc.2',
     `ADMIN_METRICS_TOKEN=${randomBytes(32).toString('base64url')}`,
     'FEATURE_PREMIUM_PROVIDERS=false',
+    'VIRUSTOTAL_API_KEYS=',
     'VIRUSTOTAL_API_KEY=',
     'DISABLE_CLOUDFLARE_DNS=false',
     'DISABLE_GOOGLE_DNS=false',

@@ -7,6 +7,7 @@ const defaults = () => ({
   APP_PORT: '3000',
   ADMIN_METRICS_TOKEN: randomBytes(32).toString('base64url'),
   FEATURE_PREMIUM_PROVIDERS: 'false',
+  VIRUSTOTAL_API_KEYS: '',
   VIRUSTOTAL_API_KEY: '',
 });
 
