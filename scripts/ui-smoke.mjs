@@ -30,10 +30,10 @@ try {
   if ((await page.locator('h1').count()) !== 1) throw new Error('Expected one h1');
   if ((await page.locator('label[for="indicator"]').count()) !== 1) throw new Error('Missing input label');
   await page.locator('#indicator').fill('example.com');
-  await page.getByRole('button', { name: 'Periksa' }).click();
-  await page.getByText('Belum ada cukup data reputasi').waitFor();
-  await page.getByText('Sumber pemeriksaan').click();
-  await page.getByText('Domain aktif dan memiliki jawaban DNS; ini bukan bukti bahwa domain aman.').first().waitFor();
+  await page.getByRole('button', { name: 'ANALISIS →' }).click();
+  await page.locator('#lookup-result').waitFor();
+  await page.getByText('DATA KURANG').waitFor();
+  await page.getByText('Domain aktif. Ini bukan bukti bahwa domain aman.').first().waitFor();
   await assertAccessible('lookup result');
   await page.evaluate(() => navigator.serviceWorker.ready);
   const serviceWorkerCount = await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length);
@@ -87,7 +87,7 @@ try {
   await assertAccessible('QR tool');
 
   await page.goto(`${baseURL}/dashboard`);
-  await page.getByRole('heading', { name: 'Progress dan data Anda.' }).waitFor();
+  await page.getByRole('heading', { name: 'CEK. SIMPAN. PANTAU.' }).waitFor();
   await assertAccessible('dashboard');
 
   await page.goto(`${baseURL}/support`);

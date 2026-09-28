@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { enabledProviderNames, featureFlags, providerDiagnostics } from './features';
+import { enabledProviderNames, featureFlags, providerDiagnostics, virusTotalApiKeys } from './features';
 
 describe('feature governance', () => {
   it('denies risky features by default', () => {
@@ -20,14 +20,16 @@ describe('feature governance', () => {
       VIRUSTOTAL_API_KEY: 'test-key',
     })).toContain('virustotal');
   });
-  it('rejects comma-separated key pools as misconfigured', () => {
-    expect(providerDiagnostics({
+  it('accepts a comma-separated key pool for automatic rollover', () => {
+    const env: NodeJS.ProcessEnv = {
       NODE_ENV: 'test',
       FEATURE_PREMIUM_PROVIDERS: 'true',
-      VIRUSTOTAL_API_KEY: 'one,two',
-    }).find((provider) => provider.name === 'virustotal')).toMatchObject({
-      status: 'misconfigured',
-      reason: 'key-must-be-single-value',
+      VIRUSTOTAL_API_KEYS: 'one,two,one',
+    };
+    expect(virusTotalApiKeys(env)).toEqual(['one', 'two']);
+    expect(providerDiagnostics(env).find((provider) => provider.name === 'virustotal')).toMatchObject({
+      status: 'enabled',
+      reason: 'configured-key-pool',
     });
   });
 });

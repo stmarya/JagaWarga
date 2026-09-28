@@ -169,3 +169,5 @@
   .lookup-options{align-items:flex-start}
   .console-foot{gap:5px;padding:0 8px;font-size:.48rem}
 }
+
+.page>.eyebrow,.result .eyebrow{color:#a92f12}

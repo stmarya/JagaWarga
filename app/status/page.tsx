@@ -12,9 +12,9 @@ type Health = {
 };
 const diagnosticReason: Record<string, string> = {
   configured: 'siap digunakan',
+  'configured-key-pool': 'siap digunakan dengan rollover API key otomatis',
   'feature-disabled': 'fitur provider premium belum diaktifkan',
   'missing-key': 'API key belum tersedia pada environment proses aplikasi',
-  'key-must-be-single-value': 'gunakan tepat satu API key; daftar dipisahkan koma tidak didukung',
   'kill-switch': 'dinonaktifkan oleh kill switch',
 };
 export default function StatusPage() {

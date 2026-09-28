@@ -1,6 +1,10 @@
+import { createHash } from 'node:crypto';
 import type { CanonicalIndicator } from '../security/canonicalize';
 import { safeFetchJson } from '../security/safe-fetch';
 import type { Evidence, EvidenceVerdict, ProviderAdapter } from './types';
+
+const exhaustedKeys = new Map<string, number>();
+let nextKeyCursor = 0;
 
 type Stats = {
   malicious?: number;
@@ -27,6 +31,23 @@ type Fetcher = (
 
 function urlId(value: string) {
   return Buffer.from(value).toString('base64url');
+}
+
+function nextUtcDay() {
+  const now = new Date();
+  return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
+}
+
+function keyId(apiKey: string) {
+  return createHash('sha256').update(apiKey).digest('hex').slice(0, 16);
+}
+
+function keyPool(value: string | string[]) {
+  const keys = (Array.isArray(value) ? value : [value])
+    .flatMap((key) => key.split(/[\r\n,]+/))
+    .map((key) => key.trim())
+    .filter(Boolean);
+  return [...new Set(keys)];
 }
 
 function resource(indicator: CanonicalIndicator) {
@@ -70,16 +91,18 @@ function normalize(stats: Stats): { verdict: EvidenceVerdict; confidence: number
 
 export class VirusTotalAdapter implements ProviderAdapter {
   readonly name = 'virustotal';
+  private readonly apiKeys: string[];
 
   constructor(
-    private readonly apiKey: string,
+    apiKeys: string | string[],
     private readonly fetcher: Fetcher = (url, signal, key) => safeFetchJson<VirusTotalResponse>(
       url,
       signal,
       { accept: 'application/json', headers: { 'x-apikey': key } },
     ),
   ) {
-    if (!apiKey.trim()) throw new Error('VIRUSTOTAL_API_KEY_REQUIRED');
+    this.apiKeys = keyPool(apiKeys);
+    if (!this.apiKeys.length) throw new Error('VIRUSTOTAL_API_KEY_REQUIRED');
   }
 
   supports(type: CanonicalIndicator['type']) {
@@ -89,8 +112,16 @@ export class VirusTotalAdapter implements ProviderAdapter {
   async lookup(indicator: CanonicalIndicator, signal: AbortSignal): Promise<Evidence> {
     const path = resource(indicator);
     const fetchedAt = new Date().toISOString();
-    try {
-      const response = await this.fetcher(`https://www.virustotal.com/api/v3/${path.api}`, signal, this.apiKey);
+    let lastError: unknown;
+    for (let offset = 0; offset < this.apiKeys.length; offset += 1) {
+      const index = (nextKeyCursor + offset) % this.apiKeys.length;
+      const apiKey = this.apiKeys[index];
+      const id = keyId(apiKey);
+      const exhaustedUntil = exhaustedKeys.get(id) ?? 0;
+      if (exhaustedUntil > Date.now()) continue;
+      try {
+        const response = await this.fetcher(`https://www.virustotal.com/api/v3/${path.api}`, signal, apiKey);
+        nextKeyCursor = (index + 1) % this.apiKeys.length;
       const attributes = response.data?.attributes;
       if (!attributes?.last_analysis_stats) {
         return {
@@ -117,8 +148,13 @@ export class VirusTotalAdapter implements ProviderAdapter {
         sourceUrl: `https://www.virustotal.com/gui/${path.gui}`,
         submissionOccurred: false,
       };
-    } catch (error) {
-      if (error instanceof Error && error.message === 'PROVIDER_HTTP_404') {
+      } catch (error) {
+        lastError = error;
+        if (error instanceof Error && error.message === 'PROVIDER_HTTP_429') {
+          exhaustedKeys.set(id, nextUtcDay());
+          continue;
+        }
+        if (error instanceof Error && error.message === 'PROVIDER_HTTP_404') {
         return {
           provider: this.name,
           verdict: 'unknown',
@@ -128,8 +164,10 @@ export class VirusTotalAdapter implements ProviderAdapter {
           reasonCodes: ['VT_NO_RECORD'],
           submissionOccurred: false,
         };
+        }
+        throw error;
       }
-      throw error;
     }
+    throw lastError ?? new Error('PROVIDER_HTTP_429');
   }
 }

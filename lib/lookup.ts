@@ -8,7 +8,7 @@ import { RuntimeCache } from './runtime/cache';
 import { RuntimeCircuitBreaker } from './runtime/circuit';
 import { BoundedQueue } from './runtime/queue';
 import { consumeBudget } from './runtime/budget';
-import { enabledProviderNames } from './runtime/features';
+import { enabledProviderNames, virusTotalApiKeys } from './runtime/features';
 import { recordGauge, recordMetric, withMetric } from './runtime/metrics';
 import { canonicalizeIndicator } from './security/canonicalize';
 import { CAPACITY_LIMITS } from './runtime/capacity';
@@ -38,8 +38,9 @@ async function lookupWithRetry(adapter: ProviderAdapter, indicator: ReturnType<t
 }
 function productionAdapters(env: NodeJS.ProcessEnv = process.env): ProviderAdapter[] {
   const adapters: ProviderAdapter[] = [new CloudflareDnsAdapter(), new GoogleDnsAdapter()];
-  if (enabledProviderNames(env).includes('virustotal') && env.VIRUSTOTAL_API_KEY) {
-    adapters.push(new VirusTotalAdapter(env.VIRUSTOTAL_API_KEY));
+  const apiKeys = virusTotalApiKeys(env);
+  if (enabledProviderNames(env).includes('virustotal') && apiKeys.length) {
+    adapters.push(new VirusTotalAdapter(apiKeys));
   }
   return adapters;
 }
