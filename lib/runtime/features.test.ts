@@ -21,7 +21,7 @@ describe('feature governance', () => {
     })).toContain('virustotal');
   });
   it('accepts a comma-separated key pool for automatic rollover', () => {
-    const env = {
+    const env: NodeJS.ProcessEnv = {
       NODE_ENV: 'test',
       FEATURE_PREMIUM_PROVIDERS: 'true',
       VIRUSTOTAL_API_KEYS: 'one,two,one',
