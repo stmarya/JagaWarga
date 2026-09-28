@@ -42,7 +42,7 @@ function actions(verdict: LookupResult['verdict']) {
 }
 
 export default function Home() {
-  const [mode, setMode] = useState<'file' | 'url' | 'search'>('file');
+  const [mode, setMode] = useState<'file' | 'url' | 'search'>('search');
   const [fileName, setFileName] = useState('');
   const [value, setValue] = useState(''); const [notice, setNotice] = useState('');
   const [result, setResult] = useState<LookupResult | null>(null); const [loading, setLoading] = useState(false);
@@ -93,38 +93,49 @@ export default function Home() {
   }
 
   return <main className="home">
-    <section className="lookup-home" id="scanner">
-      <div className="lookup-brand"><span className="lookup-symbol" aria-hidden="true">JW</span><h1>JAGA/WARGA</h1></div>
-      <p className="lookup-lead">Periksa file, URL, domain, IP, dan hash. Dapatkan hasil yang jelas dan langkah aman berikutnya.</p>
-      <div className="lookup-panel">
-        <div className="lookup-tabs" role="tablist" aria-label="Jenis pemeriksaan">
-          <button type="button" role="tab" aria-selected={mode === 'file'} className={mode === 'file' ? 'active' : ''} onClick={() => setMode('file')}>FILE</button>
-          <button type="button" role="tab" aria-selected={mode === 'url'} className={mode === 'url' ? 'active' : ''} onClick={() => setMode('url')}>URL</button>
-          <button type="button" role="tab" aria-selected={mode === 'search'} className={mode === 'search' ? 'active' : ''} onClick={() => setMode('search')}>SEARCH</button>
-          <Link href="/tools/message">PESAN</Link>
+    <section className="security-desk" id="scanner">
+      <aside className="desk-intro">
+        <p className="desk-index">JW—01 / SECURITY DESK</p>
+        <h1>CEK<br />RISIKO.<br /><span>TETAP AMAN.</span></h1>
+        <p>Masukkan satu indikator. Kami bantu membaca sinyalnya dan menunjukkan langkah berikutnya—tanpa istilah yang bikin bingung.</p>
+        <div className="desk-principles"><span>01 / PRIVAT</span><span>02 / TERLACAK</span><span>03 / PRAKTIS</span></div>
+      </aside>
+      <div className="desk-console">
+        <header className="console-bar"><span>CHECKPOINT_01</span><span className="console-status">● SISTEM AKTIF</span></header>
+        <div className="console-grid">
+          <div className="mode-rail" role="tablist" aria-label="Jenis pemeriksaan">
+            <button type="button" role="tab" aria-selected={mode === 'search'} className={mode === 'search' ? 'active' : ''} onClick={() => setMode('search')}><b>01</b><span>IOC</span><small>IP / HASH</small></button>
+            <button type="button" role="tab" aria-selected={mode === 'url'} className={mode === 'url' ? 'active' : ''} onClick={() => setMode('url')}><b>02</b><span>URL</span><small>LINK / DOMAIN</small></button>
+            <button type="button" role="tab" aria-selected={mode === 'file'} className={mode === 'file' ? 'active' : ''} onClick={() => setMode('file')}><b>03</b><span>FILE</span><small>HASH LOKAL</small></button>
+            <Link href="/tools/message"><b>04</b><span>PESAN</span><small>TEKS</small></Link>
+          </div>
+          <div className="console-stage">
+            <div className="stage-heading"><p>{mode === 'file' ? 'HASH FILE LOKAL' : mode === 'url' ? 'CEK LINK' : 'CEK INDIKATOR'}</p><h2>{mode === 'file' ? 'Pilih file. Kami hitung hash.' : mode === 'url' ? 'Link ini aman?' : 'Apa yang ingin dicek?'}</h2></div>
+            <form className="scan-form desk-form" onSubmit={submit}>
+              {mode === 'file' ? (
+                <div className="file-mode">
+                  <label className="file-picker" htmlFor="indicator-file">
+                    <span className="file-icon" aria-hidden="true">+</span>
+                    <strong>{fileName || 'Tarik atau pilih file'}</strong>
+                    <small>File tidak diunggah. Hanya SHA-256 yang diperiksa.</small>
+                    <b>{fileName ? 'GANTI FILE' : 'PILIH FILE'}</b>
+                    <input id="indicator-file" type="file" onChange={selectFile} />
+                  </label>
+                  {value && <div className="file-ready"><span>HASH SIAP</span><code>{value}</code><button type="submit" disabled={!canSubmit}>{loading ? 'MENGECEK…' : 'CEK HASH →'}</button></div>}
+                </div>
+              ) : (
+                <div className="direct-mode">
+                  <label htmlFor="indicator">{mode === 'url' ? 'TEMPEL URL ATAU DOMAIN' : 'IP, DOMAIN, ATAU HASH'}</label>
+                  <div className="search"><input id="indicator" value={value} onChange={(e) => setValue(e.target.value)} placeholder={mode === 'url' ? 'https://contoh.id' : '8.8.8.8 atau SHA-256'} autoComplete="off" spellCheck="false" /><button type="submit" disabled={!canSubmit}>{loading ? 'MENGECEK…' : 'CEK →'}</button></div>
+                  <small className="detected-type">TERDETEKSI / <strong>{indicator.label}</strong></small>
+                </div>
+              )}
+              <div className="lookup-options"><label className="checkbox"><input type="checkbox" checked={saveLocal} onChange={(e) => setSaveLocal(e.target.checked)} /> Simpan di perangkat</label><span>Tanpa submission otomatis</span></div>
+            </form>
+            {notice && <div className="notice" role="status">{notice}</div>}{!result && requestId && <p className="notice">ID: <code>{requestId}</code></p>}
+          </div>
         </div>
-        <form className="scan-form vt-form" onSubmit={submit}>
-          {mode === 'file' ? (
-            <div className="file-mode">
-              <label className="file-picker" htmlFor="indicator-file">
-                <span className="file-icon" aria-hidden="true">⌑</span>
-                <strong>{fileName || 'Pilih file untuk dihitung hash-nya'}</strong>
-                <small>File tetap di perangkat Anda. Hanya SHA-256 yang diperiksa.</small>
-                <b>{fileName ? 'GANTI FILE' : 'PILIH FILE'}</b>
-                <input id="indicator-file" type="file" onChange={selectFile} />
-              </label>
-              {value && <div className="file-ready"><span>SHA-256 siap</span><code>{value}</code><button type="submit" disabled={!canSubmit}>{loading ? 'MENGECEK…' : 'CEK HASH →'}</button></div>}
-            </div>
-          ) : (
-            <div className="direct-mode">
-              <label htmlFor="indicator">{mode === 'url' ? 'URL ATAU DOMAIN' : 'IP, DOMAIN, ATAU HASH'}</label>
-              <div className="search"><input id="indicator" value={value} onChange={(e) => setValue(e.target.value)} placeholder={mode === 'url' ? 'https://contoh.id' : 'Masukkan indikator'} autoComplete="off" spellCheck="false" autoFocus /><button type="submit" disabled={!canSubmit}>{loading ? 'MENGECEK…' : 'CEK →'}</button></div>
-              <small className="detected-type">Terdeteksi: <strong>{indicator.label}</strong></small>
-            </div>
-          )}
-          <div className="lookup-options"><label className="checkbox"><input type="checkbox" checked={saveLocal} onChange={(e) => setSaveLocal(e.target.checked)} /> Simpan hasil di perangkat</label><span>Tanpa submission otomatis</span></div>
-        </form>
-        {notice && <div className="notice" role="status">{notice}</div>}{!result && requestId && <p className="notice">ID: <code>{requestId}</code></p>}
+        <footer className="console-foot"><span>DATA MINIMAL</span><span>SUMBER TERBUKA</span><span>LANGKAH JELAS</span></footer>
       </div>
     </section>
 
