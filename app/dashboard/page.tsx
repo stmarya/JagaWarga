@@ -1,39 +1,22 @@
 'use client';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { addWatchlist, clearAllLocalData, clearHistory, exportLocalData, getHistory, getProgress, getWatchlist, LocalHistoryItem, removeWatchlist } from '@/lib/client/storage';
+import { ChangeEvent, useEffect, useState } from 'react';
+import { addWatchlist, clearAllLocalData, getHistory, getWatchlist, LocalHistoryItem, removeWatchlist } from '@/lib/client/storage';
 
 export default function Dashboard() {
-  const [history, setHistory] = useState<LocalHistoryItem[]>([]);
-  const [watchlist, setWatchlist] = useState<string[]>([]);
-  const [progress, setProgress] = useState({ xp: 0, badges: [] as string[] });
-  const refresh = () => { setHistory(getHistory()); setWatchlist(getWatchlist()); setProgress(getProgress()); };
-  useEffect(refresh, []);
-  function download() {
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(new Blob([exportLocalData()], { type: 'application/json' }));
-    link.href = url;
-    link.download = 'jagawarga-local-data.json'; link.click();
-    link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 0);
-  }
-  return <main className="page dashboard-page">
-    <Link href="/">← Beranda</Link>
-    <p className="eyebrow">DASHBOARD LOKAL</p>
-    <h1>Progress dan data Anda.</h1>
-    <div className="dashboard-summary">
-      <section className="panel stat-panel"><span>PROGRESS</span><h2>{progress.xp} XP</h2><p>Badge: {progress.badges.join(', ') || 'Belum ada'}</p></section>
-      <section className="panel stat-panel"><span>RIWAYAT</span><h2>{history.length}</h2><p>Pemeriksaan tersimpan di perangkat ini.</p></section>
-      <section className="panel stat-panel"><span>WATCHLIST</span><h2>{watchlist.length}</h2><p>Indikator yang sedang Anda pantau.</p></section>
+  const [history, setHistory] = useState<LocalHistoryItem[]>([]); const [watchlist, setWatchlist] = useState<string[]>([]);
+  const [fileName, setFileName] = useState(''); const [fileHash, setFileHash] = useState('');
+  const refresh = () => { setHistory(getHistory()); setWatchlist(getWatchlist()); }; useEffect(refresh, []);
+  async function selectFile(event: ChangeEvent<HTMLInputElement>) { const file = event.target.files?.[0]; if (!file) return; setFileName(file.name); const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer()); setFileHash([...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('')); }
+  return <main className="workspace">
+    <aside className="workspace-nav"><p className="workspace-user">DW<br /><small>RUANG LOKAL</small></p><Link className="active" href="/dashboard">▦ RINGKASAN</Link><Link href="/#scanner">⌕ CEK IOC</Link><Link href="/tools/file-hash">⇧ CEK FILE</Link><Link href="/emergency">! DARURAT</Link><button className="button-danger" onClick={() => { clearAllLocalData(); refresh(); }}>HAPUS DATA</button></aside>
+    <div className="workspace-main">
+      <header className="workspace-header"><div><p className="eyebrow">/// RUANG SAYA</p><h1>CEK. SIMPAN. PANTAU.</h1></div><Link className="button" href="/#scanner">+ CEK IOC</Link></header>
+      <section className="upload-panel"><div className="tool-tabs"><span className="active">⇧ FILE</span><Link href="/#scanner"># IOC</Link><Link href="/tools/message">↗ PESAN</Link></div><label className="dropzone" htmlFor="dashboard-file"><strong>{fileName || 'TARIK FILE KE SINI'}</strong><span>{fileHash ? 'HASH SIAP — salin untuk dicek' : 'atau klik untuk memilih · diproses lokal'}</span><b>{fileHash ? fileHash : 'PILIH FILE'}</b><input id="dashboard-file" type="file" onChange={selectFile} /></label></section>
+      <section className="activity-panel"><div className="section-heading"><div><p className="eyebrow">/// AKTIVITAS</p><h2>HASIL TERBARU</h2></div><span>{history.length} TERSIMPAN</span></div>
+        {history.length ? <div className="activity-table"><div className="table-head"><span>INDIKATOR</span><span>HASIL</span><span>WAKTU</span><span>AKSI</span></div>{history.map((item) => <article key={item.id}><div><strong>{item.displayValue}</strong><small>{item.type.toUpperCase()}</small></div><span className={`verdict-label verdict-${item.verdict}`}>{item.verdict.replace('-', ' ').toUpperCase()}</span><time>{new Date(item.checkedAt).toLocaleString('id-ID')}</time><button className="button-muted" onClick={() => { addWatchlist(item.displayValue); refresh(); }}>PANTAU</button></article>)}</div> : <div className="empty-state"><strong>BELUM ADA HASIL</strong><p>Simpan hasil cek IoC untuk melihatnya di sini.</p><Link className="button" href="/#scanner">CEK SEKARANG →</Link></div>}
+      </section>
+      <section className="watchlist-panel panel"><div className="section-heading"><div><p className="eyebrow">/// WATCHLIST</p><h2>DIPANTAU</h2></div></div>{watchlist.length ? <ul>{watchlist.map((item) => <li key={item}><span>{item}</span><button className="button-danger" onClick={() => { removeWatchlist(item); refresh(); }}>HAPUS</button></li>)}</ul> : <p>Belum ada indikator.</p>}</section>
     </div>
-    <section className="panel privacy-panel">
-      <div><p className="eyebrow">KONTROL PRIVASI</p><h2>Data tetap di perangkat Anda.</h2><p>Ekspor salinan atau hapus data lokal kapan saja.</p></div>
-      <div className="panel-actions"><button onClick={download}>Ekspor data</button><button className="button-muted" onClick={() => { clearHistory(); refresh(); }}>Hapus riwayat</button><button className="button-danger" onClick={() => { clearAllLocalData(); refresh(); }}>Hapus semua</button></div>
-    </section>
-    <section className="panel history-panel">
-      <div className="section-heading"><div><p className="eyebrow">AKTIVITAS TERBARU</p><h2>Riwayat pemeriksaan</h2></div><Link href="/#scanner">Pemeriksaan baru →</Link></div>
-      {history.length ? <div className="history-list">{history.map((item) => <article key={item.id}><div className="history-main"><span className={`verdict-dot verdict-${item.verdict}`} aria-hidden="true" /><div><strong>{item.displayValue}</strong><small>{item.type} · {new Date(item.checkedAt).toLocaleString('id-ID')}</small></div></div><span className={`verdict-label verdict-${item.verdict}`}>{item.verdict}</span><button className="button-muted" onClick={() => { addWatchlist(item.displayValue); refresh(); }}>Pantau</button></article>)}</div> : <div className="empty-state"><strong>Belum ada riwayat</strong><p>Aktifkan “Simpan di perangkat ini” saat melakukan pemeriksaan.</p><Link className="button button-secondary" href="/#scanner">Mulai pemeriksaan</Link></div>}
-    </section>
-    <section className="panel watchlist-panel"><div className="section-heading"><div><p className="eyebrow">PEMANTAUAN</p><h2>Watchlist lokal</h2></div></div>{watchlist.length ? <ul>{watchlist.map((item) => <li key={item}><span>{item}</span><button className="button-danger" onClick={() => { removeWatchlist(item); refresh(); }}>Hapus</button></li>)}</ul> : <p>Belum ada indikator yang dipantau.</p>}</section>
   </main>;
 }

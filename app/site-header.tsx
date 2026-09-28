@@ -5,25 +5,15 @@ export function SiteHeader() {
     <header className="site-header">
       <nav className="site-nav" aria-label="Navigasi utama">
         <Link className="wordmark" href="/" aria-label="JagaWarga, beranda">
-          <span className="wordmark-mark" aria-hidden="true">
-            <i />
-            <i />
-            <i />
-          </span>
-          <span>
-            <strong>JagaWarga</strong>
-            <small>Keamanan digital bersama</small>
-          </span>
+          <span className="wordmark-mark" aria-hidden="true">JW</span>
+          <span><strong>JAGA/WARGA</strong><small>cek sebelum klik</small></span>
         </Link>
         <div className="nav-links">
-          <Link href="/tools">Alat keamanan</Link>
-          <Link href="/dashboard">Aktivitas</Link>
-          <Link href="/status">Status sistem</Link>
+          <Link href="/#scanner">Cek IoC</Link>
+          <Link href="/tools/file-hash">Cek file</Link>
+          <Link href="/dashboard">Ruang saya</Link>
         </div>
-        <Link className="nav-emergency" href="/emergency">
-          <span aria-hidden="true">!</span>
-          Bantuan darurat
-        </Link>
+        <Link className="nav-emergency" href="/emergency"><span aria-hidden="true">!</span> Darurat</Link>
       </nav>
     </header>
   );
@@ -32,17 +22,11 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className="site-footer">
-      <div>
-        <strong>JagaWarga</strong>
-        <p>Alat bantu keamanan digital yang transparan dan mengutamakan privasi.</p>
-      </div>
+      <div><strong>JAGA/WARGA</strong><p>Cek sinyal ancaman. Ambil langkah aman.</p></div>
       <nav aria-label="Tautan informasi">
-        <Link href="/methodology">Metodologi</Link>
-        <Link href="/transparency">Transparansi</Link>
-        <Link href="/privacy">Privasi</Link>
-        <Link href="/support">Dukungan</Link>
+        <Link href="/methodology">Metode</Link><Link href="/privacy">Privasi</Link><Link href="/status">Status</Link><Link href="/support">Bantuan</Link>
       </nav>
-      <p className="footer-caution">Belum ada indikasi berbahaya bukan berarti 100% aman.</p>
+      <p className="footer-caution">Hasil “bersih” bukan jaminan 100% aman.</p>
     </footer>
   );
 }
