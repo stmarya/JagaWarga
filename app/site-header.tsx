@@ -17,10 +17,6 @@ export function SiteHeader() {
             <small>Pusat Cek Digital</small>
           </span>
         </Link>
-        <span className="system-live-pill" aria-label="Status sistem: Siaga">
-          <span className="live-dot" aria-hidden="true" />
-          <span>Sistem Siaga</span>
-        </span>
         <div className="nav-links">
           <Link className={pathname === '/' ? 'active' : ''} href="/#scanner">Mulai Cek</Link>
           <Link className={pathname.startsWith('/dashboard') ? 'active' : ''} href="/dashboard">Riwayat</Link>

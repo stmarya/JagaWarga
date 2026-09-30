@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
 import { Icon, type IconName } from '@/components/icon';
 import { ProgressBreadcrumb } from '@/components/page-navigation';
+import { severityFor } from '@/lib/security/severity-policy';
 
 type Evidence = {
   provider: string;
@@ -29,14 +30,6 @@ type Result = {
   reasonCodes?: string[];
   actions?: string[];
 };
-
-function severityFor(result: Result) {
-  if (result.verdict === 'insufficient-data') return { level: 'unknown', label: 'Belum dapat dinilai', answer: 'Jangan anggap aman', summary: 'Data belum cukup. Hindari tindakan penting sampai pemeriksaan dapat diulang.', tone: 'neutral' };
-  if (result.risk >= 70 || ['high-risk', 'phishing'].includes(result.verdict)) return { level: 'critical', label: 'Bahaya tinggi', answer: 'Tidak aman', summary: 'Sinyal ancaman kuat ditemukan. Jangan lanjutkan interaksi.', tone: 'danger' };
-  if (result.risk >= 40 || result.verdict === 'suspicious') return { level: 'warning', label: 'Perlu waspada', answer: 'Berpotensi tidak aman', summary: 'Ada tanda mencurigakan. Verifikasi sebelum membuka, membalas, atau membayar.', tone: 'warning' };
-  if (result.risk >= 15) return { level: 'caution', label: 'Perlu perhatian', answer: 'Belum tentu aman', summary: 'Belum ada ancaman kuat, tetapi beberapa sinyal masih perlu diperiksa.', tone: 'caution' };
-  return { level: 'low', label: 'Risiko rendah', answer: 'Belum ada tanda bahaya', summary: 'Belum ditemukan sinyal berbahaya. Tetap periksa pengirim dan tujuan.', tone: 'safe' };
-}
 
 const reasonLabels: Record<string, string> = {
   VT_MULTIPLE_MALICIOUS_DETECTIONS: 'Beberapa mesin keamanan mendeteksi ancaman.',
