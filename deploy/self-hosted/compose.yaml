@@ -2,7 +2,8 @@ services:
   proxy:
     image: caddy:2.10-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d
     environment:
-      PUBLIC_HOST: ${PUBLIC_HOST:?Set PUBLIC_HOST}
+      PUBLIC_HOST: ${PUBLIC_HOST:-jagawarga.cloud}
+      CADDY_DOMAINS: ${CADDY_DOMAINS:-${PUBLIC_HOST:-jagawarga.cloud}}
       ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL}
     ports:
       - "80:80"
@@ -23,12 +24,15 @@ services:
     networks: [edge]
 
   app:
-    image: ${IMAGE_REF:?Set immutable IMAGE_REF}
+    image: ${IMAGE_REF:-jagawarga:0.13.0-rc.4}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
     environment:
       NODE_ENV: production
-      APP_VERSION: ${APP_VERSION:-0.13.0-rc.2}
-      APP_IMAGE_DIGEST: ${APP_IMAGE_DIGEST:?Set APP_IMAGE_DIGEST}
-      APP_URL: https://${PUBLIC_HOST:?Set PUBLIC_HOST}
+      APP_VERSION: ${APP_VERSION:-0.13.0-rc.4}
+      APP_IMAGE_DIGEST: ${APP_IMAGE_DIGEST:-sha256:build}
+      APP_URL: https://${PUBLIC_HOST:-jagawarga.cloud}
       ADMIN_METRICS_TOKEN: ${ADMIN_METRICS_TOKEN:?Set ADMIN_METRICS_TOKEN}
       REDIS_URL: redis://redis:6379
       RUNTIME_TOPOLOGY: distributed
@@ -39,6 +43,9 @@ services:
       FEATURE_PREMIUM_PROVIDERS: ${FEATURE_PREMIUM_PROVIDERS:-false}
       VIRUSTOTAL_API_KEYS: ${VIRUSTOTAL_API_KEYS:-}
       VIRUSTOTAL_API_KEY: ${VIRUSTOTAL_API_KEY:-}
+      GROQ_API_KEYS: ${GROQ_API_KEYS:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-120b}
       FEATURE_EXTERNAL_NOTIFICATIONS: "false"
       FEATURE_ORGANIZATION_WORKSPACES: "false"
       DISABLE_CLOUDFLARE_DNS: ${DISABLE_CLOUDFLARE_DNS:-false}

@@ -19,14 +19,19 @@ if (!/^[a-z0-9.-]+$/i.test(values.PUBLIC_HOST || '') || !(values.PUBLIC_HOST || 
   errors.push('PUBLIC_HOST must be a DNS hostname');
 }
 if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(values.ACME_EMAIL || '')) errors.push('ACME_EMAIL is invalid');
-if (!/^ghcr\.io\/stmarya\/jagawarga@sha256:[a-f0-9]{64}$/.test(values.IMAGE_REF || '')) {
-  errors.push('IMAGE_REF must be the immutable GHCR sha256 digest');
-}
-if (!/^sha256:[a-f0-9]{64}$/.test(values.APP_IMAGE_DIGEST || '')) {
-  errors.push('APP_IMAGE_DIGEST must be a sha256 digest');
-}
-if (values.IMAGE_REF && values.APP_IMAGE_DIGEST && !values.IMAGE_REF.endsWith(`@${values.APP_IMAGE_DIGEST}`)) {
-  errors.push('APP_IMAGE_DIGEST must match IMAGE_REF');
+const isGhcr = (values.IMAGE_REF || '').startsWith('ghcr.io/');
+if (isGhcr) {
+  if (!/^ghcr\.io\/stmarya\/jagawarga@sha256:[a-f0-9]{64}$/.test(values.IMAGE_REF || '')) {
+    errors.push('IMAGE_REF must be the immutable GHCR sha256 digest');
+  }
+  if (!/^sha256:[a-f0-9]{64}$/.test(values.APP_IMAGE_DIGEST || '')) {
+    errors.push('APP_IMAGE_DIGEST must be a sha256 digest');
+  }
+  if (values.IMAGE_REF && values.APP_IMAGE_DIGEST && !values.IMAGE_REF.endsWith(`@${values.APP_IMAGE_DIGEST}`)) {
+    errors.push('APP_IMAGE_DIGEST must match IMAGE_REF');
+  }
+} else if (!values.IMAGE_REF) {
+  errors.push('IMAGE_REF is required');
 }
 if ((values.ADMIN_METRICS_TOKEN || '').length < 32) errors.push('ADMIN_METRICS_TOKEN is too short');
 

@@ -2,8 +2,15 @@ import { spawnSync } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
+import { existsSync } from 'node:fs';
+
+const bashCmd = process.platform === 'win32' && existsSync('C:\\Program Files\\Git\\bin\\bash.exe')
+  ? 'C:\\Program Files\\Git\\bin\\bash.exe'
+  : 'bash';
+
 function run(command, args, env = {}) {
-  return spawnSync(command, args, {
+  const actualCmd = command === 'bash' ? bashCmd : command;
+  return spawnSync(actualCmd, args, {
     cwd: process.cwd(),
     env: { ...process.env, ...env },
     encoding: 'utf8',
