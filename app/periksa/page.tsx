@@ -38,7 +38,8 @@ export default function ScannerPage() {
     const shared = params.get('ioc') ?? [params.get('url'), params.get('text'), params.get('title')].filter(Boolean).join('\n').trim();
     if (shared) {
       setValue(shared);
-      setInputMode(shared.includes('http') ? 'link' : 'message');
+      const classified = classifySmartInput(shared);
+      setInputMode(classified.endpoint === 'lookup' ? 'link' : 'message');
       window.setTimeout(() => document.getElementById('scanner')?.scrollIntoView({ behavior: 'smooth' }), 50);
     }
   }, []);
@@ -122,11 +123,12 @@ export default function ScannerPage() {
         : indicator.endpoint === 'email-header'
           ? '/api/analyze/email-header'
           : '/api/lookups';
+      const indicatorPayload = indicator.normalized ?? value;
       const body = indicator.endpoint === 'message'
         ? { text: value }
         : indicator.endpoint === 'email-header'
           ? { headers: value }
-          : { indicator: value };
+          : { indicator: indicatorPayload };
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -208,7 +210,7 @@ export default function ScannerPage() {
                 className="ioc-input"
                 value={value}
                 onChange={(event) => { setValue(event.target.value); setFileName(''); }}
-                placeholder="https://contoh.id, domain, IP, atau hash SHA-256"
+                placeholder="https://contoh.id, domain, IP, atau hash SHA-256 / MD5"
                 autoComplete="off"
                 spellCheck="false"
               />}
@@ -222,7 +224,10 @@ export default function ScannerPage() {
               <Icon name="upload" size={32} />
               <strong>{fileName || 'Pilih berkas untuk dihitung hash-nya'}</strong>
               <p>APK, dokumen, arsip, dan berkas lain diproses lokal. Isi berkas tidak diunggah.</p>
-              <button type="button" onClick={() => fileInput.current?.click()}><Icon name="file" /> {fileName ? 'Ganti berkas' : 'Pilih berkas'}</button>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <button type="button" onClick={() => fileInput.current?.click()}><Icon name="file" /> {fileName ? 'Ganti berkas' : 'Pilih berkas'}</button>
+                <button type="button" className="secondary-action" onClick={() => chooseMode('link')}><Icon name="hash" /> Tempel teks hash</button>
+              </div>
               <input ref={fileInput} type="file" onChange={selectFile} hidden />
             </div>}
 

@@ -118,6 +118,25 @@ function contextualFindings(result: Result, reasons: string[]) {
     if (!evidence.details || evidence.provider !== 'virustotal') continue;
     const attributes = evidence.details.attributes as Record<string, unknown> | undefined;
     const stats = attributes?.last_analysis_stats as Record<string, number> | undefined;
+    const threatClass = attributes?.popular_threat_classification as { suggested_threat_label?: string } | undefined;
+    const meaningfulName = attributes?.meaningful_name as string | undefined;
+
+    if (threatClass?.suggested_threat_label) {
+      findings.unshift({
+        code: 'THREAT_FAMILY',
+        title: `Keluarga Ancaman: ${threatClass.suggested_threat_label}`,
+        detail: 'Label klasifikasi ancaman berdasarkan konsensus intelijen keamanan global.',
+        level: 'high',
+      });
+    }
+    if (meaningfulName) {
+      findings.unshift({
+        code: 'DETECTED_FILENAME',
+        title: `Nama Berkas: ${meaningfulName}`,
+        detail: 'Nama berkas yang terasosiasi dengan sidik jari ini di jaringan keamanan.',
+        level: 'medium',
+      });
+    }
     if (stats && (stats.malicious || stats.suspicious)) {
       findings.unshift({
         code: 'REPUTATION_SUMMARY',
@@ -127,7 +146,7 @@ function contextualFindings(result: Result, reasons: string[]) {
       });
     }
   }
-  return findings.slice(0, 6);
+  return findings.slice(0, 8);
 }
 
 export default function ResultPage() {

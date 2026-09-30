@@ -34,8 +34,10 @@ export function canonicalizeIndicator(raw: string): CanonicalIndicator {
   const detected = classifyInput(raw);
   if (detected.type === 'unknown') throw new Error('INDICATOR_UNSUPPORTED');
 
+  const cleanVal = detected.normalized ?? raw.trim();
+
   if (detected.type === 'url') {
-    const parsed = new URL(raw.trim());
+    const parsed = new URL(cleanVal);
     if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('URL_PROTOCOL_UNSUPPORTED');
     if (parsed.username || parsed.password) throw new Error('URL_CREDENTIALS_NOT_ALLOWED');
     const hostname = parsed.hostname.replace(/^\[|\]$/g, '');
@@ -49,15 +51,15 @@ export function canonicalizeIndicator(raw: string): CanonicalIndicator {
   }
 
   if (detected.type === 'domain') {
-    const value = canonicalDomain(raw.trim());
+    const value = canonicalDomain(cleanVal);
     return { type: 'domain', value, displayValue: value };
   }
 
   if (detected.type === 'ipv4' || detected.type === 'ipv6') {
-    const value = assertPublicIp(raw.trim());
+    const value = assertPublicIp(cleanVal);
     return { type: detected.type, value, displayValue: value };
   }
 
-  const value = raw.trim().toLowerCase();
+  const value = cleanVal.toLowerCase();
   return { type: 'hash', value, displayValue: value };
 }
