@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { classifySmartInput } from '@/lib/input';
 import { addHistory, addXp } from '@/lib/client/storage';
 import { Icon } from '@/components/icon';
+import { TourTriggerButton } from '@/components/orientation-tour';
 
 type BarcodeDetectorType = new (options: { formats: string[] }) => {
   detect(source: ImageBitmap): Promise<Array<{ rawValue: string }>>;
@@ -180,6 +181,7 @@ export default function Home() {
       <section className="scanner-card" id="scanner">
         <div className="scanner-card-head">
           <span>CHECKPOINT / 01</span>
+          <TourTriggerButton className="scanner-tour-pill" label="Panduan Mulai" />
           <span className="system-ok">● SISTEM AKTIF</span>
         </div>
         <div className="scanner-card-body">

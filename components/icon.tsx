@@ -2,7 +2,7 @@ import type { SVGProps } from 'react';
 
 export type IconName =
   | 'alert' | 'arrow' | 'book' | 'camera' | 'check' | 'clipboard' | 'close'
-  | 'device' | 'email' | 'file' | 'hash' | 'key' | 'link' | 'message'
+  | 'compass' | 'device' | 'email' | 'file' | 'hash' | 'help' | 'key' | 'link' | 'message'
   | 'network' | 'privacy' | 'qr' | 'search' | 'share' | 'shield'
   | 'spark' | 'transaction' | 'upload' | 'users' | 'work';
 
@@ -14,10 +14,12 @@ const paths: Record<IconName, React.ReactNode> = {
   check: <path d="m5 12 4 4L19 6"/>,
   clipboard: <><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3h6v1.5M8 10h8m-8 4h8"/></>,
   close: <path d="m6 6 12 12M18 6 6 18"/>,
+  compass: <><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></>,
   device: <><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M10 18h4"/></>,
   email: <><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></>,
   file: <><path d="M6 2h8l4 4v16H6V2Z"/><path d="M14 2v5h5"/></>,
   hash: <path d="M9 3 7 21m10-18-2 18M4 9h16M3 15h16"/>,
+  help: <><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01"/></>,
   key: <><circle cx="8" cy="15" r="4"/><path d="m11 12 8-8m-3 3 3 3"/></>,
   link: <><path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.1-1.1"/></>,
   message: <path d="M4 4h16v12H8l-4 4V4Z"/>,
