@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Icon } from '@/components/icon';
-import { TourTriggerButton } from '@/components/orientation-tour';
 
 export function SiteHeader() {
   const pathname = usePathname() || '/';
@@ -24,7 +23,6 @@ export function SiteHeader() {
           <Link className={pathname.startsWith('/education') ? 'active' : ''} href="/education">Edukasi</Link>
           <Link className={pathname.startsWith('/tools') ? 'active' : ''} href="/tools">Alat Bantu</Link>
         </div>
-        <TourTriggerButton className="nav-tour-btn" label="Panduan" />
         <Link className={`nav-emergency ${pathname.startsWith('/emergency') ? 'active' : ''}`} href="/emergency" title="Panduan jika sudah terlanjur klik atau transfer">
           <span className="emergency-icon" aria-hidden="true">!</span>
           <span>Darurat</span>
@@ -52,7 +50,6 @@ export function SiteFooter() {
           <Link href="/dashboard">Riwayat komunitas</Link>
           <Link href="/education">Belajar keamanan</Link>
           <Link href="/tools">Alat bantu</Link>
-          <TourTriggerButton className="footer-tour-btn" label="Tur orientasi" />
         </nav>
         <div className="footer-report-column">
           <strong>Laporkan ancaman</strong>

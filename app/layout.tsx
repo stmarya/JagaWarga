@@ -5,7 +5,6 @@ import { ServiceWorkerRegister } from './sw-register';
 import { SiteFooter, SiteHeader } from './site-header';
 import { ScrollToTop } from '@/components/page-navigation';
 import { AiAssistant } from '@/components/ai-assistant';
-import { OrientationTour } from '@/components/orientation-tour';
 
 export const metadata: Metadata = {
   title: 'JagaWarga — Cek sebelum klik',
@@ -22,7 +21,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <div id="main-content">{children}</div>
         <ScrollToTop />
         <AiAssistant />
-        <OrientationTour />
         <SiteFooter />
       </body>
     </html>
