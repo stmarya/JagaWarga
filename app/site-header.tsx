@@ -18,7 +18,7 @@ export function SiteHeader() {
           </span>
         </Link>
         <div className="nav-links">
-          <Link className={pathname === '/' ? 'active' : ''} href="/#scanner">Mulai Cek</Link>
+          <Link className={pathname.startsWith('/periksa') || pathname.startsWith('/scan') ? 'active' : ''} href="/periksa">Mulai Cek</Link>
           <Link className={pathname.startsWith('/dashboard') ? 'active' : ''} href="/dashboard">Riwayat</Link>
           <Link className={pathname.startsWith('/education') ? 'active' : ''} href="/education">Edukasi</Link>
           <Link className={pathname.startsWith('/tools') ? 'active' : ''} href="/tools">Alat Bantu</Link>
@@ -46,7 +46,7 @@ export function SiteFooter() {
         </div>
         <nav aria-label="Jelajahi JagaWarga">
           <strong>Jelajahi</strong>
-          <Link href="/#scanner">Mulai periksa</Link>
+          <Link href="/periksa">Mulai periksa</Link>
           <Link href="/dashboard">Riwayat komunitas</Link>
           <Link href="/education">Belajar keamanan</Link>
           <Link href="/tools">Alat bantu</Link>

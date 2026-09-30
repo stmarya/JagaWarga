@@ -10,7 +10,7 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: '#14231d',
     lang: 'id',
     share_target: {
-      action: '/?share-target=1',
+      action: '/periksa?share-target=1',
       method: 'GET',
       enctype: 'application/x-www-form-urlencoded',
       params: {
