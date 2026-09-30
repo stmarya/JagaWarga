@@ -260,7 +260,7 @@ export default function ResultPage() {
         {feedback && <p className="feedback-response" role="status">{feedback}</p>}
       </section>
 
-      <button className="floating-share" type="button" onClick={shareResult} aria-label="Bagikan hasil pemeriksaan"><Icon name="share" size={22} /><span>Bagikan</span></button>
+      <button className="floating-share" type="button" onClick={shareResult} aria-label="Bagikan hasil pemeriksaan" title="Bagikan hasil pemeriksaan"><Icon name="share" size={20} /><span className="sr-only">Bagikan</span></button>
     </main>
   );
 }

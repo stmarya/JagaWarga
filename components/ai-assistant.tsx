@@ -169,8 +169,10 @@ export function AiAssistant() {
   }
 
   return <aside className="ai-assistant-wrapper no-print" aria-label="Pendamping keamanan digital">
-    {!isOpen && <button ref={launcherRef} type="button" className="ai-fab-btn" onClick={() => setIsOpen(true)} aria-label="Buka pendamping keamanan digital">
-      <span className="ai-brand-mark" aria-hidden="true">JW</span><span><b>Tanya JagaWarga</b><small>Pendamping keamanan</small></span>
+    {!isOpen && <button ref={launcherRef} type="button" className="ai-fab-btn" onClick={() => setIsOpen(true)} aria-label="Buka pendamping keamanan digital" title="Tanya JagaWarga — Pendamping Keamanan">
+      <span className="ai-brand-mark" aria-hidden="true">JW</span>
+      <span className="ai-live-pulse-dot" aria-hidden="true" />
+      <span className="sr-only">Tanya JagaWarga — Pendamping Keamanan</span>
     </button>}
     {isOpen && <div ref={dialogRef} className="ai-chat-window" role="dialog" aria-modal="true" aria-labelledby="ai-chat-title">
       <header className="ai-chat-header"><div className="ai-chat-title-group"><span className="ai-brand-mark" aria-hidden="true">JW</span><div><strong id="ai-chat-title">Pendamping JagaWarga</strong><span>{pageLabel(pathname)}</span></div></div><button type="button" className="ai-chat-close-btn" onClick={close}>Tutup</button></header>

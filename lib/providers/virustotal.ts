@@ -85,7 +85,10 @@ function resource(indicator: CanonicalIndicator) {
   return { api: `ip_addresses/${encodeURIComponent(indicator.value)}`, gui: `ip-address/${encodeURIComponent(indicator.value)}` };
 }
 
-function normalize(stats: Stats): { verdict: EvidenceVerdict; confidence: number; reasons: string[] } {
+function normalize(
+  stats: Stats,
+  attributes?: VirusTotalResponse['data'] extends { attributes?: infer A } ? A : Record<string, unknown>,
+): { verdict: EvidenceVerdict; confidence: number; reasons: string[] } {
   const malicious = Math.max(0, stats.malicious ?? 0);
   const suspicious = Math.max(0, stats.suspicious ?? 0);
   const harmless = Math.max(0, stats.harmless ?? 0);
@@ -93,20 +96,48 @@ function normalize(stats: Stats): { verdict: EvidenceVerdict; confidence: number
   const total = malicious + suspicious + harmless + undetected + Math.max(0, stats.timeout ?? 0);
   const ratio = total ? malicious / total : 0;
 
-  if (malicious >= 2 || ratio >= 0.05) {
+  // Check popularity and reputation to filter false-positives on globally recognized domains
+  const popRanks = ((attributes as Record<string, unknown> | undefined)?.popularity_ranks ?? {}) as Record<string, { rank?: number }>;
+  const rankValues = Object.values(popRanks).map((r) => r?.rank).filter((r): r is number => typeof r === 'number' && r > 0);
+  const bestRank = rankValues.length ? Math.min(...rankValues) : Infinity;
+  const isTopRanked = Number.isFinite(bestRank) && bestRank <= 100_000;
+  const reputation = (attributes as { reputation?: number } | undefined)?.reputation ?? 0;
+  const isHighReputation = reputation >= 50 || isTopRanked;
+
+  // Case A: Highly reputable or top-ranked domain with isolated false flags (e.g. 1-2 engines out of 60+ harmless)
+  if (isHighReputation && harmless >= 15 && malicious <= 3 && ratio < 0.05) {
+    return {
+      verdict: 'benign',
+      confidence: 0.9,
+      reasons: ['VT_POPULAR_TRUSTED_DOMAIN', 'VT_NO_NEGATIVE_DETECTIONS'],
+    };
+  }
+
+  // Case B: High threshold for declaring "malicious":
+  // In large scanner pools (total >= 40), 2 flags can easily be false positives.
+  // We require either malicious >= 4, or (malicious >= 3 with ratio >= 0.05), or ratio >= 0.08.
+  // For small engine pools (total < 40), malicious >= 2 is sufficient.
+  const isConfirmedMalicious = total >= 40
+    ? (malicious >= 4 || (malicious >= 3 && ratio >= 0.05) || ratio >= 0.08)
+    : (malicious >= 2 || ratio >= 0.05);
+
+  if (isConfirmedMalicious) {
     return {
       verdict: 'malicious',
       confidence: Math.min(0.98, 0.8 + ratio),
       reasons: ['VT_MULTIPLE_MALICIOUS_DETECTIONS'],
     };
   }
-  if (malicious === 1 || suspicious > 0) {
+
+  // Case C: Suspicious / low flag count (1 to 3 detections or suspicious flags)
+  if (malicious > 0 || suspicious > 0) {
     return {
       verdict: 'suspicious',
-      confidence: 0.65,
-      reasons: [malicious ? 'VT_SINGLE_MALICIOUS_DETECTION' : 'VT_SUSPICIOUS_DETECTION'],
+      confidence: 0.6,
+      reasons: [malicious ? 'VT_FEW_MALICIOUS_DETECTIONS' : 'VT_SUSPICIOUS_DETECTION'],
     };
   }
+
   if (harmless > 0) {
     return {
       verdict: 'benign',
@@ -168,7 +199,7 @@ export class VirusTotalAdapter implements ProviderAdapter {
           submissionOccurred: false,
         };
       }
-      const result = normalize(attributes.last_analysis_stats);
+      const result = normalize(attributes.last_analysis_stats, attributes);
       return {
         provider: this.name,
         verdict: result.verdict,

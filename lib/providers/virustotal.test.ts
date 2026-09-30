@@ -78,4 +78,19 @@ describe('VirusTotalAdapter', () => {
     await adapter.lookup(canonicalizeIndicator('example.org'), signal);
     expect(['pool-key-1', 'pool-key-2']).toContain(suppliedKey);
   });
+
+  it('classifies globally popular domains with isolated false-positive detections as benign', async () => {
+    const adapter = new VirusTotalAdapter('test-key', async () => ({
+      data: {
+        attributes: {
+          last_analysis_stats: { malicious: 2, suspicious: 0, harmless: 62, undetected: 27 },
+          reputation: 725,
+          popularity_ranks: { Majestic: { rank: 1 } },
+        },
+      },
+    }));
+    const evidence = await adapter.lookup(canonicalizeIndicator('google.com'), signal);
+    expect(evidence.verdict).toBe('benign');
+    expect(evidence.reasonCodes).toContain('VT_POPULAR_TRUSTED_DOMAIN');
+  });
 });
