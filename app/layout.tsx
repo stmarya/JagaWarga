@@ -7,8 +7,8 @@ import { ScrollToTop } from '@/components/page-navigation';
 import { AiAssistant } from '@/components/ai-assistant';
 
 export const metadata: Metadata = {
-  title: 'JagaWarga — Cek sebelum klik',
-  description: 'Security lookup dan awareness untuk pengguna awam.',
+  title: 'JagaWarga — Periksa sebelum bertindak',
+  description: 'Periksa tautan, pesan, berkas, dan kode QR yang mencurigakan. Pahami risikonya dengan bahasa sederhana lalu ambil langkah yang aman.',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
