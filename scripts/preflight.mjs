@@ -29,7 +29,15 @@ if (!live.response.ok || live.body.status !== 'alive') throw new Error('Liveness
 const ready = await json('/api/ready');
 if (!ready.response.ok || ready.body.status !== 'ready') throw new Error('Readiness failed');
 if (ready.body.warnings?.length) {
-  throw new Error(`Provider configuration warnings: ${ready.body.warnings.map((item) => `${item.name}:${item.reason}`).join(', ')}`);
+  const hints = {
+    'virustotal:missing-key': 'FEATURE_PREMIUM_PROVIDERS aktif tetapi VIRUSTOTAL_API_KEY belum diisi atau kosong',
+  };
+  const formattedWarnings = ready.body.warnings.map((item) => {
+    const key = `${item.name}:${item.reason}`;
+    const hint = hints[key];
+    return hint ? `${key} (${hint})` : key;
+  }).join(', ');
+  throw new Error(`Provider configuration warnings: ${formattedWarnings}`);
 }
 if (process.env.REQUIRE_REPUTATION_PROVIDER === 'true') {
   const reputationReady = ready.body.providerDiagnostics?.some((provider) => provider.kind === 'reputation' && provider.status === 'enabled');

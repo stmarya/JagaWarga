@@ -7,7 +7,6 @@ const defaults = () => ({
   APP_PORT: '3000',
   ADMIN_METRICS_TOKEN: randomBytes(32).toString('base64url'),
   FEATURE_PREMIUM_PROVIDERS: 'false',
-  VIRUSTOTAL_API_KEYS: '',
   VIRUSTOTAL_API_KEY: '',
 });
 
@@ -17,7 +16,13 @@ try {
   const present = new Set(
     current.split(/\r?\n/).filter((line) => line && !line.startsWith('#') && line.includes('=')).map((line) => line.slice(0, line.indexOf('='))),
   );
-  const missing = Object.entries(variables).filter(([key]) => !present.has(key));
+  const hasVtConfig = present.has('VIRUSTOTAL_API_KEY') || present.has('VIRUSTOTAL_API_KEYS');
+  const missing = Object.entries(variables).filter(([key]) => {
+    if ((key === 'VIRUSTOTAL_API_KEY' || key === 'VIRUSTOTAL_API_KEYS') && hasVtConfig) {
+      return false;
+    }
+    return !present.has(key);
+  });
   if (!missing.length) {
     await chmod(path, 0o600);
     console.log(`${path} is complete; leaving values unchanged.`);

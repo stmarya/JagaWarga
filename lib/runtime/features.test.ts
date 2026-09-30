@@ -32,4 +32,17 @@ describe('feature governance', () => {
       reason: 'configured-key-pool',
     });
   });
+  it('falls back to VIRUSTOTAL_API_KEY when VIRUSTOTAL_API_KEYS is empty or whitespace', () => {
+    const env: NodeJS.ProcessEnv = {
+      NODE_ENV: 'test',
+      FEATURE_PREMIUM_PROVIDERS: 'true',
+      VIRUSTOTAL_API_KEYS: '   ',
+      VIRUSTOTAL_API_KEY: 'fallback-key',
+    };
+    expect(virusTotalApiKeys(env)).toEqual(['fallback-key']);
+    expect(providerDiagnostics(env).find((provider) => provider.name === 'virustotal')).toMatchObject({
+      status: 'enabled',
+      reason: 'configured',
+    });
+  });
 });

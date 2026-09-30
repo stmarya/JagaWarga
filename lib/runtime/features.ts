@@ -12,7 +12,7 @@ function enabled(value: string | undefined) {
 }
 
 export function virusTotalApiKeys(env: NodeJS.ProcessEnv = process.env) {
-  const pool = env.VIRUSTOTAL_API_KEYS || env.VIRUSTOTAL_API_KEY || '';
+  const pool = env.VIRUSTOTAL_API_KEYS?.trim() || env.VIRUSTOTAL_API_KEY?.trim() || '';
   return [...new Set(pool.split(/[\r\n,]+/).map((key) => key.trim()).filter(Boolean))];
 }
 
