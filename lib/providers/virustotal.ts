@@ -16,9 +16,37 @@ type Stats = {
 
 type VirusTotalResponse = {
   data?: {
+    id?: string;
+    type?: string;
     attributes?: {
       last_analysis_stats?: Stats;
       last_analysis_date?: number;
+      last_analysis_results?: Record<string, {
+        category?: string;
+        engine_name?: string;
+        engine_version?: string | null;
+        result?: string | null;
+        method?: string;
+        engine_update?: string;
+      }>;
+      reputation?: number;
+      total_votes?: { harmless?: number; malicious?: number };
+      tags?: string[];
+      categories?: Record<string, string>;
+      names?: string[];
+      meaningful_name?: string;
+      type_description?: string;
+      size?: number;
+      first_submission_date?: number;
+      last_submission_date?: number;
+      times_submitted?: number;
+      creation_date?: number;
+      registrar?: string;
+      country?: string;
+      as_owner?: string;
+      network?: string;
+      last_https_certificate_date?: number;
+      [key: string]: unknown;
     };
   };
 };
@@ -132,6 +160,11 @@ export class VirusTotalAdapter implements ProviderAdapter {
           fetchedAt,
           reasonCodes: ['VT_NO_ANALYSIS'],
           sourceUrl: `https://www.virustotal.com/gui/${path.gui}`,
+          details: {
+            resourceId: response.data?.id ?? null,
+            resourceType: response.data?.type ?? null,
+            attributes: attributes ?? {},
+          },
           submissionOccurred: false,
         };
       }
@@ -146,6 +179,11 @@ export class VirusTotalAdapter implements ProviderAdapter {
         fetchedAt,
         reasonCodes: result.reasons,
         sourceUrl: `https://www.virustotal.com/gui/${path.gui}`,
+        details: {
+          resourceId: response.data?.id ?? null,
+          resourceType: response.data?.type ?? null,
+          attributes,
+        },
         submissionOccurred: false,
       };
       } catch (error) {

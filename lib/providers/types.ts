@@ -10,6 +10,7 @@ export type Evidence = {
   fetchedAt: string;
   reasonCodes: string[];
   sourceUrl?: string;
+  details?: Record<string, unknown>;
   submissionOccurred: false;
 };
 

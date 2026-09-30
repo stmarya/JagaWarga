@@ -11,6 +11,7 @@ export function SiteHeader() {
         <div className="nav-links">
           <Link href="/#scanner">Mulai cek</Link>
           <Link href="/dashboard">Riwayat</Link>
+          <Link href="/education">Edukasi</Link>
           <Link href="/status">Status</Link>
         </div>
         <Link className="nav-emergency" href="/emergency"><span aria-hidden="true">!</span> Darurat</Link>
@@ -24,7 +25,7 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div><strong>JAGA/WARGA</strong><p>Cek sinyal ancaman. Ambil langkah aman.</p></div>
       <nav aria-label="Tautan informasi">
-        <Link href="/methodology">Metode</Link><Link href="/privacy">Privasi</Link><Link href="/status">Status</Link><Link href="/support">Bantuan</Link>
+        <Link href="/methodology">Metode</Link><Link href="/education">Edukasi</Link><Link href="/privacy">Privasi</Link><Link href="/support">Bantuan</Link>
       </nav>
       <p className="footer-caution">Hasil “bersih” bukan jaminan 100% aman.</p>
     </footer>
