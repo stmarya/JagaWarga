@@ -1,9 +1,10 @@
 'use client';
 
-import { ChangeEvent, DragEvent, FormEvent, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, DragEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { classifySmartInput } from '@/lib/input';
 import { addHistory, addXp } from '@/lib/client/storage';
+import { Icon } from '@/components/icon';
 
 type BarcodeDetectorType = new (options: { formats: string[] }) => {
   detect(source: ImageBitmap): Promise<Array<{ rawValue: string }>>;
@@ -26,6 +27,9 @@ export default function Home() {
   const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
   const [inputMode, setInputMode] = useState<'link' | 'message' | 'file' | 'qr'>('link');
+  const fileInput = useRef<HTMLInputElement>(null);
+  const qrInput = useRef<HTMLInputElement>(null);
+  const cameraInput = useRef<HTMLInputElement>(null);
   const indicator = useMemo(() => classifySmartInput(value), [value]);
   const canSubmit = Boolean(value.trim()) && indicator.endpoint !== null && !loading;
 
@@ -80,11 +84,9 @@ export default function Home() {
 
   function chooseMode(mode: 'link' | 'message' | 'file' | 'qr') {
     setInputMode(mode);
-    if (mode === 'file' || mode === 'qr') {
-      document.getElementById('indicator-file')?.click();
-      return;
-    }
-    document.getElementById('indicator')?.focus();
+    setFileName('');
+    setNotice('');
+    if (mode === 'link' || mode === 'message') window.setTimeout(() => document.getElementById('indicator')?.focus(), 0);
   }
 
   function useExample(kind: 'link' | 'message') {
@@ -185,31 +187,60 @@ export default function Home() {
           <h2>Apa yang ingin diperiksa?</h2>
           <p className="muted">Pilih jenisnya atau langsung tempel—kami tetap mengenalinya otomatis.</p>
           <div className="intake-tabs" role="tablist" aria-label="Jenis pemeriksaan">
-            <button type="button" role="tab" aria-selected={inputMode === 'link'} onClick={() => chooseMode('link')}>🔗 Tautan web</button>
-            <button type="button" role="tab" aria-selected={inputMode === 'message'} onClick={() => chooseMode('message')}>💬 Teks pesan</button>
-            <button type="button" role="tab" aria-selected={inputMode === 'file'} onClick={() => chooseMode('file')}>📄 Berkas/APK</button>
-            <button type="button" role="tab" aria-selected={inputMode === 'qr'} onClick={() => chooseMode('qr')}>📷 Kode QR</button>
+            <button type="button" role="tab" aria-selected={inputMode === 'link'} onClick={() => chooseMode('link')}><Icon name="link" /> <span>Tautan / IoC</span></button>
+            <button type="button" role="tab" aria-selected={inputMode === 'message'} onClick={() => chooseMode('message')}><Icon name="message" /> <span>Teks pesan</span></button>
+            <button type="button" role="tab" aria-selected={inputMode === 'file'} onClick={() => chooseMode('file')}><Icon name="file" /> <span>Berkas / APK</span></button>
+            <button type="button" role="tab" aria-selected={inputMode === 'qr'} onClick={() => chooseMode('qr')}><Icon name="qr" /> <span>Kode QR</span></button>
           </div>
           <form onSubmit={submit} onDrop={dropFile} onDragOver={(event) => event.preventDefault()}>
-            <label htmlFor="indicator">Tempel tautan atau isi pesan yang ingin diperiksa</label>
-            <textarea
-              id="indicator"
-              value={value}
-              onChange={(event) => { setValue(event.target.value); setFileName(''); }}
-              placeholder={inputMode === 'message' ? 'Tempel isi SMS, WhatsApp, email, atau chat mencurigakan…' : 'Contoh: https://alamat-situs.example/login'}
-              rows={5}
-              autoComplete="off"
-              spellCheck="false"
-            />
-            <div className="input-helpers">
-              <button className="clipboard-action" type="button" onClick={pasteClipboard}>📋 Tempel dari Clipboard</button>
-              <button type="button" onClick={() => useExample('link')}>Coba contoh tautan</button>
-              <button type="button" onClick={() => useExample('message')}>Coba contoh pesan</button>
-            </div>
+            {(inputMode === 'link' || inputMode === 'message') && <>
+              <label htmlFor="indicator">{inputMode === 'message' ? 'Tempel isi pesan yang ingin dianalisis' : 'Masukkan URL, domain, IP, atau hash'}</label>
+              {inputMode === 'message' ? <textarea
+                id="indicator"
+                value={value}
+                onChange={(event) => { setValue(event.target.value); setFileName(''); }}
+                placeholder="Tempel isi SMS, WhatsApp, email, atau chat mencurigakan…"
+                rows={6}
+                autoComplete="off"
+                spellCheck="false"
+              /> : <input
+                id="indicator"
+                className="ioc-input"
+                value={value}
+                onChange={(event) => { setValue(event.target.value); setFileName(''); }}
+                placeholder="https://contoh.id, domain, IP, atau hash SHA-256"
+                autoComplete="off"
+                spellCheck="false"
+              />}
+              <div className="input-helpers">
+                <button className="clipboard-action" type="button" onClick={pasteClipboard}><Icon name="clipboard" /> Tempel</button>
+                <button type="button" onClick={() => useExample(inputMode)}><Icon name="spark" /> Coba contoh</button>
+              </div>
+            </>}
+
+            {inputMode === 'file' && <div className="upload-choice">
+              <Icon name="upload" size={32} />
+              <strong>{fileName || 'Pilih berkas untuk dihitung hash-nya'}</strong>
+              <p>APK, dokumen, arsip, dan berkas lain diproses lokal. Isi berkas tidak diunggah.</p>
+              <button type="button" onClick={() => fileInput.current?.click()}><Icon name="file" /> {fileName ? 'Ganti berkas' : 'Pilih berkas'}</button>
+              <input ref={fileInput} type="file" onChange={selectFile} hidden />
+            </div>}
+
+            {inputMode === 'qr' && <div className="upload-choice">
+              <Icon name="qr" size={32} />
+              <strong>{fileName || 'Pindai kode QR dengan aman'}</strong>
+              <p>Pilih gambar yang sudah ada atau gunakan kamera perangkat. Tujuan QR tidak dibuka otomatis.</p>
+              <div className="qr-actions">
+                <button type="button" onClick={() => qrInput.current?.click()}><Icon name="file" /> Pilih gambar</button>
+                <button type="button" className="secondary-action" onClick={() => cameraInput.current?.click()}><Icon name="camera" /> Gunakan kamera</button>
+              </div>
+              <input ref={qrInput} type="file" accept="image/*" onChange={selectFile} hidden />
+              <input ref={cameraInput} type="file" accept="image/*" capture="environment" onChange={selectFile} hidden />
+            </div>}
+
             <div className="scanner-actions">
-              <label className="file-action" htmlFor="indicator-file">{fileName ? 'Ganti file / QR' : 'Pilih file / QR'}</label>
-              <input id="indicator-file" type="file" onChange={selectFile} hidden />
-              <button type="submit" disabled={!canSubmit}>{loading ? 'Memeriksa…' : 'Periksa sekarang →'}</button>
+              <span className="scanner-privacy"><Icon name="shield" /> Diproses dengan data minimal</span>
+              <button type="submit" disabled={!canSubmit}>{loading ? 'Memeriksa…' : <>Periksa sekarang <Icon name="arrow" /></>}</button>
             </div>
             <div className="input-status">
               <span>TERDETEKSI: <strong>{indicator.label}</strong>{fileName ? ` · ${fileName}` : ''}</span>
@@ -223,7 +254,7 @@ export default function Home() {
       <section className="flow-strip" aria-label="Alur pemeriksaan">
         <div><strong>01</strong><span>Masukkan indikator</span></div>
         <div><strong>02</strong><span>Pahami hasil umum</span></div>
-        <div><strong>03</strong><span>Buka detail VirusTotal</span></div>
+        <div><strong>03</strong><span>Buka bukti teknis</span></div>
       </section>
     </main>
   );

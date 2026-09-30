@@ -7,7 +7,6 @@ export type Lesson = {
 
 export type Topic = {
   slug: string;
-  icon: string;
   title: string;
   description: string;
   badge: string;
@@ -16,7 +15,7 @@ export type Topic = {
 
 export const educationTopics: Topic[] = [
   {
-    slug: 'phishing', icon: '🎣', title: 'Phishing & Rekayasa Sosial', badge: 'Pemburu Phishing',
+    slug: 'phishing', title: 'Phishing & Rekayasa Sosial', badge: 'Pemburu Phishing',
     description: 'Kenali manipulasi yang memancing klik, data, atau uang.',
     lessons: [
       { title: 'Tanda pesan palsu', summary: 'Urgensi, ancaman, hadiah, dan sapaan generik sering dipakai untuk menekan korban.', safe: 'Berhenti dan periksa konteks sebelum bertindak.', risky: 'Mengikuti instruksi karena takut akun diblokir.' },
@@ -27,7 +26,7 @@ export const educationTopics: Topic[] = [
     ],
   },
   {
-    slug: 'password', icon: '🔐', title: 'Kata Sandi & Passkey', badge: 'Penjaga Kredensial',
+    slug: 'password', title: 'Kata Sandi & Passkey', badge: 'Penjaga Kredensial',
     description: 'Bangun kebiasaan autentikasi yang tahan pembobolan.',
     lessons: [
       { title: 'Unik untuk setiap akun', summary: 'Sandi yang digunakan ulang membuat satu kebocoran membuka banyak akun.', safe: 'Gunakan sandi unik untuk setiap layanan.', risky: 'Mengganti satu angka pada sandi yang sama.' },
@@ -38,7 +37,7 @@ export const educationTopics: Topic[] = [
     ],
   },
   {
-    slug: 'mfa', icon: '🛡️', title: 'MFA & Keamanan Akun', badge: 'Benteng MFA',
+    slug: 'mfa', title: 'MFA & Keamanan Akun', badge: 'Benteng MFA',
     description: 'Tambahkan lapisan pertahanan dan kenali serangan persetujuan.',
     lessons: [
       { title: 'Jenis MFA', summary: 'Aplikasi autentikator dan security key umumnya lebih kuat daripada SMS.', safe: 'Pilih security key atau authenticator.', risky: 'Menonaktifkan MFA demi kenyamanan.' },
@@ -49,7 +48,7 @@ export const educationTopics: Topic[] = [
     ],
   },
   {
-    slug: 'device', icon: '💻', title: 'Keamanan Perangkat', badge: 'Perisai Perangkat',
+    slug: 'device', title: 'Keamanan Perangkat', badge: 'Perisai Perangkat',
     description: 'Lindungi laptop dan ponsel dari akses, malware, dan kehilangan.',
     lessons: [
       { title: 'Pembaruan', summary: 'Patch menutup celah yang diketahui dan sering dieksploitasi.', safe: 'Aktifkan pembaruan otomatis.', risky: 'Menunda patch keamanan tanpa alasan.' },
@@ -60,7 +59,7 @@ export const educationTopics: Topic[] = [
     ],
   },
   {
-    slug: 'network', icon: '📶', title: 'Wi-Fi & Jaringan Aman', badge: 'Navigator Jaringan',
+    slug: 'network', title: 'Wi-Fi & Jaringan Aman', badge: 'Navigator Jaringan',
     description: 'Gunakan jaringan publik tanpa membuka data sensitif.',
     lessons: [
       { title: 'Wi-Fi palsu', summary: 'Nama hotspot dapat ditiru untuk menjebak pengguna.', safe: 'Konfirmasi nama jaringan kepada pengelola.', risky: 'Memilih hotspot terkuat dengan nama mirip.' },
@@ -71,7 +70,7 @@ export const educationTopics: Topic[] = [
     ],
   },
   {
-    slug: 'privacy', icon: '🕵️', title: 'Privasi & Data Pribadi', badge: 'Wali Privasi',
+    slug: 'privacy', title: 'Privasi & Data Pribadi', badge: 'Wali Privasi',
     description: 'Kurangi data yang terekspos dan pahami jejak digital.',
     lessons: [
       { title: 'Data sensitif', summary: 'NIK, alamat, biometrik, kesehatan, dan finansial membutuhkan perlindungan ekstra.', safe: 'Bagikan hanya data yang benar-benar diperlukan.', risky: 'Mengirim foto identitas tanpa watermark dan tujuan.' },
@@ -82,7 +81,7 @@ export const educationTopics: Topic[] = [
     ],
   },
   {
-    slug: 'malware', icon: '🦠', title: 'Malware & File Berbahaya', badge: 'Penganalisis File',
+    slug: 'malware', title: 'Malware & File Berbahaya', badge: 'Penganalisis File',
     description: 'Periksa file, ekstensi, makro, dan sumber unduhan.',
     lessons: [
       { title: 'Ekstensi file', summary: 'Ikon dapat dipalsukan; ekstensi menunjukkan tipe sebenarnya.', safe: 'Tampilkan ekstensi dan periksa nama ganda.', risky: 'Membuka invoice.pdf.exe karena ikonnya PDF.' },
@@ -93,7 +92,7 @@ export const educationTopics: Topic[] = [
     ],
   },
   {
-    slug: 'transaction', icon: '💳', title: 'Transaksi & Penipuan Digital', badge: 'Penjaga Transaksi',
+    slug: 'transaction', title: 'Transaksi & Penipuan Digital', badge: 'Penjaga Transaksi',
     description: 'Cegah transfer palsu, QR berbahaya, dan manipulasi pembayaran.',
     lessons: [
       { title: 'Verifikasi penerima', summary: 'Nama, nomor, dan tujuan transaksi harus diperiksa sebelum konfirmasi.', safe: 'Cocokkan penerima dan nominal.', risky: 'Transfer karena bukti chat terlihat meyakinkan.' },
@@ -104,7 +103,7 @@ export const educationTopics: Topic[] = [
     ],
   },
   {
-    slug: 'work', icon: '🏢', title: 'Keamanan Kerja & Kolaborasi', badge: 'Rekan Kerja Aman',
+    slug: 'work', title: 'Keamanan Kerja & Kolaborasi', badge: 'Rekan Kerja Aman',
     description: 'Lindungi data tim di email, cloud, rapat, dan perangkat kerja.',
     lessons: [
       { title: 'Klasifikasi data', summary: 'Label membantu menentukan siapa yang boleh melihat dan membagikan data.', safe: 'Ikuti label publik, internal, rahasia.', risky: 'Mengirim data rahasia melalui kanal publik.' },
@@ -115,7 +114,7 @@ export const educationTopics: Topic[] = [
     ],
   },
   {
-    slug: 'ai-misinformation', icon: '🤖', title: 'AI, Deepfake & Misinformasi', badge: 'Verifikator Digital',
+    slug: 'ai-misinformation', title: 'AI, Deepfake & Misinformasi', badge: 'Verifikator Digital',
     description: 'Verifikasi konten sintetis, klaim viral, dan identitas digital.',
     lessons: [
       { title: 'Deepfake suara', summary: 'Suara orang dikenal dapat ditiru untuk meminta uang atau rahasia.', safe: 'Gunakan pertanyaan atau kode keluarga.', risky: 'Transfer hanya karena suara terdengar sama.' },

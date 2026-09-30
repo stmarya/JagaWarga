@@ -66,8 +66,8 @@ export default function DetailsPage() {
   if (loading) return <main className="compact-page"><p>Memuat detail…</p></main>;
   if (!result?.evidence) return <main className="compact-page"><div className="empty-card"><h1>Detail tidak tersedia</h1><Link className="primary-action" href="/#scanner">Periksa indikator</Link></div></main>;
 
-  const vt = result.evidence.find((item) => item.provider === 'virustotal');
-  const attributes = vt?.details?.attributes ?? {};
+  const reputation = result.evidence.find((item) => item.provider === 'virustotal');
+  const attributes = reputation?.details?.attributes ?? {};
   const stats = (attributes.last_analysis_stats ?? {}) as Record<string, number>;
   const engines = Object.values((attributes.last_analysis_results ?? {}) as Record<string, Record<string, unknown>>);
   const metadata = Object.entries(attributes).filter(([key]) => !['last_analysis_results', 'last_analysis_stats'].includes(key));
@@ -88,10 +88,10 @@ export default function DetailsPage() {
         <div><span>Request ID</span><strong>{result.requestId}</strong></div>
       </section>
 
-      {!vt ? <section className="content-card"><h2>VirusTotal belum aktif</h2><p>Konfigurasikan provider dan API key VirusTotal untuk memperoleh detail reputasi.</p></section> : (
+      {!reputation ? <section className="content-card"><h2>Sumber reputasi belum aktif</h2><p>Detail reputasi eksternal belum tersedia untuk pemeriksaan ini.</p></section> : (
         <>
           <section className="content-card">
-            <div className="section-title"><div><p className="step-label">VIRUSTOTAL</p><h2>Ringkasan analisis mesin</h2></div>{vt.sourceUrl && <a className="secondary-action" href={vt.sourceUrl} target="_blank" rel="noreferrer">Buka di VirusTotal ↗</a>}</div>
+            <div className="section-title"><div><p className="step-label">SUMBER REPUTASI</p><h2>Ringkasan analisis mesin</h2></div></div>
             <div className="stat-grid">{Object.entries(stats).map(([name, count]) => <div key={name} className={`stat stat-${name}`}><strong>{count}</strong><span>{name}</span></div>)}</div>
           </section>
           <section className="content-card">
@@ -107,7 +107,7 @@ export default function DetailsPage() {
 
       <section className="content-card">
         <h2>Semua sumber</h2>
-        <div className="provider-list">{result.evidence.map((item) => <article key={item.provider}><strong>{item.provider}</strong><span>{item.verdict} · confidence {Math.round(item.confidence * 100)}%</span><small>{item.reasonCodes.join(', ')}</small></article>)}</div>
+        <div className="provider-list">{result.evidence.map((item) => <article key={item.provider}><strong>{item.provider === 'virustotal' ? 'Sumber reputasi' : item.provider.includes('dns') ? 'Sumber DNS' : 'Sumber pemeriksaan'}</strong><span>{item.verdict} · keyakinan {Math.round(item.confidence * 100)}%</span><small>{item.reasonCodes.join(', ')}</small></article>)}</div>
       </section>
       <section className="content-card">
         <h2>Komentar warga ({comments.length})</h2>

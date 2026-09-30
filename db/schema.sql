@@ -20,3 +20,35 @@ CREATE TABLE IF NOT EXISTS audit_events (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 -- Raw indicators, message bodies, email headers, QR images, and files must never be stored here.
+
+-- Versioned security-awareness catalog. The web client requests one topic at a
+-- time, so the full curriculum is not bundled into browser memory.
+CREATE TABLE IF NOT EXISTS education_topics (
+  slug TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  badge TEXT NOT NULL,
+  position INTEGER NOT NULL,
+  published BOOLEAN NOT NULL DEFAULT true,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS education_lessons (
+  id UUID PRIMARY KEY,
+  topic_slug TEXT NOT NULL REFERENCES education_topics(slug) ON DELETE CASCADE,
+  position INTEGER NOT NULL,
+  title TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  safe_action TEXT NOT NULL,
+  risky_action TEXT NOT NULL,
+  UNIQUE(topic_slug, position)
+);
+CREATE TABLE IF NOT EXISTS education_questions (
+  id UUID PRIMARY KEY,
+  topic_slug TEXT NOT NULL REFERENCES education_topics(slug) ON DELETE CASCADE,
+  position INTEGER NOT NULL,
+  prompt TEXT NOT NULL,
+  options JSONB NOT NULL,
+  correct_option INTEGER NOT NULL CHECK (correct_option >= 0),
+  explanation TEXT NOT NULL,
+  UNIQUE(topic_slug, position)
+);
