@@ -1,7 +1,7 @@
 {
   "decision": "NO-GO",
   "phase": "internal release candidate controls complete; staging and external authorization blocked",
-  "version": "0.13.0-rc.3",
+  "version": "0.13.0-rc.4",
   "localAcceptance": "READY",
   "publicProduction": "NO-GO",
   "reason": "Local native production acceptance passed. Public external approvals remain unverified in the evidence gate.",

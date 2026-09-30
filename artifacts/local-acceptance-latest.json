@@ -1,17 +1,17 @@
 {
   "decision": "LOCAL-READY",
   "publicProductionDecision": "NO-GO",
-  "version": "0.13.0-rc.3",
+  "version": "0.13.0-rc.4",
   "runtime": "native-nextjs-production",
   "bind": "127.0.0.1:3100",
-  "startedAt": "2026-09-30T14:24:00.000Z",
-  "completedAt": "2026-09-30T14:24:30.000Z",
+  "startedAt": "2026-09-30T14:52:00.000Z",
+  "completedAt": "2026-09-30T14:52:30.000Z",
   "checks": {
     "build": "passed-before-run",
     "preflight": {
       "status": "passed",
       "baseURL": "http://127.0.0.1:3100",
-      "version": "0.13.0-rc.3",
+      "version": "0.13.0-rc.4",
       "providers": [
         "cloudflare-dns",
         "google-dns"
