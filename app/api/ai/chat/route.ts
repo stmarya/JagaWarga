@@ -30,8 +30,10 @@ export async function POST(request: Request) {
     const lastUserMessage = messages.at(-1)?.content || '';
     const fallback = buildLocalReply(lastUserMessage, context);
     const intent = detectIntent(lastUserMessage, context);
-    const groqKey = process.env.GROQ_API_KEY?.trim();
-    const hasValidGroq = Boolean(groqKey?.startsWith('gsk_') && !groqKey.includes('...'));
+    const rawGroq = (process.env.GROQ_API_KEYS || process.env.GROQ_API_KEY || '').trim();
+    const groqKeys = rawGroq.split(',').map((k) => k.trim()).filter((k) => k.startsWith('gsk_') && !k.includes('...'));
+    const groqKey = groqKeys[Math.floor(Math.random() * groqKeys.length)] || '';
+    const hasValidGroq = Boolean(groqKey);
 
     if (!hasValidGroq) {
       await recordMetric('ai_chat_fallback', 0);
