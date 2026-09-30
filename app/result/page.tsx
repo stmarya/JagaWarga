@@ -28,11 +28,11 @@ type Result = {
 };
 
 const copy: Record<string, { title: string; summary: string; tone: string }> = {
-  'high-risk': { title: 'Risiko tinggi', summary: 'Ada sinyal kuat bahwa indikator ini berbahaya. Jangan lanjutkan interaksi.', tone: 'danger' },
-  suspicious: { title: 'Perlu waspada', summary: 'Ada sinyal mencurigakan. Verifikasi melalui kanal resmi sebelum bertindak.', tone: 'warning' },
-  'no-indication': { title: 'Belum ada sinyal negatif', summary: 'Tidak ada deteksi negatif saat ini, tetapi ini bukan jaminan aman.', tone: 'safe' },
-  'insufficient-data': { title: 'Data belum cukup', summary: 'Sumber yang tersedia belum cukup untuk memberi kesimpulan.', tone: 'neutral' },
-  phishing: { title: 'Pesan berisiko', summary: 'Pola pesan menunjukkan risiko phishing atau manipulasi.', tone: 'danger' },
+  'high-risk': { title: 'Bahaya: Jangan Dibuka', summary: 'Ada sinyal kuat bahwa indikator ini berbahaya. Jangan lanjutkan interaksi.', tone: 'danger' },
+  suspicious: { title: 'Waspada: Verifikasi Ulang', summary: 'Ada sinyal mencurigakan. Verifikasi melalui kanal resmi sebelum bertindak.', tone: 'warning' },
+  'no-indication': { title: 'Belum Ada Indikasi', summary: 'Tidak ada deteksi negatif saat ini, tetapi ini bukan jaminan aman.', tone: 'safe' },
+  'insufficient-data': { title: 'Data Kurang', summary: 'Sumber yang tersedia belum cukup untuk memberi kesimpulan.', tone: 'neutral' },
+  phishing: { title: 'Bahaya: Dugaan Phishing', summary: 'Pola pesan menunjukkan risiko phishing atau manipulasi.', tone: 'danger' },
 };
 
 const reasonLabels: Record<string, string> = {
@@ -62,6 +62,7 @@ export default function ResultPage() {
   const [feedback, setFeedback] = useState('');
   const [comment, setComment] = useState('');
   const [sending, setSending] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState('');
 
   useEffect(() => {
     const local = sessionStorage.getItem('jagawarga:last-result');
@@ -100,6 +101,20 @@ export default function ResultPage() {
     setSending(false);
   }
 
+  function warningText() {
+    const target = result?.indicator?.displayValue ?? 'indikator yang diperiksa';
+    return `Peringatan JagaWarga: ${target} mendapat status “${verdict.title}”. Jangan buka, mengisi data, atau melakukan transfer sebelum diverifikasi melalui kanal resmi.`;
+  }
+
+  async function copyWarning() {
+    try {
+      await navigator.clipboard.writeText(warningText());
+      setShareFeedback('Ringkasan peringatan berhasil disalin.');
+    } catch {
+      setShareFeedback('Tidak dapat menyalin otomatis. Gunakan tombol WhatsApp untuk membagikan.');
+    }
+  }
+
   if (!result) return (
     <main className="compact-page">
       <div className="empty-card"><h1>Hasil tidak ditemukan</h1><p>Mulai pemeriksaan baru untuk melihat hasil.</p><Link className="primary-action" href="/#scanner">Mulai cek</Link></div>
@@ -108,6 +123,11 @@ export default function ResultPage() {
 
   const verdict = copy[result.verdict] ?? { title: result.verdict.replaceAll('-', ' '), summary: 'Ini adalah sinyal awal, bukan vonis otomatis.', tone: 'warning' };
   const reasons = result.evidence?.flatMap((item) => item.reasonCodes) ?? result.reasonCodes ?? [];
+  const urgent = ['high-risk', 'phishing'].includes(result.verdict);
+  const vt = result.evidence?.find((item) => item.provider === 'virustotal');
+  const vtAttributes = (vt?.details?.attributes ?? {}) as Record<string, unknown>;
+  const vtStats = (vtAttributes.last_analysis_stats ?? {}) as Record<string, number>;
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(warningText())}`;
 
   return (
     <main className="compact-page">
@@ -119,8 +139,13 @@ export default function ResultPage() {
           <p className="result-lead">{verdict.summary}</p>
           {result.indicator && <p className="indicator-value">{result.indicator.type.toUpperCase()} · {result.indicator.displayValue}</p>}
         </div>
-        <div className="score"><strong>{result.risk}</strong><span>/100 risiko</span></div>
+        <div className="score"><strong>{result.risk}</strong><span>indikator teknis /100<br />bukan persentase</span></div>
       </section>
+
+      {urgent && <aside className="emergency-callout">
+        <div><strong>⚠️ Sudah terlanjur klik atau transfer uang?</strong><p>Jangan panik. Putuskan interaksi dan ikuti langkah pertolongan pertama sekarang.</p></div>
+        <Link className="primary-action" href="/emergency">Buka panduan darurat →</Link>
+      </aside>}
 
       <section className="result-grid">
         <article className="content-card">
@@ -136,9 +161,26 @@ export default function ResultPage() {
         </aside>
       </section>
 
+      {vt && <details className="quick-technical">
+        <summary>Lihat ringkasan mesin keamanan tanpa pindah halaman</summary>
+        <div className="quick-stats">
+          {Object.keys(vtStats).length ? Object.entries(vtStats).map(([name, count]) => <span key={name}><strong>{count}</strong>{name}</span>) : <p>VirusTotal merespons, tetapi belum memiliki statistik analisis.</p>}
+        </div>
+        <p>Ringkasan ini untuk pengguna mahir. Metadata dan hasil setiap engine tetap tersedia pada halaman detail.</p>
+      </details>}
+
       <section className="detail-cta">
         <div><p className="step-label">LANGKAH 3 · OPSIONAL</p><h2>Butuh seluruh detail IoC?</h2><p>Lihat statistik mesin, metadata, kategori, dan respons VirusTotal pada halaman terpisah.</p></div>
         <Link className="primary-action" href={result.historyId ? `/details?id=${encodeURIComponent(result.historyId)}` : '/details'}>Cek detail →</Link>
+      </section>
+
+      <section className="share-card">
+        <div><h2>Ingatkan keluarga atau komunitas</h2><p>Bagikan ringkasan tanpa menyatakan hasil sebagai kepastian mutlak.</p></div>
+        <div className="share-actions">
+          <a className="whatsapp-action" href={whatsappUrl} target="_blank" rel="noreferrer">📲 Bagikan ke WhatsApp</a>
+          <button className="secondary-action" type="button" onClick={copyWarning}>Salin peringatan</button>
+        </div>
+        {shareFeedback && <p role="status">{shareFeedback}</p>}
       </section>
 
       <section className="feedback-card">

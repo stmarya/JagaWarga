@@ -1,6 +1,6 @@
 'use client';
 
-import { ChangeEvent, DragEvent, FormEvent, useMemo, useState } from 'react';
+import { ChangeEvent, DragEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { classifySmartInput } from '@/lib/input';
 import { addHistory, addXp } from '@/lib/client/storage';
@@ -25,8 +25,19 @@ export default function Home() {
   const [fileName, setFileName] = useState('');
   const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
+  const [inputMode, setInputMode] = useState<'link' | 'message' | 'file' | 'qr'>('link');
   const indicator = useMemo(() => classifySmartInput(value), [value]);
   const canSubmit = Boolean(value.trim()) && indicator.endpoint !== null && !loading;
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const shared = [params.get('url'), params.get('text'), params.get('title')].filter(Boolean).join('\n').trim();
+    if (shared) {
+      setValue(shared);
+      setInputMode(shared.includes('http') ? 'link' : 'message');
+      window.setTimeout(() => document.getElementById('scanner')?.scrollIntoView({ behavior: 'smooth' }), 50);
+    }
+  }, []);
 
   async function ingestFile(file: File) {
     setFileName(file.name);
@@ -45,9 +56,47 @@ export default function Home() {
           // Gambar non-QR tetap aman diproses sebagai hash lokal.
         }
       }
+      setNotice('Gambar ini tidak terbaca sebagai kode QR. Jika ini tangkapan layar pesan penipuan, salin teks pesannya ke kolom pemeriksaan agar isi pesan dapat dianalisis. Saat ini berkas hanya diperiksa melalui hash.');
     }
     const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
     setValue([...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join(''));
+  }
+
+  async function pasteClipboard() {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text.trim()) {
+        setNotice('Clipboard kosong. Salin tautan atau pesan terlebih dahulu.');
+        return;
+      }
+      setValue(text);
+      setFileName('');
+      setNotice('Berhasil ditempel dari clipboard.');
+      setInputMode(text.includes('http') ? 'link' : 'message');
+    } catch {
+      setNotice('Browser belum memberi izin membaca clipboard. Tekan lama pada kolom lalu pilih Tempel.');
+    }
+  }
+
+  function chooseMode(mode: 'link' | 'message' | 'file' | 'qr') {
+    setInputMode(mode);
+    if (mode === 'file' || mode === 'qr') {
+      document.getElementById('indicator-file')?.click();
+      return;
+    }
+    document.getElementById('indicator')?.focus();
+  }
+
+  function useExample(kind: 'link' | 'message') {
+    setFileName('');
+    setNotice('Contoh dimuat. Tekan “Periksa sekarang” untuk mencoba alurnya.');
+    if (kind === 'link') {
+      setInputMode('link');
+      setValue('https://login-security.example/verify-account');
+    } else {
+      setInputMode('message');
+      setValue('PENTING! Akun Anda akan diblokir hari ini. Klik tautan berikut dan kirim kode OTP untuk verifikasi.');
+    }
   }
 
   async function selectFile(event: ChangeEvent<HTMLInputElement>) {
@@ -134,18 +183,29 @@ export default function Home() {
         <div className="scanner-card-body">
           <p className="step-label">LANGKAH 1 DARI 3 · MASUKKAN INDIKATOR</p>
           <h2>Apa yang ingin diperiksa?</h2>
-          <p className="muted">Jenis input akan dikenali otomatis.</p>
+          <p className="muted">Pilih jenisnya atau langsung tempel—kami tetap mengenalinya otomatis.</p>
+          <div className="intake-tabs" role="tablist" aria-label="Jenis pemeriksaan">
+            <button type="button" role="tab" aria-selected={inputMode === 'link'} onClick={() => chooseMode('link')}>🔗 Tautan web</button>
+            <button type="button" role="tab" aria-selected={inputMode === 'message'} onClick={() => chooseMode('message')}>💬 Teks pesan</button>
+            <button type="button" role="tab" aria-selected={inputMode === 'file'} onClick={() => chooseMode('file')}>📄 Berkas/APK</button>
+            <button type="button" role="tab" aria-selected={inputMode === 'qr'} onClick={() => chooseMode('qr')}>📷 Kode QR</button>
+          </div>
           <form onSubmit={submit} onDrop={dropFile} onDragOver={(event) => event.preventDefault()}>
-            <label htmlFor="indicator">URL, DOMAIN, IP, HASH, PESAN, ATAU HEADER EMAIL</label>
+            <label htmlFor="indicator">Tempel tautan atau isi pesan yang ingin diperiksa</label>
             <textarea
               id="indicator"
               value={value}
               onChange={(event) => { setValue(event.target.value); setFileName(''); }}
-              placeholder="Tempel indikator di sini…"
+              placeholder={inputMode === 'message' ? 'Tempel isi SMS, WhatsApp, email, atau chat mencurigakan…' : 'Contoh: https://alamat-situs.example/login'}
               rows={5}
               autoComplete="off"
               spellCheck="false"
             />
+            <div className="input-helpers">
+              <button className="clipboard-action" type="button" onClick={pasteClipboard}>📋 Tempel dari Clipboard</button>
+              <button type="button" onClick={() => useExample('link')}>Coba contoh tautan</button>
+              <button type="button" onClick={() => useExample('message')}>Coba contoh pesan</button>
+            </div>
             <div className="scanner-actions">
               <label className="file-action" htmlFor="indicator-file">{fileName ? 'Ganti file / QR' : 'Pilih file / QR'}</label>
               <input id="indicator-file" type="file" onChange={selectFile} hidden />

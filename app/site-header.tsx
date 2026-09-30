@@ -12,6 +12,7 @@ export function SiteHeader() {
           <Link href="/#scanner">Mulai cek</Link>
           <Link href="/dashboard">Riwayat</Link>
           <Link href="/education">Edukasi</Link>
+          <Link href="/tools">Alat Bantu</Link>
           <Link href="/status">Status</Link>
         </div>
         <Link className="nav-emergency" href="/emergency"><span aria-hidden="true">!</span> Darurat</Link>
