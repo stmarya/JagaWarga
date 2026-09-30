@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
 import { Icon } from '@/components/icon';
+import { ProgressBreadcrumb } from '@/components/page-navigation';
 
 type Evidence = {
   provider: string;
@@ -29,13 +30,13 @@ type Result = {
   actions?: string[];
 };
 
-const copy: Record<string, { title: string; summary: string; tone: string }> = {
-  'high-risk': { title: 'Bahaya: Jangan Dibuka', summary: 'Sinyal kuat menunjukkan indikator ini berbahaya. Hentikan interaksi.', tone: 'danger' },
-  suspicious: { title: 'Waspada: Verifikasi Ulang', summary: 'Ditemukan sinyal mencurigakan. Verifikasi melalui kanal resmi.', tone: 'warning' },
-  'no-indication': { title: 'Belum Ada Indikasi', summary: 'Belum ditemukan deteksi negatif, tetapi hasil ini bukan jaminan aman.', tone: 'safe' },
-  'insufficient-data': { title: 'Data Kurang', summary: 'Sumber yang tersedia belum cukup untuk memberi kesimpulan.', tone: 'neutral' },
-  phishing: { title: 'Bahaya: Dugaan Phishing', summary: 'Pola pesan menunjukkan upaya manipulasi atau pencurian data.', tone: 'danger' },
-};
+function severityFor(result: Result) {
+  if (result.verdict === 'insufficient-data') return { level: 'unknown', label: 'Belum dapat dinilai', answer: 'Jangan anggap aman', summary: 'Data belum cukup. Hindari tindakan penting sampai pemeriksaan dapat diulang.', tone: 'neutral' };
+  if (result.risk >= 70 || ['high-risk', 'phishing'].includes(result.verdict)) return { level: 'critical', label: 'Bahaya tinggi', answer: 'Tidak aman', summary: 'Sinyal ancaman kuat ditemukan. Jangan lanjutkan interaksi.', tone: 'danger' };
+  if (result.risk >= 40 || result.verdict === 'suspicious') return { level: 'warning', label: 'Perlu waspada', answer: 'Berpotensi tidak aman', summary: 'Ada tanda mencurigakan. Verifikasi sebelum membuka, membalas, atau membayar.', tone: 'warning' };
+  if (result.risk >= 15) return { level: 'caution', label: 'Perlu perhatian', answer: 'Belum tentu aman', summary: 'Belum ada ancaman kuat, tetapi beberapa sinyal masih perlu diperiksa.', tone: 'caution' };
+  return { level: 'low', label: 'Risiko rendah', answer: 'Belum ada tanda bahaya', summary: 'Belum ditemukan sinyal berbahaya. Tetap periksa pengirim dan tujuan.', tone: 'safe' };
+}
 
 const reasonLabels: Record<string, string> = {
   VT_MULTIPLE_MALICIOUS_DETECTIONS: 'Beberapa mesin keamanan mendeteksi ancaman.',
@@ -69,7 +70,20 @@ function contextualActions(result: Result, reasons: string[]) {
   if (codes.has('SHORT_LINK')) steps.push('Jangan buka tautan pendek sebelum alamat tujuan sebenarnya diketahui.');
   if (codes.has('VT_MULTIPLE_MALICIOUS_DETECTIONS') || codes.has('VT_SINGLE_MALICIOUS_DETECTION')) steps.push('Isolasi berkas atau alamat ini dan jangan teruskan kepada perangkat lain.');
   if (result.partial) steps.push('Ulangi pemeriksaan nanti karena sebagian sumber belum memberikan data.');
-  return [...new Set(steps)].slice(0, 4);
+  steps.push('Simpan bukti seperti alamat, nama akun, waktu, dan tangkapan layar tanpa menyebarkan data pribadi.');
+  if (result.risk >= 40) steps.push('Laporkan melalui kanal resmi platform atau pihak berwenang agar pengguna lain dapat dilindungi.');
+  return [...new Set([...(result.actions ?? []), ...steps])].slice(0, 7);
+}
+
+function possibleThreats(result: Result, reasons: string[]) {
+  const codes = new Set(reasons);
+  const threats: Array<{ title: string; detail: string; icon: 'key' | 'transaction' | 'device' | 'privacy' | 'alert' }> = [];
+  if (codes.has('CREDENTIAL_REQUEST') || ['phishing', 'high-risk'].includes(result.verdict)) threats.push({ title: 'Akun dapat diambil alih', detail: 'Kata sandi, OTP, atau sesi login dapat dicuri dan dipakai pelaku.', icon: 'key' });
+  if (codes.has('MONEY_REQUEST') || result.risk >= 70) threats.push({ title: 'Kerugian uang', detail: 'Pelaku dapat mengarahkan transfer, pembayaran palsu, atau pencurian saldo.', icon: 'transaction' });
+  if (codes.has('VT_MULTIPLE_MALICIOUS_DETECTIONS') || result.indicator?.type === 'hash') threats.push({ title: 'Perangkat terinfeksi', detail: 'Berkas dapat memasang aplikasi berbahaya, mencuri data, atau mengunci perangkat.', icon: 'device' });
+  if (codes.has('IMPERSONATION') || codes.has('PRIZE_OR_REFUND')) threats.push({ title: 'Penipuan identitas', detail: 'Nama lembaga atau orang yang dikenal dapat dipakai untuk membangun kepercayaan palsu.', icon: 'privacy' });
+  if (codes.has('SHORT_LINK') || result.indicator?.type === 'url' || result.indicator?.type === 'domain') threats.push({ title: 'Situs palsu', detail: 'Halaman dapat meniru layanan resmi untuk mengambil data login atau pembayaran.', icon: 'alert' });
+  return threats.slice(0, 5);
 }
 
 function contextualFindings(result: Result, reasons: string[]) {
@@ -148,16 +162,17 @@ export default function ResultPage() {
     </main>
   );
 
-  const verdict = copy[result.verdict] ?? { title: result.verdict.replaceAll('-', ' '), summary: 'Ini adalah sinyal awal, bukan vonis otomatis.', tone: 'warning' };
+  const severity = severityFor(result);
   const reasons = result.evidence?.flatMap((item) => item.reasonCodes) ?? result.reasonCodes ?? [];
   const findings = contextualFindings(result, reasons);
-  const actions = result.actions?.length ? result.actions : contextualActions(result, reasons);
+  const actions = contextualActions(result, reasons);
+  const threats = possibleThreats(result, reasons);
   const urgent = ['high-risk', 'phishing'].includes(result.verdict);
   const reputation = result.evidence?.find((item) => item.provider === 'virustotal');
   const attributes = (reputation?.details?.attributes ?? {}) as Record<string, unknown>;
   const stats = (attributes.last_analysis_stats ?? {}) as Record<string, number>;
   const scoreLevel = result.risk >= 70 ? 'high' : result.risk >= 40 ? 'medium' : result.risk >= 15 ? 'guarded' : 'low';
-  const warningText = `Peringatan JagaWarga: ${result.indicator?.displayValue ?? 'indikator ini'} mendapat status “${verdict.title}”. Jangan membuka, mengisi data, atau melakukan transfer sebelum diverifikasi melalui kanal resmi.`;
+  const warningText = `Peringatan JagaWarga: ${result.indicator?.displayValue ?? 'indikator ini'} mendapat status “${severity.label}”. Jangan membuka, mengisi data, atau melakukan transfer sebelum diverifikasi melalui kanal resmi.`;
 
   async function shareResult() {
     if (navigator.share) {
@@ -173,16 +188,18 @@ export default function ResultPage() {
 
   return (
     <main className="compact-page result-page">
-      <nav className="breadcrumb"><Link href="/#scanner">Scanner</Link><span>→</span><span>Hasil</span></nav>
-      <section className={`summary-card tone-${verdict.tone}`}>
+      <ProgressBreadcrumb current="result" />
+      <section className={`summary-card tone-${severity.tone}`}>
         <div>
           <p className="step-label">LANGKAH 2 DARI 3 · HASIL UMUM</p>
-          <h1>{verdict.title}</h1>
-          <p className="result-lead">{verdict.summary}</p>
+          <div className="severity-heading"><span className={`severity-dot severity-${severity.level}`} /><div><span className="severity-answer">{severity.answer}</span><h1>{severity.label}</h1></div></div>
+          <p className="result-lead">{severity.summary}</p>
           {result.indicator && <p className="indicator-value">{result.indicator.type.toUpperCase()} · {result.indicator.displayValue}</p>}
         </div>
-        <div className={`score score-${scoreLevel}`} aria-label={`Skor risiko ${result.risk} dari 100`}><strong>{result.risk}</strong><span>/100</span></div>
+        <div className={`score score-${scoreLevel}`} aria-label={`Skor risiko ${result.risk} dari 100`}><strong>{result.risk}</strong><span>/100</span><small>{severity.label}</small></div>
       </section>
+
+      {threats.length > 0 && <section className="threat-section"><div className="section-heading-simple"><p className="step-label">DAMPAK YANG MUNGKIN TERJADI</p><h2>Mengapa Anda perlu berhati-hati?</h2></div><div className="threat-grid">{threats.map((threat) => <article key={threat.title}><span><Icon name={threat.icon} /></span><div><strong>{threat.title}</strong><p>{threat.detail}</p></div></article>)}</div></section>}
 
       {urgent && <aside className="emergency-callout">
         <div><strong><Icon name="alert" /> Sudah terlanjur klik atau transfer uang?</strong><p>Jangan panik. Putuskan interaksi dan ikuti langkah pertolongan pertama.</p></div>

@@ -1,20 +1,11 @@
 'use client';
 import Link from 'next/link';
 import { ChangeEvent, useState } from 'react';
+import { Icon } from '@/components/icon';
 
 type BarcodeDetectorType = new (options: { formats: string[] }) => { detect(source: ImageBitmap): Promise<Array<{ rawValue: string }>> };
-
 export default function QrTool() {
-  const [value, setValue] = useState('');
-  const [error, setError] = useState('');
-  async function select(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const Detector = (window as unknown as { BarcodeDetector?: BarcodeDetectorType }).BarcodeDetector;
-    if (!Detector) { setError('Browser ini belum mendukung pembacaan QR lokal.'); return; }
-    const codes = await new Detector({ formats: ['qr_code'] }).detect(await createImageBitmap(file));
-    setValue(codes[0]?.rawValue ?? '');
-    if (!codes.length) setError('QR tidak ditemukan.');
-  }
-  return <main className="page"><Link href="/tools">← Semua alat</Link><p className="eyebrow">QR AMAN</p><h1>Lihat tujuan tanpa membukanya.</h1><section className="panel"><label htmlFor="qr">Pilih gambar QR</label><input id="qr" type="file" accept="image/*" onChange={select} /><p>Gambar diproses di browser. Target tidak dibuka otomatis.</p>{value && <textarea readOnly value={value} aria-label="Isi QR" />}{error && <p role="alert">{error}</p>}</section></main>;
+  const [value, setValue] = useState(''); const [error, setError] = useState('');
+  async function select(event: ChangeEvent<HTMLInputElement>) { const file = event.target.files?.[0]; if (!file) return; setError(''); const Detector = (window as unknown as { BarcodeDetector?: BarcodeDetectorType }).BarcodeDetector; if (!Detector) { setError('Browser ini belum mendukung pembacaan QR lokal. Coba browser terbaru.'); return; } const codes = await new Detector({ formats: ['qr_code'] }).detect(await createImageBitmap(file)); setValue(codes[0]?.rawValue ?? ''); if (!codes.length) setError('Kode QR tidak ditemukan pada gambar.'); }
+  return <main className="compact-page tool-workspace"><Link className="back-link" href="/tools">← Semua alat</Link><header className="tool-hero"><span><Icon name="qr" size={30} /></span><div><p className="kicker">PEMBACA QR</p><h1>Lihat tujuan QR sebelum membukanya.</h1><p>Gambar dibaca di perangkat. Tautan tidak akan terbuka secara otomatis.</p></div></header><div className="tool-layout"><section className="tool-form-card"><label className="large-file-picker" htmlFor="qr"><Icon name="camera" size={34} /><strong>Pilih atau ambil gambar QR</strong><span>Gunakan gambar yang jelas dan tidak terpotong.</span></label><input id="qr" type="file" accept="image/*" capture="environment" onChange={select} hidden />{error && <p className="inline-alert">{error}</p>}{value && <div className="hash-result"><span>ISI KODE QR</span><code>{value}</code><Link className="primary-action" href={`/?ioc=${encodeURIComponent(value)}#scanner`}>Periksa tujuan ini <Icon name="arrow" /></Link></div>}</section><aside className="tool-guide"><h2>QR yang perlu dicurigai</h2><ul><li>Stiker QR yang menutupi QR asli.</li><li>QR pembayaran dengan nama penerima berbeda.</li><li>QR yang meminta instalasi APK.</li><li>QR hadiah yang meminta data login.</li></ul></aside></div></main>;
 }

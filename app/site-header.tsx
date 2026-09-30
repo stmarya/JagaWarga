@@ -23,11 +23,10 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className="site-footer">
-      <div><strong>JAGA/WARGA</strong><p>Cek sinyal ancaman. Ambil langkah aman.</p></div>
-      <nav aria-label="Tautan informasi">
-        <Link href="/methodology">Metode</Link><Link href="/education">Edukasi</Link><Link href="/privacy">Privasi</Link><Link href="/support">Bantuan</Link>
-      </nav>
-      <p className="footer-caution">Hasil “bersih” bukan jaminan 100% aman.</p>
+      <div className="footer-brand"><strong>JAGA/WARGA</strong><p>Periksa sinyalnya, pahami risikonya, lalu ambil langkah aman.</p><small>Hasil pemeriksaan adalah bantuan awal, bukan jaminan keamanan mutlak.</small></div>
+      <nav aria-label="Pelajari JagaWarga"><strong>Pelajari</strong><Link href="/education">Edukasi keamanan</Link><Link href="/methodology">Cara penilaian</Link><Link href="/privacy">Privasi data</Link><Link href="/support">Bantuan</Link></nav>
+      <nav aria-label="Laporkan ancaman"><strong>Laporkan ancaman</strong><a href="https://aduankonten.id/" target="_blank" rel="noreferrer">Konten berbahaya · Komdigi</a><a href="https://patrolisiber.id/" target="_blank" rel="noreferrer">Kejahatan siber · Polri</a><a href="https://iasc.ojk.go.id/" target="_blank" rel="noreferrer">Penipuan transaksi · IASC</a><Link href="/emergency">Panduan darurat</Link></nav>
+      <div className="footer-report-note"><strong>Simpan bukti sebelum melapor</strong><p>Catat alamat, akun, waktu kejadian, nominal, dan tangkapan layar. Jangan sebarkan OTP atau data pribadi.</p></div>
     </footer>
   );
 }

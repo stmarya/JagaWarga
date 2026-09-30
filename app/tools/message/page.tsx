@@ -1,24 +1,14 @@
 'use client';
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
+import { Icon } from '@/components/icon';
 import { addXp } from '@/lib/client/storage';
 
 type Result = { risk: number; verdict: string; reasonCodes: string[]; actions: string[]; requestId: string };
+const sample = 'PENTING! Akun Anda akan diblokir hari ini. Klik link berikut dan kirim kode OTP untuk verifikasi.';
 
 export default function MessageTool() {
-  const [text, setText] = useState('');
-  const [result, setResult] = useState<Result | null>(null);
-  const [error, setError] = useState('');
-  const [requestId, setRequestId] = useState('');
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    setError('');
-    setRequestId('');
-    const response = await fetch('/api/analyze/message', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
-    const data = await response.json();
-    setRequestId(typeof data.requestId === 'string' ? data.requestId : '');
-    if (response.ok) { setResult(data); addXp(15); }
-    else { setResult(null); setError('Analisis gagal. Periksa input atau coba kembali.'); }
-  }
-  return <main className="page"><Link href="/tools">← Semua alat</Link><p className="eyebrow">ANALISIS PESAN</p><h1>Kenali pola phishing.</h1><p>Pesan dianalisis sementara dan tidak disimpan.</p><form onSubmit={submit}><label htmlFor="message">Tempel pesan tanpa data pribadi</label><textarea id="message" value={text} onChange={(e) => setText(e.target.value)} maxLength={10_000} /><button disabled={!text.trim()}>Analisis</button></form>{error && <p role="alert">{error}{requestId && <> ID permintaan: <code>{requestId}</code>.</>}</p>}{result && <section className="panel"><h2>{result.verdict}</h2><p>Risk signal: {result.risk}/100 — bukan vonis otomatis.</p><h3>Alasan</h3><ul>{result.reasonCodes.map((item) => <li key={item}>{item}</li>)}</ul><h3>Tindakan</h3><ul>{result.actions.map((item) => <li key={item}>{item}</li>)}</ul><p>ID permintaan: <code>{result.requestId}</code></p></section>}</main>;
+  const [text, setText] = useState(''); const [result, setResult] = useState<Result | null>(null); const [error, setError] = useState('');
+  async function submit(event: FormEvent) { event.preventDefault(); setError(''); const response = await fetch('/api/analyze/message', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) }); const data = await response.json(); if (response.ok) { setResult(data); addXp(15); } else { setResult(null); setError('Pesan belum dapat dianalisis. Coba salin teks yang lebih lengkap.'); } }
+  return <main className="compact-page tool-workspace"><Link className="back-link" href="/tools">← Semua alat</Link><header className="tool-hero"><span><Icon name="message" size={30} /></span><div><p className="kicker">ANALISIS PESAN</p><h1>Kenali pesan yang mencoba membuat Anda panik.</h1><p>Tempel isi SMS, chat, atau email. Hapus nama dan data pribadi terlebih dahulu.</p></div></header><div className="tool-layout"><section className="tool-form-card"><div className="tool-card-heading"><h2>Isi pesan</h2><button className="sample-button" type="button" onClick={() => setText(sample)}><Icon name="spark" /> Gunakan contoh</button></div><form onSubmit={submit}><label htmlFor="message">Salin kalimat lengkap agar konteksnya dapat dibaca</label><textarea id="message" value={text} onChange={(e) => setText(e.target.value)} maxLength={10_000} rows={10} placeholder="Tempel pesan di sini…" /><button disabled={!text.trim()}>Analisis pesan <Icon name="arrow" /></button></form>{error && <p className="inline-alert">{error}</p>}</section><aside className="tool-guide"><h2>Yang kami cari</h2><ul><li>Ancaman dan batas waktu palsu.</li><li>Permintaan OTP, PIN, atau password.</li><li>Permintaan transfer atau biaya.</li><li>Penyamaran sebagai bank, kurir, atau keluarga.</li></ul></aside></div>{result && <section className="tool-result"><div className="tool-result-score"><strong>{result.risk}</strong><span>/100</span></div><div><p className="kicker">HASIL ANALISIS</p><h2>{result.risk >= 70 ? 'Pesan berbahaya' : result.risk >= 40 ? 'Pesan mencurigakan' : 'Risiko rendah'}</h2><ol>{result.actions.map((item) => <li key={item}>{item}</li>)}</ol></div></section>}</main>;
 }

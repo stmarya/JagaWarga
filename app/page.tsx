@@ -35,7 +35,7 @@ export default function Home() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const shared = [params.get('url'), params.get('text'), params.get('title')].filter(Boolean).join('\n').trim();
+    const shared = params.get('ioc') ?? [params.get('url'), params.get('text'), params.get('title')].filter(Boolean).join('\n').trim();
     if (shared) {
       setValue(shared);
       setInputMode(shared.includes('http') ? 'link' : 'message');

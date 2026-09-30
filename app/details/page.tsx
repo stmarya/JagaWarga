@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { ProgressBreadcrumb } from '@/components/page-navigation';
 
 type Evidence = {
   provider: string;
@@ -74,7 +75,7 @@ export default function DetailsPage() {
 
   return (
     <main className="compact-page detail-page">
-      <nav className="breadcrumb"><Link href="/dashboard">Riwayat</Link><span>→</span><Link href="/result">Hasil</Link><span>→</span><span>Detail</span></nav>
+      <ProgressBreadcrumb current="detail" />
       <header className="detail-header">
         <div><p className="step-label">DETAIL TEKNIS IOC</p><h1>Respons sumber lengkap</h1><p>Data teknis dipisahkan dari ringkasan agar hasil utama tetap mudah dipahami.</p></div>
         <span className="verdict-pill">{result.verdict.replaceAll('-', ' ')}</span>

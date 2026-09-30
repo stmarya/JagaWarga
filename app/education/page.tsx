@@ -6,7 +6,8 @@ import { Icon, type IconName } from '@/components/icon';
 
 type Lesson = { title: string; summary: string; safe: string; risky: string };
 type Question = { prompt: string; options: string[]; answer: number; explanation: string };
-type TopicSummary = { slug: string; title: string; description: string; badge: string; lessonCount: number; questionCount: number };
+type LearningLevel = 'beginner' | 'intermediate' | 'advanced';
+type TopicSummary = { slug: string; title: string; description: string; badge: string; level: LearningLevel; lessonCount: number; questionCount: number };
 type Topic = TopicSummary & { lessons: Lesson[]; questions: Question[] };
 
 const topicIcons: Record<string, IconName> = {
@@ -23,6 +24,7 @@ export default function EducationPage() {
   const [score, setScore] = useState(0);
   const [answer, setAnswer] = useState<number | null>(null);
   const [completed, setCompleted] = useState<string[]>([]);
+  const [level, setLevel] = useState<LearningLevel>('beginner');
 
   useEffect(() => {
     fetch('/api/education').then((response) => response.json()).then(setTopics).finally(() => setLoading(false));
@@ -110,8 +112,14 @@ export default function EducationPage() {
 
   return (
     <main className="compact-page education-page">
-      <header className="page-heading"><div><p className="kicker">AKADEMI JAGA/WARGA</p><h1>Belajar mengambil keputusan yang aman.</h1><p>Materi dimuat per topik dari katalog backend agar tetap ringan di perangkat seluler.</p></div><div className="progress-orb"><strong>{completed.length}</strong><span>/{topics.length} selesai</span></div></header>
-      <section className="topic-grid">{topics.map((item, index) => <button className="topic-card" onClick={() => selectTopic(item)} key={item.slug}><span className="topic-icon professional-icon"><Icon name={topicIcons[item.slug]} size={26} /></span><span className="topic-number">TOPIK {String(index + 1).padStart(2, '0')}</span><strong>{item.title}</strong><p>{item.description}</p><small>{item.lessonCount} submateri · {item.questionCount} evaluasi</small>{completed.includes(item.slug) && <b><Icon name="check" /> {item.badge}</b>}</button>)}</section>
+      <header className="page-heading"><div><p className="kicker">BELAJAR KEAMANAN DIGITAL</p><h1>Mulai dari yang paling mudah.</h1><p>Pilih tingkat yang sesuai. Setiap materi memakai contoh sehari-hari dan langkah yang dapat langsung dicoba.</p></div><div className="progress-orb"><strong>{completed.length}</strong><span>/{topics.length} selesai</span></div></header>
+      <nav className="level-tabs" aria-label="Pilih tingkat belajar">
+        <button className={level === 'beginner' ? 'active' : ''} onClick={() => setLevel('beginner')}><strong>Dasar</strong><span>Baru mulai belajar</span></button>
+        <button className={level === 'intermediate' ? 'active' : ''} onClick={() => setLevel('intermediate')}><strong>Menengah</strong><span>Sudah paham dasar</span></button>
+        <button className={level === 'advanced' ? 'active' : ''} onClick={() => setLevel('advanced')}><strong>Lanjutan</strong><span>Untuk pengelola dan tim</span></button>
+      </nav>
+      <div className="level-intro"><strong>{level === 'beginner' ? 'Mulai di sini' : level === 'intermediate' ? 'Perkuat kebiasaan Anda' : 'Siapkan perlindungan yang lebih matang'}</strong><p>{level === 'beginner' ? 'Tidak perlu memahami istilah teknis. Ikuti contoh dan pilih tindakan yang paling aman.' : level === 'intermediate' ? 'Pelajari pengaturan akun, jaringan, privasi, dan berkas mencurigakan.' : 'Pelajari perlindungan organisasi, informasi palsu, dan penanganan insiden.'}</p></div>
+      <section className="topic-grid">{topics.filter((item) => item.level === level).map((item, index) => <button className="topic-card" onClick={() => selectTopic(item)} key={item.slug}><span className="topic-icon professional-icon"><Icon name={topicIcons[item.slug] ?? 'book'} size={26} /></span><span className="topic-number">MATERI {String(index + 1).padStart(2, '0')}</span><strong>{item.title}</strong><p>{item.description}</p><small>{item.lessonCount} pelajaran singkat · {item.questionCount} latihan</small>{completed.includes(item.slug) && <b><Icon name="check" /> {item.badge}</b>}</button>)}</section>
     </main>
   );
 }

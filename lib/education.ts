@@ -124,6 +124,28 @@ export const educationTopics: Topic[] = [
       { title: 'Data ke AI', summary: 'Input ke layanan AI dapat tersimpan atau dipakai sesuai kebijakan layanan.', safe: 'Anonimkan data dan ikuti kebijakan organisasi.', risky: 'Menempelkan rahasia atau data pelanggan ke AI publik.' },
     ],
   },
+  {
+    slug: 'safe-chat', title: 'Aman Menggunakan Chat', badge: 'Warga Cermat',
+    description: 'Kebiasaan dasar agar SMS, WhatsApp, dan media sosial lebih aman.',
+    lessons: [
+      { title: 'Kenali pengirim', summary: 'Nama dan foto profil dapat disalin dengan mudah.', safe: 'Periksa nomor dan tanyakan lewat kontak lama.', risky: 'Percaya hanya karena foto dan namanya cocok.' },
+      { title: 'Pesan mendadak', summary: 'Permintaan yang tidak biasa perlu jeda sebelum dijawab.', safe: 'Berhenti sebentar dan konfirmasi.', risky: 'Langsung mengikuti karena pesan terlihat mendesak.' },
+      { title: 'Lampiran chat', summary: 'Berkas APK, ZIP, dan dokumen tak terduga dapat berbahaya.', safe: 'Tanyakan tujuan berkas sebelum membuka.', risky: 'Memasang APK agar dapat melihat undangan.' },
+      { title: 'Grup keluarga', summary: 'Pesan salah dapat menyebar cepat melalui grup.', safe: 'Periksa sumber sebelum meneruskan.', risky: 'Meneruskan agar orang lain waspada tanpa verifikasi.' },
+      { title: 'Blokir dan laporkan', summary: 'Blokir menghentikan kontak, laporan membantu pengguna lain.', safe: 'Simpan bukti, blokir, lalu gunakan fitur laporan.', risky: 'Berdebat panjang dengan akun penipu.' },
+    ],
+  },
+  {
+    slug: 'incident-response', title: 'Menangani Insiden Digital', badge: 'Koordinator Tanggap',
+    description: 'Langkah terstruktur saat akun, perangkat, atau uang sudah terdampak.',
+    lessons: [
+      { title: 'Hentikan dampak', summary: 'Prioritas pertama adalah mencegah kerusakan bertambah.', safe: 'Putuskan koneksi atau hentikan transaksi.', risky: 'Terus mencoba login pada perangkat terinfeksi.' },
+      { title: 'Amankan akun utama', summary: 'Email dan nomor telepon sering menjadi jalan pemulihan akun lain.', safe: 'Amankan email, nomor, dan password manager.', risky: 'Mengganti akun kecil sebelum akun utama.' },
+      { title: 'Kumpulkan bukti', summary: 'Bukti membantu bank, platform, dan penegak hukum menindaklanjuti.', safe: 'Simpan waktu, akun, alamat, transaksi, dan tangkapan layar.', risky: 'Menghapus semua percakapan karena panik.' },
+      { title: 'Buat laporan', summary: 'Saluran laporan berbeda untuk konten, transaksi, dan kejahatan siber.', safe: 'Pilih kanal resmi sesuai jenis kejadian.', risky: 'Membayar orang yang menjanjikan pemulihan instan.' },
+      { title: 'Belajar setelah insiden', summary: 'Evaluasi membantu mencegah kejadian yang sama.', safe: 'Perbarui prosedur, MFA, dan kontak darurat.', risky: 'Menyalahkan korban tanpa memperbaiki perlindungan.' },
+    ],
+  },
 ];
 
 export function topicQuestions(topic: Topic) {

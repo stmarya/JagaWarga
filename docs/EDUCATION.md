@@ -3,7 +3,8 @@
 ## Tujuan
 
 Katalog menerjemahkan risiko keamanan digital menjadi keputusan praktis bagi
-warga umum. Setiap topik mempunyai lima submateri dan sepuluh evaluasi.
+warga umum. Setiap topik mempunyai lima submateri dan sepuluh evaluasi. Materi
+dibagi menjadi tingkat Dasar, Menengah, dan Lanjutan.
 
 ## Struktur data
 
@@ -36,6 +37,10 @@ warga umum. Setiap topik mempunyai lima submateri dan sepuluh evaluasi.
    pelaporan.
 10. AI, Deepfake & Misinformasi — suara, gambar sintetis, klaim viral, akun
     tiruan, dan data ke AI.
+11. Aman Menggunakan Chat — pengirim, pesan mendadak, lampiran, grup, dan
+    pelaporan.
+12. Menangani Insiden Digital — menghentikan dampak, mengamankan akun,
+    mengumpulkan bukti, melapor, dan evaluasi.
 
 ## Prinsip editorial
 

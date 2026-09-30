@@ -25,6 +25,7 @@ export default function Dashboard() {
   const [lookupValue, setLookupValue] = useState('');
   const [lookupLoading, setLookupLoading] = useState(false);
   const [lookupNotice, setLookupNotice] = useState('');
+  const [openComments, setOpenComments] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/history')
@@ -107,15 +108,16 @@ export default function Dashboard() {
       {loading ? <div className="empty-card"><p>Memuat riwayat…</p></div> : rows.length ? (
         <div className="history-table">
           <div className="history-row history-head"><span>Indikator</span><span>Status</span><span>Skor</span><span>Komentar</span><span>Waktu</span></div>
-          {rows.map((item) => (
-            <Link className="history-row" href={`/details?id=${encodeURIComponent(item.id)}`} key={item.id}>
-              <span className="history-indicator"><strong>{item.indicator.displayValue}</strong><small>{item.indicator.type.toUpperCase()}</small></span>
+          {rows.map((item) => <article className="history-entry" key={item.id}>
+            <div className="history-row">
+              <Link className="history-indicator" href={`/details?id=${encodeURIComponent(item.id)}`}><strong>{item.indicator.displayValue}</strong><small>{item.indicator.type.toUpperCase()} · buka detail</small></Link>
               <span><b className={`status-chip status-${item.verdict}`}>{item.verdict.replaceAll('-', ' ')}</b></span>
               <span>{item.risk}/100</span>
-              <span>{item.comments.length ? `${item.comments.length} komentar` : 'Belum ada'}</span>
+              <button className="comment-toggle" type="button" disabled={!item.comments.length} onClick={() => setOpenComments(openComments === item.id ? null : item.id)}>{item.comments.length ? `${item.comments.length} komentar` : 'Belum ada'}</button>
               <time>{new Date(item.checkedAt).toLocaleString('id-ID')}</time>
-            </Link>
-          ))}
+            </div>
+            {openComments === item.id && <div className="history-comments">{item.comments.map((comment) => <article key={comment.id}><div><strong>{comment.author}</strong><time>{new Date(comment.createdAt).toLocaleString('id-ID')}</time></div><p>{comment.message}</p></article>)}</div>}
+          </article>)}
         </div>
       ) : (
         <div className="empty-card"><h2>Belum ada hasil yang cocok</h2><p>Coba kata kunci lain atau mulai pemeriksaan baru.</p><Link className="primary-action" href="/#scanner">Mulai cek</Link></div>

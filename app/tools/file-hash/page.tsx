@@ -1,16 +1,10 @@
 'use client';
 import Link from 'next/link';
 import { ChangeEvent, useState } from 'react';
+import { Icon } from '@/components/icon';
 
 export default function FileHashTool() {
-  const [result, setResult] = useState('');
-  const [name, setName] = useState('');
-  async function select(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setName(file.name);
-    const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
-    setResult([...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join(''));
-  }
-  return <main className="page"><Link href="/tools">← Semua alat</Link><p className="eyebrow">HASH FILE LOKAL</p><h1>Hitung SHA-256 tanpa upload.</h1><section className="panel"><label htmlFor="file">Pilih file</label><input id="file" type="file" onChange={select} /><p>File diproses hanya di browser dan tidak dikirim ke server.</p>{result && <><strong>{name}</strong><textarea readOnly value={result} aria-label="SHA-256 hash" /></>}</section></main>;
+  const [result, setResult] = useState(''); const [name, setName] = useState('');
+  async function select(event: ChangeEvent<HTMLInputElement>) { const file = event.target.files?.[0]; if (!file) return; setName(file.name); const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer()); setResult([...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('')); }
+  return <main className="compact-page tool-workspace"><Link className="back-link" href="/tools">← Semua alat</Link><header className="tool-hero"><span><Icon name="hash" size={30} /></span><div><p className="kicker">SIDIK JARI BERKAS</p><h1>Kenali berkas tanpa mengunggah isinya.</h1><p>Hash SHA-256 seperti nomor identitas unik untuk APK, dokumen, gambar, dan arsip.</p></div></header><div className="tool-layout"><section className="tool-form-card"><label className="large-file-picker" htmlFor="file"><Icon name="upload" size={34} /><strong>{name || 'Pilih berkas dari perangkat'}</strong><span>Isi berkas tetap berada di perangkat Anda.</span></label><input id="file" type="file" onChange={select} hidden />{result && <div className="hash-result"><span>SHA-256</span><code>{result}</code><Link className="primary-action" href={`/?ioc=${encodeURIComponent(result)}#scanner`}>Periksa hash ini <Icon name="arrow" /></Link></div>}</section><aside className="tool-guide"><h2>Contoh penggunaan</h2><ul><li>Periksa APK “undangan” dari chat.</li><li>Bandingkan file unduhan dengan hash dari situs resmi.</li><li>Cari apakah berkas yang sama pernah diperiksa.</li></ul><div className="guide-note"><Icon name="alert" /><p>Hash yang belum dikenal bukan berarti berkas aman.</p></div></aside></div></main>;
 }
