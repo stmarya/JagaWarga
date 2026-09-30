@@ -4,7 +4,7 @@ services:
     environment:
       NODE_ENV: production
       HOSTNAME: "0.0.0.0"
-      APP_VERSION: 0.13.0-rc.2
+      APP_VERSION: 0.13.0-rc.3
       APP_URL: http://127.0.0.1:${APP_PORT:-3000}
       ADMIN_METRICS_TOKEN: ${ADMIN_METRICS_TOKEN:?Run npm run local:env first}
       REDIS_URL: redis://redis:6379
