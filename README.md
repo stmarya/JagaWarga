@@ -1,6 +1,20 @@
 # JagaWarga
 
-JagaWarga adalah platform security lookup dan awareness untuk membantu pengguna awam **cek → pahami → bertindak → belajar**.
+**JagaWarga** adalah platform *digital security lookup*, panduan pertolongan pertama keamanan siber (*first-aid digital incident guide*), dan literasi digital terpadu untuk masyarakat Indonesia dengan prinsip **Cek → Pahami → Bertindak → Belajar**.
+
+> Dokumentasi lengkap visi, fitur, dan arsitektur dapat dibaca di [**`docs/PROJECT-OVERVIEW.md`**](docs/PROJECT-OVERVIEW.md).
+
+---
+
+## 🌟 Fitur Utama
+
+- 🔍 **Pusat Cek Digital ([`/periksa`](app/periksa/page.tsx))**: Memeriksa reputasi URL, domain, IP publik, teks pesan phishing, kode QR, dan hash SHA-256 berkas APK (diproses lokal di browser tanpa upload).
+- 🚨 **Pertolongan Pertama Digital ([`/emergency`](app/emergency/page.tsx))**: Panduan darurat cepat untuk warga yang terlanjur klik, transfer uang, menyerahkan OTP/password, atau memasang APK berbahaya.
+- 🤖 **AI Asisten Keamanan**: Asisten interaktif berbasis **Groq Llama 3.3 70B** yang *context-aware*, mengetahui halaman dan hasil lookup yang sedang dibuka untuk memberikan panduan bahasa manusiawi.
+- 📚 **Edukasi & Gamifikasi ([`/education`](app/education/page.tsx))**: Modul micro-learning, simulasi penipuan nyata di Indonesia, perolehan XP, dan badge pencapaian lokal.
+- 🛠️ **Alat Bantu Khusus ([`/tools`](app/tools/page.tsx))**: Pembongkar tautan singkat (*unshortener*), penganalisis header email, decoder QR, dan file hasher.
+
+---
 
 ## Status
 
