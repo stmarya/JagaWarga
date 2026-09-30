@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { ProgressBreadcrumb } from '@/components/page-navigation';
+import { Icon } from '@/components/icon';
 
 type Evidence = {
   provider: string;
@@ -75,10 +76,41 @@ export default function DetailsPage() {
 
   return (
     <main className="compact-page detail-page">
-      <ProgressBreadcrumb current="detail" />
+      <div className="print-report-banner print-only">
+        <div className="print-banner-brand">
+          <strong>JAGAWENSI & KEAMANAN SIBER WARGA</strong>
+          <span>Laporan Resmi Verifikasi Indikator Ancaman (IOC)</span>
+        </div>
+        <div className="print-banner-meta">
+          <span>Dicetak: {new Date().toLocaleString('id-ID')}</span>
+          <span>Platform: JagaWarga</span>
+        </div>
+      </div>
+
+      <div className="no-print">
+        <ProgressBreadcrumb current="detail" />
+      </div>
+
       <header className="detail-header">
-        <div><p className="step-label">DETAIL TEKNIS IOC</p><h1>Respons sumber lengkap</h1><p>Data teknis dipisahkan dari ringkasan agar hasil utama tetap mudah dipahami.</p></div>
-        <span className="verdict-pill">{result.verdict.replaceAll('-', ' ')}</span>
+        <div>
+          <p className="step-label">DETAIL TEKNIS IOC</p>
+          <h1>Respons sumber lengkap</h1>
+          <p>Data teknis dipisahkan dari ringkasan agar hasil utama tetap mudah dipahami.</p>
+        </div>
+        <div className="detail-header-actions">
+          <span className="verdict-pill">{result.verdict.replaceAll('-', ' ')}</span>
+          <div className="no-print action-buttons-group">
+            <button
+              type="button"
+              className="pdf-download-btn"
+              onClick={() => window.print()}
+              title="Cetak atau simpan laporan lengkap sebagai file PDF"
+            >
+              <Icon name="file" size={16} />
+              <span>Unduh Laporan PDF</span>
+            </button>
+          </div>
+        </div>
       </header>
       <section className="facts-grid">
         <div><span>Indikator</span><strong>{result.indicator.displayValue}</strong></div>

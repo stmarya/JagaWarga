@@ -1,7 +1,7 @@
 import { educationTopics, topicQuestions, type Topic } from './education';
 import { runtimeRedis } from './runtime/redis';
 
-const KEY = 'jagawarga:education-catalog:v1';
+const KEY = 'jagawarga:education-catalog:v2';
 
 export type EducationTopicDetail = Topic & {
   questions: ReturnType<typeof topicQuestions>;

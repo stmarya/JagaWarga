@@ -13,6 +13,7 @@ type Topic = TopicSummary & { lessons: Lesson[]; questions: Question[] };
 const topicIcons: Record<string, IconName> = {
   phishing: 'alert', password: 'key', mfa: 'shield', device: 'device', network: 'network',
   privacy: 'privacy', malware: 'file', transaction: 'transaction', work: 'work', 'ai-misinformation': 'spark',
+  'safe-chat': 'message', 'incident-response': 'alert',
 };
 
 export default function EducationPage() {

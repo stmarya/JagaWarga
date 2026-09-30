@@ -1,21 +1,36 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Icon } from '@/components/icon';
 
 export function SiteHeader() {
+  const pathname = usePathname() || '/';
+
   return (
     <header className="site-header">
       <nav className="site-nav" aria-label="Navigasi utama">
         <Link className="wordmark" href="/" aria-label="JagaWarga, beranda">
           <span className="wordmark-mark" aria-hidden="true">JW</span>
-          <span><strong>JAGA/WARGA</strong><small>Pusat cek digital</small></span>
+          <span>
+            <strong>JAGA/WARGA</strong>
+            <small>Pusat Cek Digital</small>
+          </span>
         </Link>
+        <span className="system-live-pill" aria-label="Status sistem: Siaga">
+          <span className="live-dot" aria-hidden="true" />
+          <span>Sistem Siaga</span>
+        </span>
         <div className="nav-links">
-          <Link href="/#scanner">Mulai cek</Link>
-          <Link href="/dashboard">Riwayat</Link>
-          <Link href="/education">Edukasi</Link>
-          <Link href="/tools">Alat Bantu</Link>
+          <Link className={pathname === '/' ? 'active' : ''} href="/#scanner">Mulai Cek</Link>
+          <Link className={pathname.startsWith('/dashboard') ? 'active' : ''} href="/dashboard">Riwayat</Link>
+          <Link className={pathname.startsWith('/education') ? 'active' : ''} href="/education">Edukasi</Link>
+          <Link className={pathname.startsWith('/tools') ? 'active' : ''} href="/tools">Alat Bantu</Link>
         </div>
-        <Link className="nav-emergency" href="/emergency"><span aria-hidden="true">!</span> Darurat</Link>
+        <Link className={`nav-emergency ${pathname.startsWith('/emergency') ? 'active' : ''}`} href="/emergency" title="Panduan jika sudah terlanjur klik atau transfer">
+          <span className="emergency-icon" aria-hidden="true">!</span>
+          <span>Darurat</span>
+        </Link>
       </nav>
     </header>
   );

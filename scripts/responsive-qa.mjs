@@ -3,7 +3,7 @@ import { chromium } from 'playwright';
 
 const baseUrl = process.env.BASE_URL || 'http://127.0.0.1:3000';
 const widths = [320, 360, 375, 390, 414, 768, 820, 1024, 1280, 1440];
-const routes = ['/', '/dashboard', '/result', '/details', '/education', '/tools', '/tools/email-header', '/tools/message', '/tools/file-hash', '/tools/qr', '/emergency'];
+const routes = ['/', '/dashboard', '/result', '/details', '/education', '/tools', '/tools/email-header', '/tools/message', '/tools/file-hash', '/tools/qr', '/tools/unshorten', '/emergency'];
 const candidates = [
   process.env.CHROMIUM_PATH,
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',

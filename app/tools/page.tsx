@@ -8,8 +8,9 @@ const categories: Array<{
 }> = [
   {
     title: 'Analisis komunikasi',
-    description: 'Baca pola manipulasi pada pesan dan autentikasi email.',
+    description: 'Baca pola manipulasi pada pesan, tautan tersembunyi, dan autentikasi email.',
     tools: [
+      { name: 'Pemeriksa tautan singkat', href: '/tools/unshorten', copy: 'Buka alamat asli di balik bit.ly, s.id, dan tinyurl tanpa mengeklik langsung.', icon: 'link', meta: 'Tautan · pelacakan pengalihan' },
       { name: 'Analisis pesan', href: '/tools/message', copy: 'Temukan urgensi, permintaan OTP, transaksi, dan penyamaran identitas.', icon: 'message', meta: 'Teks · diproses sementara' },
       { name: 'Pemeriksaan email', href: '/tools/email-header', copy: 'Periksa SPF, DKIM, DMARC, jalur penerimaan, dan ketidaksesuaian Reply-To.', icon: 'email', meta: 'Header email · tanpa penyimpanan' },
     ],
