@@ -72,28 +72,45 @@ ${JSON.stringify(knowledge)}`;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), MODEL_TIMEOUT_MS);
     const started = performance.now();
+    const candidateModels = [
+      process.env.GROQ_MODEL,
+      'openai/gpt-oss-120b',
+      'openai/gpt-oss-20b',
+      'qwen/qwen3.8-27b',
+      'llama-3.3-70b-versatile',
+    ].filter(Boolean) as string[];
+    const modelsToTry = Array.from(new Set(candidateModels));
+
     try {
-      const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${groqKey}` },
-        signal: controller.signal,
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: [{ role: 'system', content: systemPrompt }, ...messages],
-          temperature: 0.2,
-          max_tokens: 1_000,
-          response_format: { type: 'json_object' },
-        }),
-      });
-      if (!groqResponse.ok) throw new Error(`PROVIDER_${groqResponse.status}`);
-      const data = await groqResponse.json();
-      const rawReply = data.choices?.[0]?.message?.content;
-      const parsed = typeof rawReply === 'string' ? safeReply(extractJson(rawReply)) : null;
-      if (!parsed) throw new Error('PROVIDER_INVALID_RESPONSE');
-      parsed.sources = officialSources(parsed.intent);
-      if (!parsed.links.length) parsed.links = fallback.links;
-      await recordMetric('ai_chat_model', performance.now() - started);
-      return response(parsed, id, 'groq/llama-3.3-70b-versatile');
+      for (const targetModel of modelsToTry) {
+        try {
+          const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${groqKey}` },
+            signal: controller.signal,
+            body: JSON.stringify({
+              model: targetModel,
+              messages: [{ role: 'system', content: systemPrompt }, ...messages],
+              temperature: 0.2,
+              max_tokens: 1_000,
+              response_format: { type: 'json_object' },
+            }),
+          });
+          if (!groqResponse.ok) continue;
+          const data = await groqResponse.json();
+          const rawReply = data.choices?.[0]?.message?.content;
+          const parsed = typeof rawReply === 'string' ? safeReply(extractJson(rawReply)) : null;
+          if (!parsed) continue;
+          parsed.sources = officialSources(parsed.intent);
+          if (!parsed.links.length) parsed.links = fallback.links;
+          await recordMetric('ai_chat_model', performance.now() - started);
+          return response(parsed, id, `groq/${targetModel}`);
+        } catch {
+          // If aborted due to timeout, break immediately
+          if (controller.signal.aborted) break;
+        }
+      }
+      throw new Error('PROVIDER_EXHAUSTED');
     } catch {
       await recordMetric('ai_chat_model', performance.now() - started, true);
       await recordMetric('ai_chat_fallback', 0);
