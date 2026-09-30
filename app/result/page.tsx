@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
-import { Icon } from '@/components/icon';
+import { Icon, type IconName } from '@/components/icon';
 import { ProgressBreadcrumb } from '@/components/page-navigation';
 
 type Evidence = {
@@ -77,13 +77,37 @@ function contextualActions(result: Result, reasons: string[]) {
 
 function possibleThreats(result: Result, reasons: string[]) {
   const codes = new Set(reasons);
-  const threats: Array<{ title: string; detail: string; icon: 'key' | 'transaction' | 'device' | 'privacy' | 'alert' }> = [];
-  if (codes.has('CREDENTIAL_REQUEST') || ['phishing', 'high-risk'].includes(result.verdict)) threats.push({ title: 'Akun dapat diambil alih', detail: 'Kata sandi, OTP, atau sesi login dapat dicuri dan dipakai pelaku.', icon: 'key' });
-  if (codes.has('MONEY_REQUEST') || result.risk >= 70) threats.push({ title: 'Kerugian uang', detail: 'Pelaku dapat mengarahkan transfer, pembayaran palsu, atau pencurian saldo.', icon: 'transaction' });
-  if (codes.has('VT_MULTIPLE_MALICIOUS_DETECTIONS') || result.indicator?.type === 'hash') threats.push({ title: 'Perangkat terinfeksi', detail: 'Berkas dapat memasang aplikasi berbahaya, mencuri data, atau mengunci perangkat.', icon: 'device' });
-  if (codes.has('IMPERSONATION') || codes.has('PRIZE_OR_REFUND')) threats.push({ title: 'Penipuan identitas', detail: 'Nama lembaga atau orang yang dikenal dapat dipakai untuk membangun kepercayaan palsu.', icon: 'privacy' });
-  if (codes.has('SHORT_LINK') || result.indicator?.type === 'url' || result.indicator?.type === 'domain') threats.push({ title: 'Situs palsu', detail: 'Halaman dapat meniru layanan resmi untuk mengambil data login atau pembayaran.', icon: 'alert' });
-  return threats.slice(0, 5);
+  const threats: Array<{ title: string; detail: string; action: string; icon: IconName }> = [];
+  const add = (title: string, detail: string, action: string, icon: IconName) => {
+    if (!threats.some((item) => item.title === title)) threats.push({ title, detail, action, icon });
+  };
+  if (codes.has('CREDENTIAL_REQUEST') || ['phishing', 'high-risk'].includes(result.verdict)) add('Akun dapat diambil alih', 'Kata sandi, OTP, atau sesi login dapat dicuri dan dipakai pelaku.', 'Jangan masukkan data login; ganti sandi jika sudah terlanjur.', 'key');
+  if (codes.has('MONEY_REQUEST') || result.risk >= 70) add('Kerugian uang', 'Pelaku dapat mengarahkan transfer, pembayaran palsu, atau pencurian saldo.', 'Tunda transaksi dan hubungi bank melalui kanal resmi.', 'transaction');
+  if (codes.has('IMPERSONATION') || codes.has('PRIZE_OR_REFUND')) add('Penyamaran identitas', 'Nama lembaga, kurir, atasan, atau keluarga dapat dipakai untuk membangun kepercayaan palsu.', 'Konfirmasi menggunakan kontak yang sudah Anda simpan.', 'privacy');
+  if (codes.has('SHORT_LINK')) add('Tujuan tautan disembunyikan', 'Tautan pendek dapat mengarahkan Anda ke situs berbeda dari yang terlihat.', 'Jangan buka sebelum alamat tujuan diketahui.', 'link');
+  if (result.indicator?.type === 'url' || result.indicator?.type === 'domain') {
+    add('Situs tiruan atau phishing', 'Halaman dapat meniru bank, marketplace, login, atau layanan pemerintah.', 'Periksa ejaan domain dan buka layanan dari aplikasi resmi.', 'link');
+    add('Pelacakan dan pengalihan', 'Alamat dapat mencatat perangkat lalu mengalihkan Anda ke halaman berbahaya.', 'Jangan izinkan notifikasi, unduhan, atau akses lokasi.', 'network');
+  }
+  if (result.indicator?.type === 'hash' || codes.has('VT_MULTIPLE_MALICIOUS_DETECTIONS') || codes.has('VT_SINGLE_MALICIOUS_DETECTION')) {
+    add('Malware pada berkas', 'APK, dokumen, atau arsip dapat mencuri data, merekam layar, atau mengunci perangkat.', 'Jangan pasang atau buka; isolasi dan hapus berkas jika tidak dipercaya.', 'file');
+  }
+  if (result.indicator?.type === 'ipv4' || result.indicator?.type === 'ipv6') {
+    add('Server pengendali serangan', 'Alamat IP dapat digunakan untuk mengendalikan malware, botnet, atau pemindaian jaringan.', 'Blokir alamat pada firewall dan periksa log koneksi.', 'network');
+  }
+  if (result.analysisKind === 'message') add('Rekayasa sosial', 'Isi pesan dapat memancing panik, penasaran, atau rasa percaya agar Anda bertindak cepat.', 'Berhenti, baca ulang, lalu konfirmasi kepada pihak terkait.', 'message');
+  if (result.analysisKind === 'email-header') add('Email palsu', 'Alamat pengirim dapat dipalsukan atau diarahkan ke alamat balasan yang berbeda.', 'Jangan balas; hubungi organisasi melalui situs resminya.', 'email');
+  return threats.slice(0, 6);
+}
+
+function statPresentation(name: string) {
+  const key = name.toLowerCase();
+  if (key === 'malicious') return { label: 'Berbahaya', tone: 'danger' };
+  if (key === 'suspicious') return { label: 'Mencurigakan', tone: 'warning' };
+  if (key === 'harmless') return { label: 'Tidak terdeteksi', tone: 'safe' };
+  if (key === 'undetected') return { label: 'Belum dinilai', tone: 'neutral' };
+  if (key === 'timeout') return { label: 'Tidak merespons', tone: 'timeout' };
+  return { label: name.replaceAll('_', ' '), tone: 'neutral' };
 }
 
 function contextualFindings(result: Result, reasons: string[]) {
@@ -196,10 +220,15 @@ export default function ResultPage() {
           <p className="result-lead">{severity.summary}</p>
           {result.indicator && <p className="indicator-value">{result.indicator.type.toUpperCase()} · {result.indicator.displayValue}</p>}
         </div>
-        <div className={`score score-${scoreLevel}`} aria-label={`Skor risiko ${result.risk} dari 100`}><strong>{result.risk}</strong><span>/100</span><small>{severity.label}</small></div>
+        <aside className={`severity-panel severity-panel-${scoreLevel}`} aria-label={`Status ${severity.answer}, skor risiko ${result.risk}`}>
+          <span className="severity-panel-kicker">STATUS PEMERIKSAAN</span>
+          <strong>{severity.answer}</strong>
+          <div className="severity-score-row"><span>Skor risiko</span><b>{result.risk}</b></div>
+          <div className="severity-meter"><i style={{ width: `${Math.max(4, result.risk)}%` }} /></div>
+        </aside>
       </section>
 
-      {threats.length > 0 && <section className="threat-section"><div className="section-heading-simple"><p className="step-label">DAMPAK YANG MUNGKIN TERJADI</p><h2>Mengapa Anda perlu berhati-hati?</h2></div><div className="threat-grid">{threats.map((threat) => <article key={threat.title}><span><Icon name={threat.icon} /></span><div><strong>{threat.title}</strong><p>{threat.detail}</p></div></article>)}</div></section>}
+      {threats.length > 0 && <section className="threat-section"><div className="section-heading-simple"><p className="step-label">DAMPAK YANG MUNGKIN TERJADI</p><h2>Mengapa Anda perlu berhati-hati?</h2></div><div className="threat-grid">{threats.map((threat) => <article key={threat.title}><span><Icon name={threat.icon} /></span><div><strong>{threat.title}</strong><p>{threat.detail}</p><small><Icon name="shield" size={13} /> {threat.action}</small></div></article>)}</div></section>}
 
       {urgent && <aside className="emergency-callout">
         <div><strong><Icon name="alert" /> Sudah terlanjur klik atau transfer uang?</strong><p>Jangan panik. Putuskan interaksi dan ikuti langkah pertolongan pertama.</p></div>
@@ -221,7 +250,7 @@ export default function ResultPage() {
       {reputation && <details className="quick-technical">
         <summary>Lihat ringkasan mesin keamanan</summary>
         <div className="quick-stats">
-          {Object.keys(stats).length ? Object.entries(stats).map(([name, count]) => <span key={name}><strong>{count}</strong>{name}</span>) : <p>Sumber reputasi belum memiliki statistik analisis.</p>}
+          {Object.keys(stats).length ? Object.entries(stats).map(([name, count]) => { const view = statPresentation(name); return <span className={`quick-stat quick-stat-${view.tone}`} key={name}><strong>{count}</strong><b>{view.label}</b><small>{name}</small></span>; }) : <p>Sumber reputasi belum memiliki statistik analisis.</p>}
         </div>
         <p>Metadata dan hasil setiap mesin tersedia pada halaman detail.</p>
       </details>}
