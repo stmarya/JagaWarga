@@ -80,14 +80,14 @@ export default function Dashboard() {
     <main className="compact-page history-page">
       <header className="page-heading">
         <div><p className="kicker">RIWAYAT KOMUNITAS</p><h1>Hasil yang sudah diperiksa</h1><p>Temukan indikator yang pernah dicek dan baca konteks dari warga lain.</p></div>
-        <Link className="secondary-action" href="/#scanner">Scanner lengkap</Link>
+        <Link className="secondary-action" href="/periksa#scanner">Scanner lengkap</Link>
       </header>
 
       <section className="dashboard-lookup">
-        <div className="dashboard-lookup-copy"><Icon name="search" size={26} /><div><h2>Periksa IoC langsung</h2><p>Masukkan URL, domain, IP publik, atau hash. Hasil akan disimpan ke riwayat komunitas.</p></div></div>
+        <div className="dashboard-lookup-copy"><Icon name="search" size={26} /><div><h2>Periksa alamat atau tautan</h2><p>Tempel tautan, domain, IP publik, atau sidik jari berkas. Hasilnya dapat dibaca kembali oleh warga lain.</p></div></div>
         <form onSubmit={lookup}>
           <label className="sr-only" htmlFor="dashboard-lookup">Indikator yang ingin diperiksa</label>
-          <input id="dashboard-lookup" value={lookupValue} onChange={(event) => setLookupValue(event.target.value)} placeholder="contoh.id, 8.8.8.8, atau hash SHA-256" autoComplete="off" spellCheck="false" />
+          <input id="dashboard-lookup" value={lookupValue} onChange={(event) => setLookupValue(event.target.value)} placeholder="contoh.id, 8.8.8.8, atau sidik jari berkas" autoComplete="off" spellCheck="false" />
           <button disabled={!lookupValue.trim() || lookupLoading}>{lookupLoading ? 'Memeriksa…' : <>Periksa <Icon name="arrow" /></>}</button>
         </form>
         {lookupNotice && <p className="inline-alert" role="alert">{lookupNotice}</p>}
@@ -120,7 +120,7 @@ export default function Dashboard() {
           </article>)}
         </div>
       ) : (
-        <div className="empty-card"><h2>Belum ada hasil yang cocok</h2><p>Coba kata kunci lain atau mulai pemeriksaan baru.</p><Link className="primary-action" href="/#scanner">Mulai cek</Link></div>
+        <div className="empty-card"><h2>Belum ada hasil yang cocok</h2><p>Coba kata kunci lain atau mulai pemeriksaan baru.</p><Link className="primary-action" href="/periksa#scanner">Mulai cek</Link></div>
       )}
 
       <aside className="privacy-banner"><strong>Catatan komunitas</strong><p>Jangan masukkan data pribadi, token, kata sandi, atau rahasia organisasi ke kolom pemeriksaan maupun komentar.</p></aside>
