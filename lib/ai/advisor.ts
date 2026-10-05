@@ -72,6 +72,25 @@ export function buildLocalReply(prompt: string, context: AiContext): AiReply {
     };
   }
 
+  const lower = prompt.toLowerCase();
+  const asksAboutLinkSafety = intent === 'general'
+    && /(link|tautan|url|domain)/.test(lower)
+    && /(aman|bahaya|mencurig|klik|streaming|buka)/.test(lower);
+  if (asksAboutLinkSafety) {
+    return {
+      intent,
+      status: 'Perlu diperiksa',
+      tone: 'warning',
+      summary: 'Link ini belum bisa dinyatakan aman hanya dari namanya. Periksa dulu sebelum dibuka.',
+      why: ['Nama domain saja tidak cukup untuk memastikan tujuan dan isi halaman.'],
+      actions: ['Tempel link ke Pemeriksa JagaWarga sebelum membukanya.'],
+      avoid: ['Jangan login atau memasukkan data pribadi di halaman tersebut.'],
+      escalation: [],
+      sources: [],
+      links: [{ label: 'Periksa tautan', href: '/#scanner' }],
+    };
+  }
+
   const threat = detectThreat(prompt);
   if (intent === 'general' && threat) {
     return {
@@ -151,14 +170,14 @@ export function buildLocalReply(prompt: string, context: AiContext): AiReply {
     intent,
     status: 'Siap membantu',
     tone: 'neutral',
-    summary: 'Ceritakan hal yang membuat Anda ragu. Saya dapat membantu menjelaskan hasil pemeriksaan, memilih alat, atau menyusun langkah darurat.',
+    summary: 'Ceritakan tautan, pesan, email, atau berkas yang membuat Anda ragu.',
     why: [],
-    actions: ['Sebutkan apakah Anda menerima tautan, pesan, email, berkas, atau permintaan transfer.', 'Jangan sertakan OTP, PIN, kata sandi, atau nomor kartu.'],
-    avoid: ['Jangan membuka kembali konten mencurigakan hanya untuk mengambil informasi tambahan.'],
+    actions: [],
+    avoid: [],
     escalation: [],
     sources: [],
     links,
-    followUp: 'Apa yang Anda terima dan apakah Anda sudah melakukan sesuatu terhadapnya?',
+    
   };
 }
 export function detectThreat(prompt: string): AiReply['threat'] {

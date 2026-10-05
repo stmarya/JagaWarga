@@ -285,3 +285,21 @@
 @media (prefers-reduced-motion: reduce) {
   .ai-privacy-note { transition: none; }
 }
+
+/* Keep secondary AI details lightweight instead of inheriting the global panel border. */
+.ai-secondary-details {
+  border: 0 !important;
+  background: transparent;
+  padding: 0 !important;
+}
+.ai-secondary-details summary {
+  width: max-content;
+  max-width: 100%;
+  padding: 7px 0;
+  list-style: none;
+  color: #3157d5;
+  font-weight: 800;
+}
+.ai-secondary-details summary::-webkit-details-marker { display: none; }
+.ai-secondary-details summary::before { content: '＋'; margin-right: 5px; }
+.ai-secondary-details[open] summary::before { content: '－'; }

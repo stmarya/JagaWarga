@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { AiContext, AiMessage, AiReply, AiScanResult } from '@/lib/ai/types';
 
+const CONVERSATION_STORAGE_KEY = 'jagawarga:ai-conversation:v2';
+
 const WELCOME: AiReply = {
   intent: 'general',
   status: 'Pendamping keamanan digital',
@@ -118,7 +120,7 @@ export function AiAssistant() {
   useEffect(() => {
     setLastResult(readResult());
     try {
-      const stored = sessionStorage.getItem('jagawarga:ai-conversation');
+      const stored = sessionStorage.getItem(CONVERSATION_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length) setItems(parsed.slice(-10));
@@ -148,7 +150,7 @@ export function AiAssistant() {
 
   function persist(next: ConversationItem[]) {
     setItems(next);
-    try { sessionStorage.setItem('jagawarga:ai-conversation', JSON.stringify(next.slice(-10))); } catch { /* Keep in memory. */ }
+    try { sessionStorage.setItem(CONVERSATION_STORAGE_KEY, JSON.stringify(next.slice(-10))); } catch { /* Keep in memory. */ }
   }
 
   async function send(value?: string) {
