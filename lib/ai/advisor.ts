@@ -6,9 +6,13 @@ export function detectIntent(prompt: string, context: AiContext): AiReply['inten
   const lower = prompt.toLowerCase();
   const emergency = /(terlanjur|sudah|telah|baru saja).{0,35}(transfer|klik|pasang|instal|kirim|beri)|kena tipu|saldo.*hilang|akun.*diambil/.test(lower);
   const negated = /(belum|tidak|jangan).{0,20}(transfer|klik|pasang|instal|kirim)/.test(lower);
+  const asksEducation = /(belajar|edukasi|jelaskan|apa itu|contoh|latihan|contohkan)/.test(lower);
+  const asksCurrentResult = /(hasil( ini| pemeriksaan| terakhir)?|skor risiko|indikator( ini| terakhir)?|data pemeriksaan|kenapa.*(hasil|skor)|mengapa.*(hasil|skor))/.test(lower);
   if (emergency && !negated) return 'emergency';
-  if (context.lastResult && (context.pathname.includes('/result') || context.pathname.includes('/details') || /(hasil|indikator|risiko|aman|domain|tautan|ip|hash|berkas|ini)/.test(lower))) return 'result';
-  if (context.pathname.includes('/education') || /(belajar|edukasi|jelaskan|apa itu|contoh)/.test(lower)) return 'education';
+  // Educational questions must not be hijacked by the active result context.
+  if (asksEducation && !asksCurrentResult) return 'education';
+  if (context.lastResult && (asksCurrentResult || context.pathname.includes('/result') || context.pathname.includes('/details') || /(reputasi|resmi|aman|bahaya|domain|tautan|link|ip|hash|berkas|ini)/.test(lower))) return 'result';
+  if (context.pathname.includes('/education')) return 'education';
   if (context.pathname.includes('/tools') || /(alat|header|hash|qr|tautan pendek|analisis pesan)/.test(lower)) return 'tool';
   return 'general';
 }
@@ -19,10 +23,7 @@ function linksFor(intent: AiReply['intent'], context: AiContext): AiLink[] {
     { label: 'Laporkan ke IASC', href: 'https://iasc.ojk.go.id/' },
     { label: 'Laporkan ke Patroli Siber', href: 'https://patrolisiber.id/' },
   ];
-  if (intent === 'result') return [
-    { label: 'Lihat detail teknis', href: '/details' },
-    { label: 'Periksa indikator lain', href: '/#scanner' },
-  ];
+  if (intent === 'result') return [{ label: 'Lihat detail teknis', href: '/details' }];
   if (intent === 'education') return [{ label: 'Buka materi edukasi', href: '/education' }];
   if (intent === 'tool') return [{ label: 'Pilih alat bantu', href: '/tools' }];
   return context.lastResult
@@ -35,6 +36,7 @@ export function buildLocalReply(prompt: string, context: AiContext): AiReply {
   const last = context.lastResult;
   const sources = officialSources(intent);
   const links = linksFor(intent, context);
+  const lower = prompt.toLowerCase();
 
   if (intent === 'result' && last) {
     const severity = severityFor(last);
@@ -52,18 +54,31 @@ export function buildLocalReply(prompt: string, context: AiContext): AiReply {
       PROVIDER_ERROR: 'Sebagian sumber pemeriksaan tidak berhasil merespons.',
     };
     const why = reasons.map((code) => reasonText[code]).filter((item): item is string => Boolean(item)).slice(0, 5);
+    const asksOfficialSource = /(resmi|penyedia layanan|pemilik|benar.?benar dari|asli)/.test(lower);
+    const asksReputation = /(reputasi|aman|bahaya|boleh dibuka|klik)/.test(lower);
+    if (asksOfficialSource) why.unshift('Skor reputasi tidak sama dengan verifikasi bahwa domain dimiliki penyedia layanan resmi.');
+    if (asksReputation) why.unshift('Hasil ini belum cukup untuk menjamin halaman aman atau bebas dari penipuan.');
     if (!why.length) why.push(last.partial ? 'Sebagian sumber belum memberikan data lengkap.' : 'Belum ada sinyal teknis kuat pada data yang tersedia.');
+    const resultActions = asksOfficialSource
+      ? ['Cari situs resmi penyedia dengan mengetik alamatnya sendiri, lalu bandingkan domain.', 'Jangan login atau memasukkan data pribadi dari link ini sebelum domain terverifikasi.']
+      : asksReputation
+        ? ['Jangan buka atau login dari link ini sampai pemeriksaan selesai.', 'Ulangi pemeriksaan nanti saat sumber reputasi tersedia.']
+        : last.actions.length
+          ? last.actions.slice(0, 3)
+          : [
+            severity.level === 'critical' ? 'Hentikan interaksi dan jangan membuka tautan atau berkasnya.' : 'Verifikasi pengirim melalui kontak resmi yang Anda cari sendiri.',
+            last.partial ? 'Ulangi pemeriksaan nanti karena hasil belum lengkap.' : 'Periksa detail teknis sebelum mengambil keputusan penting.',
+          ];
+    const resultSummary = asksOfficialSource
+      ? `${last.indicator?.displayValue || 'Indikator ini'} belum dapat dipastikan sebagai layanan resmi. Skor ${last.risk} hanya menggambarkan hasil pemeriksaan yang tersedia.`
+      : `${last.indicator?.displayValue || 'Indikator ini'} mendapat skor risiko ${last.risk}. ${severity.summary}`;
     return {
       intent,
       status: severity.label,
       tone: severity.tone === 'danger' ? 'danger' : severity.tone === 'safe' ? 'safe' : severity.tone === 'neutral' ? 'neutral' : 'warning',
-      summary: `${last.indicator?.displayValue || 'Indikator ini'} mendapat skor risiko ${last.risk}. ${severity.summary}`,
+      summary: resultSummary,
       why,
-      actions: last.actions.length ? last.actions.slice(0, 6) : [
-        severity.level === 'critical' ? 'Hentikan interaksi dan jangan membuka tautan atau berkasnya.' : 'Verifikasi pengirim melalui kontak resmi yang Anda cari sendiri.',
-        'Simpan alamat, waktu kejadian, dan tangkapan layar sebagai bukti.',
-        last.partial ? 'Ulangi pemeriksaan nanti karena hasil belum lengkap.' : 'Periksa detail teknis sebelum mengambil keputusan penting.',
-      ],
+      actions: resultActions,
       avoid: ['Jangan memberikan OTP, PIN, kata sandi, atau data kartu.', 'Jangan menyimpulkan “aman” hanya karena satu pemeriksaan tidak menemukan ancaman.'],
       escalation: last.risk >= 40 ? ['Laporkan akun atau konten kepada platform terkait.', 'Jika sudah mengalami kerugian, buka panduan darurat dan hubungi lembaga resmi.'] : [],
       sources,
@@ -72,7 +87,6 @@ export function buildLocalReply(prompt: string, context: AiContext): AiReply {
     };
   }
 
-  const lower = prompt.toLowerCase();
   const asksAboutLinkSafety = intent === 'general'
     && /(link|tautan|url|domain)/.test(lower)
     && /(aman|bahaya|mencurig|klik|streaming|buka)/.test(lower);
@@ -102,7 +116,6 @@ export function buildLocalReply(prompt: string, context: AiContext): AiReply {
       actions: [
         'Berhenti sejenak. Jangan klik tautan atau mengikuti instruksi di pesan.',
         'Verifikasi pengirim melalui aplikasi, nomor, atau situs resmi yang Anda cari sendiri.',
-        'Jika sudah berinteraksi, simpan bukti dan buka panduan darurat.',
       ],
       avoid: ['Jangan memberikan OTP, PIN, kata sandi, nomor kartu, atau kode pemulihan.'],
       escalation: [],
@@ -176,8 +189,7 @@ export function buildLocalReply(prompt: string, context: AiContext): AiReply {
     avoid: [],
     escalation: [],
     sources: [],
-    links,
-    
+    links: context.lastResult ? [{ label: 'Lihat hasil terakhir', href: '/result' }] : [{ label: 'Mulai pemeriksaan', href: '/#scanner' }],
   };
 }
 export function detectThreat(prompt: string): AiReply['threat'] {

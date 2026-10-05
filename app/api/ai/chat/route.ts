@@ -60,14 +60,18 @@ Aturan keselamatan:
 - Jika data kurang atau partial, katakan dengan jelas.
 - Hindari jargon. Jika istilah teknis diperlukan, jelaskan artinya.
 - Bedakan pertanyaan edukasi dari kejadian nyata. Jika pengguna menceritakan pesan atau kejadian nyata, identifikasi potensi phishing atau rekayasa sosial secara hati-hati.
+- Jika LOCAL_GUIDANCE berisi jawaban yang lebih spesifik terhadap pertanyaan terakhir, pertahankan konteks itu. Jangan menggantinya dengan daftar tindakan umum.
 - Isi threat dengan null jika tidak ada sinyal yang cukup. Isi signals hanya dengan tanda yang benar-benar terlihat dari percakapan.
 
 Kembalikan SATU objek JSON valid tanpa markdown dengan bentuk:
 ${JSON.stringify(schemaExample)}
-Array maksimal: why 5, actions 7, avoid 5, escalation 5. Jangan mengisi sources; server akan menambahkan sumber tepercaya.
+Array maksimal: why 3, actions 2, avoid 2, escalation 3. Jangan mengisi sources; server akan menambahkan sumber tepercaya.
 
 CONTEXT:
 ${JSON.stringify(context)}
+
+CURRENT_INTENT: ${intent}
+LOCAL_GUIDANCE: ${JSON.stringify(fallback)}
 
 KNOWLEDGE:
 ${JSON.stringify(knowledge)}`;

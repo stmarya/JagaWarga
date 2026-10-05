@@ -78,7 +78,7 @@ function ReplyCard({ reply }: { reply: AiReply }) {
   return <article className={`ai-reply-card ai-tone-${reply.tone}${isWelcome ? ' ai-welcome-card' : ''}`}>
     <div className="ai-reply-heading"><span>{reply.status}</span><strong>{reply.summary}</strong></div>
     {reply.threat && <div className="ai-threat-badge" role="status">{reply.threat.label}</div>}
-    {reply.actions.length > 0 && <section className="ai-reply-actions"><h3>Langkah berikutnya</h3><ol>{reply.actions.map((item) => <li key={item}>{item}</li>)}</ol></section>}
+    {reply.actions.length > 0 && <section className="ai-reply-actions"><h3>Langkah berikutnya</h3><ol>{reply.actions.slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ol></section>}
     {hasSecondaryDetails && <details className="ai-secondary-details">
       <summary>Lihat alasan dan detail</summary>
       {reply.why.length > 0 && <section><h3>Mengapa demikian?</h3><ul>{reply.why.map((item) => <li key={item}>{item}</li>)}</ul></section>}
