@@ -65,3 +65,45 @@
   .scanner-intro > p:not(.kicker),
   .page-heading > div:first-child > p:not(.kicker) { max-width: none; }
 }
+
+
+/* Phase 4: responsive and accessibility guardrails. */
+.intake-tabs button,
+.emergency-cases button,
+.level-tabs button,
+.tool-card,
+.primary-action,
+.secondary-action {
+  min-height: 44px;
+}
+
+.intake-tabs button:focus-visible,
+.emergency-cases button:focus-visible,
+.level-tabs button:focus-visible,
+.tool-card:focus-visible {
+  outline: 3px solid var(--ui-blue);
+  outline-offset: 3px;
+}
+
+.progress-breadcrumb,
+.nav-links {
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+}
+
+@media (max-width: 720px) {
+  .intake-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .flow-strip { grid-template-columns: 1fr; }
+  .flow-strip div { border-right: 0; border-bottom: 1px solid #cfd3db; }
+  .flow-strip div:last-child { border-bottom: 0; }
+  .progress-breadcrumb { padding-bottom: 4px; }
+}
+
+@media (max-width: 400px) {
+  .intake-tabs { grid-template-columns: 1fr; }
+  .scanner-card-head { align-items: flex-start; flex-direction: column; gap: 4px; padding: 9px 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
