@@ -178,3 +178,67 @@
   .education-page .topic-card { min-height: 200px; }
   .education-page .topic-card > strong { max-width: none; }
 }
+
+/* AI assistant: calm hierarchy and progressive disclosure. */
+.ai-chat-window {
+  width: min(520px, calc(100vw - 32px));
+  height: min(680px, calc(100dvh - 40px));
+  border-radius: 16px;
+}
+
+.ai-chat-header { padding: 14px 16px; }
+.ai-chat-title-group { gap: 10px; }
+.ai-chat-title-group strong { font-size: .96rem; }
+.ai-chat-title-group div > span { font-size: .74rem; }
+
+.ai-privacy-note {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 3px 8px;
+  padding: 10px 16px;
+  font-size: .74rem;
+  line-height: 1.4;
+}
+.ai-privacy-note strong { flex: 0 0 auto; }
+.ai-privacy-note span { flex: 1 1 260px; min-width: 0; }
+.ai-privacy-note a { flex: 0 0 auto; margin-left: 0; }
+
+.ai-messages-container { padding: 16px; gap: 14px; background: #f7f8fb; }
+.ai-user-message { max-width: 82%; padding: 9px 12px; font-size: .84rem; }
+.ai-reply-card {
+  padding: 16px;
+  border-left-width: 3px;
+  border-radius: 12px;
+  box-shadow: none;
+  font-size: .86rem;
+  line-height: 1.5;
+}
+.ai-reply-heading span { margin-bottom: 6px; font-size: .68rem; }
+.ai-reply-heading strong { font-size: 1rem; line-height: 1.4; }
+.ai-reply-card section { margin-top: 14px; padding-top: 12px; }
+.ai-reply-card h3 { margin-bottom: 6px; font-size: .8rem; }
+.ai-reply-card li + li { margin-top: 5px; }
+.ai-reply-actions { margin-inline: -4px; padding: 11px 10px !important; }
+.ai-secondary-details { margin-top: 14px; padding-top: 11px; border-top: 1px solid #eceef1; }
+.ai-secondary-details summary { color: #4b5565; font-size: .76rem; }
+.ai-secondary-details section { margin-top: 10px; }
+.ai-secondary-details[open] summary { margin-bottom: 8px; }
+.ai-reply-avoid { margin-inline: -4px; padding: 10px 10px !important; }
+.ai-follow-up { margin: 14px 0 0; padding: 11px 12px; border-left: 3px solid #b8c6ee; border-radius: 0 7px 7px 0; background: #f4f6fb; }
+.ai-reply-feedback { margin-top: 14px; padding-top: 11px; font-size: .72rem; }
+
+.ai-quick-chips { padding: 10px 14px; gap: 8px; }
+.ai-quick-chips button { min-height: 38px; padding: 7px 11px; font-size: .72rem; }
+.ai-chat-input-form { padding: 12px 14px 14px; }
+.ai-chat-input-form > label { margin-bottom: 6px; font-size: .72rem; }
+.ai-chat-input-form input { min-height: 46px; font-size: .84rem; }
+.ai-chat-input-form button { min-height: 46px; }
+
+@media (max-width: 480px) {
+  .ai-chat-window { height: 100dvh; }
+  .ai-privacy-note { padding: 9px 14px; }
+  .ai-messages-container { padding: 12px; gap: 12px; }
+  .ai-reply-card { padding: 14px; }
+  .ai-user-message { max-width: 90%; }
+}

@@ -9,11 +9,11 @@ const WELCOME: AiReply = {
   intent: 'general',
   status: 'Pendamping keamanan digital',
   tone: 'neutral',
-  summary: 'Ceritakan apa yang membuat Anda ragu. Saya bisa menjelaskan hasil pemeriksaan, membantu memilih alat, atau menyusun langkah darurat.',
+  summary: 'Saya bantu Anda memahami risiko dan memilih langkah aman.',
   why: [], actions: [],
-  avoid: ['Jangan tulis OTP, PIN, kata sandi, nomor kartu, atau token di percakapan.'],
+  avoid: [],
   escalation: [], sources: [], links: [],
-  followUp: 'Apa yang Anda terima: tautan, pesan, email, berkas, kode QR, atau permintaan transfer?',
+  followUp: 'Apa yang Anda terima?',
 };
 
 type ConversationItem = { role: 'user' | 'assistant'; content?: string; reply?: AiReply };
@@ -56,27 +56,33 @@ function pageLabel(pathname: string) {
 
 function quickPrompts(pathname: string, hasResult: boolean) {
   if ((pathname.startsWith('/result') || pathname.startsWith('/details')) && hasResult) return [
-    'Jelaskan hasil ini dengan bahasa sederhana', 'Apa yang paling perlu saya lakukan sekarang?', 'Saya sudah membuka tautannya. Apa langkah berikutnya?',
+    'Jelaskan hasil ini', 'Apa langkah saya?',
   ];
   if (pathname.startsWith('/emergency')) return [
-    'Saya sudah transfer uang. Apa yang harus dilakukan?', 'Saya sudah memasang APK dari chat', 'Saya memberikan OTP kepada orang lain',
+    'Sudah transfer uang', 'Saya memberikan OTP',
   ];
   if (pathname.startsWith('/tools')) return [
-    'Alat mana yang cocok untuk bukti saya?', 'Bagaimana memeriksa email mencurigakan?', 'Apakah berkas diproses secara lokal?',
+    'Pilih alat yang tepat', 'Periksa email mencurigakan',
   ];
   if (pathname.startsWith('/education')) return [
-    'Jelaskan phishing dengan contoh sederhana', 'Bagaimana mengenali APK palsu?', 'Beri saya latihan singkat',
+    'Jelaskan phishing', 'Beri latihan singkat',
   ];
-  return ['Saya menerima tautan yang mencurigakan', 'Bagaimana mengenali pesan penipuan?', 'Saya baru ditelepon orang yang mengaku dari bank'];
+  return ['Tautan mencurigakan', 'Pesan penipuan'];
 }
 
 function ReplyCard({ reply, onFeedback, feedbackSent }: { reply: AiReply; onFeedback: (helpful: boolean) => void; feedbackSent: boolean }) {
-  return <article className={`ai-reply-card ai-tone-${reply.tone}`}>
+  const isWelcome = reply.intent === WELCOME.intent && reply.status === WELCOME.status;
+  const hasSecondaryDetails = !isWelcome && (reply.why.length > 0 || reply.avoid.length > 0 || reply.escalation.length > 0);
+
+  return <article className={`ai-reply-card ai-tone-${reply.tone}${isWelcome ? ' ai-welcome-card' : ''}`}>
     <div className="ai-reply-heading"><span>{reply.status}</span><strong>{reply.summary}</strong></div>
-    {reply.why.length > 0 && <section><h3>Mengapa demikian?</h3><ul>{reply.why.map((item) => <li key={item}>{item}</li>)}</ul></section>}
-    {reply.actions.length > 0 && <section className="ai-reply-actions"><h3>Yang dapat Anda lakukan</h3><ol>{reply.actions.map((item) => <li key={item}>{item}</li>)}</ol></section>}
-    {reply.avoid.length > 0 && <section className="ai-reply-avoid"><h3>Hindari</h3><ul>{reply.avoid.map((item) => <li key={item}>{item}</li>)}</ul></section>}
-    {reply.escalation.length > 0 && <section><h3>Jika perlu dilaporkan</h3><ul>{reply.escalation.map((item) => <li key={item}>{item}</li>)}</ul></section>}
+    {reply.actions.length > 0 && <section className="ai-reply-actions"><h3>Langkah berikutnya</h3><ol>{reply.actions.map((item) => <li key={item}>{item}</li>)}</ol></section>}
+    {hasSecondaryDetails && <details className="ai-secondary-details">
+      <summary>Lihat alasan dan detail</summary>
+      {reply.why.length > 0 && <section><h3>Mengapa demikian?</h3><ul>{reply.why.map((item) => <li key={item}>{item}</li>)}</ul></section>}
+      {reply.avoid.length > 0 && <section className="ai-reply-avoid"><h3>Hindari</h3><ul>{reply.avoid.map((item) => <li key={item}>{item}</li>)}</ul></section>}
+      {reply.escalation.length > 0 && <section><h3>Jika perlu dilaporkan</h3><ul>{reply.escalation.map((item) => <li key={item}>{item}</li>)}</ul></section>}
+    </details>}
     {reply.links.length > 0 && <nav className="ai-response-links" aria-label="Tindakan lanjutan">{reply.links.map((item) => (
       item.href.startsWith('/') ? <Link key={item.href} href={item.href}>{item.label}</Link> : <a key={item.href} href={item.href} target="_blank" rel="noreferrer">{item.label}</a>
     ))}</nav>}
@@ -176,7 +182,7 @@ export function AiAssistant() {
     </button>}
     {isOpen && <div ref={dialogRef} className="ai-chat-window" role="dialog" aria-modal="true" aria-labelledby="ai-chat-title">
       <header className="ai-chat-header"><div className="ai-chat-title-group"><span className="ai-brand-mark" aria-hidden="true">JW</span><div><strong id="ai-chat-title">Pendamping JagaWarga</strong><span>{pageLabel(pathname)}</span></div></div><button type="button" className="ai-chat-close-btn" onClick={close}>Tutup</button></header>
-      <div className="ai-privacy-note"><strong>Jaga data pribadi.</strong><span>Jangan tulis OTP, PIN, kata sandi, nomor kartu, atau token. Saat AI cloud aktif, pertanyaan diproses oleh penyedia model.</span><Link href="/privacy">Baca privasi</Link></div>
+      <div className="ai-privacy-note"><strong>Jaga data pribadi.</strong><span>Jangan tulis OTP, PIN, kata sandi, nomor kartu, atau token. Saat AI cloud aktif, pertanyaan diproses oleh penyedia model.</span><Link href="/privacy">Privasi</Link></div>
       {lastResult && <div className="ai-context-banner"><span>Hasil aktif</span><strong>{lastResult.indicator?.displayValue?.slice(0, 28) || 'Indikator terakhir'}</strong><b>{lastResult.risk}</b></div>}
       <div className="ai-messages-container" aria-live="polite" aria-busy={loading}>
         {items.map((item, index) => item.role === 'user' ? <div className="ai-user-message" key={`${item.content}-${index}`}>{item.content}</div> : item.reply && <ReplyCard key={`${item.reply.summary}-${index}`} reply={item.reply} onFeedback={(helpful) => sendFeedback(item.reply as AiReply, helpful)} feedbackSent={Boolean(feedback[`${item.reply.intent}:${item.reply.summary}`])} />)}
