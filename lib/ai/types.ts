@@ -1,3 +1,10 @@
+export type AiThreat = {
+  kind: 'none' | 'phishing' | 'social_engineering' | 'mixed';
+  label: string;
+  confidence: 'low' | 'medium' | 'high';
+  signals: string[];
+};
+
 export type AiMessage = {
   role: 'user' | 'assistant';
   content: string;
@@ -51,4 +58,5 @@ export type AiReply = {
   sources: AiSource[];
   links: AiLink[];
   followUp?: string;
+  threat?: AiThreat;
 };

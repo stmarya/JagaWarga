@@ -72,6 +72,27 @@ export function buildLocalReply(prompt: string, context: AiContext): AiReply {
     };
   }
 
+  const threat = detectThreat(prompt);
+  if (intent === 'general' && threat) {
+    return {
+      intent,
+      status: 'Perlu waspada',
+      tone: 'warning',
+      summary: 'Ada beberapa tanda yang perlu diwaspadai. Jangan membuka tautan, membalas, atau memberikan data sebelum pengirimnya terverifikasi.',
+      why: threat.signals,
+      actions: [
+        'Berhenti sejenak. Jangan klik tautan atau mengikuti instruksi di pesan.',
+        'Verifikasi pengirim melalui aplikasi, nomor, atau situs resmi yang Anda cari sendiri.',
+        'Jika sudah berinteraksi, simpan bukti dan buka panduan darurat.',
+      ],
+      avoid: ['Jangan memberikan OTP, PIN, kata sandi, nomor kartu, atau kode pemulihan.'],
+      escalation: [],
+      sources,
+      links: linksFor('general', context),
+      threat,
+    };
+  }
+
   if (intent === 'emergency') {
     return {
       intent,
@@ -138,5 +159,32 @@ export function buildLocalReply(prompt: string, context: AiContext): AiReply {
     sources: [],
     links,
     followUp: 'Apa yang Anda terima dan apakah Anda sudah melakukan sesuatu terhadapnya?',
+  };
+}
+export function detectThreat(prompt: string): AiReply['threat'] {
+  const lower = prompt.toLowerCase();
+  if (/(jelaskan|apa itu|contoh|belajar|materi|latihan).{0,30}(phishing|rekayasa sosial|social engineering)/.test(lower)) return undefined;
+
+  const situational = /(saya menerima|saya dapat|saya mendapat|dikirim|pesan ini|chat ini|email ini|ada yang|dia meminta|diminta|disuruh|mengaku|menawarkan)/.test(lower);
+  const phishingSignals = [
+    { match: /(https?:\/\/|www\.|bit\.ly|tinyurl|tautan|link|qr|kode qr)/, text: 'Ada tautan atau alamat yang perlu diverifikasi.' },
+    { match: /(klik|login|masuk|verifikasi|konfirmasi|undangan|hadiah|apk|aplikasi)/, text: 'Ada ajakan membuka, masuk, atau mengunduh sesuatu.' },
+  ].filter((item) => item.match.test(lower)).map((item) => item.text);
+  const socialSignals = [
+    { match: /(otp|pin|kode verifikasi|password|kata sandi|nomor kartu|cvv|token)/, text: 'Ada permintaan data rahasia atau kode keamanan.' },
+    { match: /(transfer|kirim uang|saldo|rekening|bank|admin|polisi|cs|petugas)/, text: 'Ada klaim identitas atau permintaan terkait uang.' },
+    { match: /(segera|mendesak|darurat|panik|ancam|rahasia|jangan beri tahu|batas waktu)/, text: 'Ada tekanan agar Anda segera bertindak.' },
+  ].filter((item) => item.match.test(lower)).map((item) => item.text);
+
+  const hasPhishing = phishingSignals.length > 0 && (situational || phishingSignals.length > 1);
+  const hasSocial = socialSignals.length > 0 && (situational || socialSignals.length > 1);
+  if (!hasPhishing && !hasSocial) return undefined;
+  const kind = hasPhishing && hasSocial ? 'mixed' : hasPhishing ? 'phishing' : 'social_engineering';
+  const signals = [...phishingSignals, ...socialSignals].slice(0, 4);
+  return {
+    kind,
+    label: kind === 'mixed' ? 'Potensi phishing dan rekayasa sosial' : kind === 'phishing' ? 'Potensi phishing' : 'Potensi rekayasa sosial',
+    confidence: signals.length >= 3 || kind === 'mixed' ? 'high' : 'medium',
+    signals,
   };
 }

@@ -13,7 +13,6 @@ const WELCOME: AiReply = {
   why: [], actions: [],
   avoid: [],
   escalation: [], sources: [], links: [],
-  followUp: 'Apa yang Anda terima?',
 };
 
 type ConversationItem = { role: 'user' | 'assistant'; content?: string; reply?: AiReply };
@@ -70,12 +69,13 @@ function quickPrompts(pathname: string, hasResult: boolean) {
   return ['Tautan mencurigakan', 'Pesan penipuan'];
 }
 
-function ReplyCard({ reply, onFeedback, feedbackSent }: { reply: AiReply; onFeedback: (helpful: boolean) => void; feedbackSent: boolean }) {
+function ReplyCard({ reply }: { reply: AiReply }) {
   const isWelcome = reply.intent === WELCOME.intent && reply.status === WELCOME.status;
   const hasSecondaryDetails = !isWelcome && (reply.why.length > 0 || reply.avoid.length > 0 || reply.escalation.length > 0);
 
   return <article className={`ai-reply-card ai-tone-${reply.tone}${isWelcome ? ' ai-welcome-card' : ''}`}>
     <div className="ai-reply-heading"><span>{reply.status}</span><strong>{reply.summary}</strong></div>
+    {reply.threat && <div className="ai-threat-badge" role="status">{reply.threat.label}</div>}
     {reply.actions.length > 0 && <section className="ai-reply-actions"><h3>Langkah berikutnya</h3><ol>{reply.actions.map((item) => <li key={item}>{item}</li>)}</ol></section>}
     {hasSecondaryDetails && <details className="ai-secondary-details">
       <summary>Lihat alasan dan detail</summary>
@@ -87,10 +87,6 @@ function ReplyCard({ reply, onFeedback, feedbackSent }: { reply: AiReply; onFeed
       item.href.startsWith('/') ? <Link key={item.href} href={item.href}>{item.label}</Link> : <a key={item.href} href={item.href} target="_blank" rel="noreferrer">{item.label}</a>
     ))}</nav>}
     {reply.sources.length > 0 && <details className="ai-sources"><summary>Sumber resmi</summary>{reply.sources.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{source.label}<small>Diverifikasi {source.verifiedAt}</small></a>)}</details>}
-    {reply.followUp && <p className="ai-follow-up">{reply.followUp}</p>}
-    <div className="ai-reply-feedback" aria-label="Nilai jawaban">
-      {feedbackSent ? <span>Terima kasih atas masukannya.</span> : <><span>Jawaban ini membantu?</span><button type="button" onClick={() => onFeedback(true)}>Ya</button><button type="button" onClick={() => onFeedback(false)}>Belum</button></>}
-    </div>
   </article>;
 }
 
@@ -102,12 +98,22 @@ export function AiAssistant() {
   const [loading, setLoading] = useState(false);
   const [lastResult, setLastResult] = useState<AiScanResult | null>(null);
   const [notice, setNotice] = useState('');
-  const [feedback, setFeedback] = useState<Record<string, boolean>>({});
+  const [showPrivacyNotice, setShowPrivacyNotice] = useState(true);
   const launcherRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const prompts = useMemo(() => quickPrompts(pathname, Boolean(lastResult)), [pathname, lastResult]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setShowPrivacyNotice(true);
+      return;
+    }
+    setShowPrivacyNotice(true);
+    const timer = window.setTimeout(() => setShowPrivacyNotice(false), 10_000);
+    return () => window.clearTimeout(timer);
+  }, [isOpen]);
 
   useEffect(() => {
     setLastResult(readResult());
@@ -150,7 +156,14 @@ export function AiAssistant() {
     if (!query || loading) return;
     const pending = [...items, { role: 'user' as const, content: query }].slice(-10);
     persist(pending); setInput(''); setLoading(true); setNotice('');
-    const messages: AiMessage[] = pending.map((item) => ({ role: item.role, content: item.content || item.reply?.summary || '' })).filter((message) => message.content);
+    const messages: AiMessage[] = pending.map((item) => {
+      if (item.content) return { role: item.role, content: item.content };
+      const reply = item.reply;
+      return {
+        role: item.role,
+        content: [reply?.status, reply?.summary, ...(reply?.actions || []).slice(0, 3)].filter(Boolean).join(' '),
+      };
+    }).filter((message) => message.content);
     const context: AiContext = { pathname, lastResult };
     try {
       const response = await fetch('/api/ai/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages, context }) });
@@ -164,28 +177,18 @@ export function AiAssistant() {
 
   function close() { setIsOpen(false); requestAnimationFrame(() => launcherRef.current?.focus()); }
 
-  async function sendFeedback(reply: AiReply, helpful: boolean) {
-    const key = `${reply.intent}:${reply.summary}`;
-    setFeedback((current) => ({ ...current, [key]: true }));
-    await fetch('/api/feedback', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ helpful, category: `ai-${reply.intent}` }),
-    }).catch(() => undefined);
-  }
-
-  return <aside className="ai-assistant-wrapper no-print" aria-label="Pendamping keamanan digital">
-    {!isOpen && <button ref={launcherRef} type="button" className="ai-fab-btn" onClick={() => setIsOpen(true)} aria-label="Buka pendamping keamanan digital" title="Tanya JagaWarga — Pendamping Keamanan">
+  return <aside className="ai-assistant-wrapper no-print" aria-label="Pendamping Warga">
+    {!isOpen && <button ref={launcherRef} type="button" className="ai-fab-btn" onClick={() => setIsOpen(true)} aria-label="Buka Pendamping Warga" title="Tanya Pendamping Warga">
       <span className="ai-brand-mark" aria-hidden="true">JW</span>
       <span className="ai-live-pulse-dot" aria-hidden="true" />
-      <span className="sr-only">Tanya JagaWarga — Pendamping Keamanan</span>
+      <span className="sr-only">Buka Pendamping Warga</span>
     </button>}
     {isOpen && <div ref={dialogRef} className="ai-chat-window" role="dialog" aria-modal="true" aria-labelledby="ai-chat-title">
-      <header className="ai-chat-header"><div className="ai-chat-title-group"><span className="ai-brand-mark" aria-hidden="true">JW</span><div><strong id="ai-chat-title">Pendamping JagaWarga</strong><span>{pageLabel(pathname)}</span></div></div><button type="button" className="ai-chat-close-btn" onClick={close}>Tutup</button></header>
-      <div className="ai-privacy-note"><strong>Jaga data pribadi.</strong><span>Jangan tulis OTP, PIN, kata sandi, nomor kartu, atau token. Saat AI cloud aktif, pertanyaan diproses oleh penyedia model.</span><Link href="/privacy">Privasi</Link></div>
+      <header className="ai-chat-header"><div className="ai-chat-title-group"><span className="ai-brand-mark" aria-hidden="true">JW</span><div><strong id="ai-chat-title">Pendamping Warga</strong><span>{pageLabel(pathname)}</span></div></div><button type="button" className="ai-chat-close-btn" onClick={close} aria-label="Tutup Pendamping Warga" title="Tutup"><span aria-hidden="true">×</span><span className="sr-only">Tutup</span></button></header>
+      {isOpen && <div className={`ai-privacy-note${showPrivacyNotice ? '' : ' ai-privacy-note-hidden'}`} role="status" aria-live="polite" aria-hidden={!showPrivacyNotice}><strong>Jaga data pribadi.</strong><span>Jangan tulis OTP, PIN, kata sandi, nomor kartu, atau token.</span><Link href="/privacy">Privasi</Link></div>}
       {lastResult && <div className="ai-context-banner"><span>Hasil aktif</span><strong>{lastResult.indicator?.displayValue?.slice(0, 28) || 'Indikator terakhir'}</strong><b>{lastResult.risk}</b></div>}
       <div className="ai-messages-container" aria-live="polite" aria-busy={loading}>
-        {items.map((item, index) => item.role === 'user' ? <div className="ai-user-message" key={`${item.content}-${index}`}>{item.content}</div> : item.reply && <ReplyCard key={`${item.reply.summary}-${index}`} reply={item.reply} onFeedback={(helpful) => sendFeedback(item.reply as AiReply, helpful)} feedbackSent={Boolean(feedback[`${item.reply.intent}:${item.reply.summary}`])} />)}
+        {items.map((item, index) => item.role === 'user' ? <div className="ai-user-message" key={`${item.content}-${index}`}>{item.content}</div> : item.reply && <ReplyCard key={`${item.reply.summary}-${index}`} reply={item.reply} />)}
         {loading && <div className="ai-thinking"><span /><span /><span /><b>Menyusun panduan yang aman…</b></div>}<div ref={endRef} />
       </div>
       {notice && <p className="ai-error" role="alert">{notice}</p>}

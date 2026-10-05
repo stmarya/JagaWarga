@@ -1,4 +1,4 @@
-import type { AiContext, AiMessage, AiReply } from './types';
+import type { AiContext, AiMessage, AiReply, AiThreat } from './types';
 
 const MAX_MESSAGES = 10;
 const MAX_MESSAGE_LENGTH = 1_600;
@@ -86,6 +86,14 @@ export function safeReply(value: unknown): AiReply | null {
   const raw = value as Record<string, unknown>;
   const intent = ['result', 'emergency', 'education', 'tool', 'general'].includes(String(raw.intent)) ? raw.intent as AiReply['intent'] : 'general';
   const tone = ['neutral', 'danger', 'warning', 'safe'].includes(String(raw.tone)) ? raw.tone as AiReply['tone'] : 'neutral';
+  const rawThreat = raw.threat && typeof raw.threat === 'object' ? raw.threat as Record<string, unknown> : null;
+  const threatKind = ['phishing', 'social_engineering', 'mixed'].includes(String(rawThreat?.kind)) ? rawThreat?.kind as AiThreat['kind'] : null;
+  const threat = threatKind ? {
+    kind: threatKind,
+    label: safeString(rawThreat?.label, 100) || 'Potensi ancaman',
+    confidence: ['low', 'medium', 'high'].includes(String(rawThreat?.confidence)) ? rawThreat?.confidence as AiThreat['confidence'] : 'medium',
+    signals: safeStrings(rawThreat?.signals, 4, 180),
+  } : undefined;
   const links = Array.isArray(raw.links) ? raw.links.slice(0, 4).flatMap((item) => {
     if (!item || typeof item !== 'object') return [];
     const row = item as Record<string, unknown>;
@@ -106,5 +114,6 @@ export function safeReply(value: unknown): AiReply | null {
     sources: [],
     links,
     followUp: safeString(raw.followUp, 250) || undefined,
+    threat,
   };
 }
