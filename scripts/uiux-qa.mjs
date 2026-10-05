@@ -23,6 +23,8 @@ const checks = [
   ['result pages restore shared history results', has('app/result/page.tsx', '/api/history?id=')],
   ['result loading and empty states are explicit', has('app/result/page.tsx', 'loadingResult') && has('app/result/page.tsx', 'Hasil belum tersedia')],
   ['scanner tabs expose their panel relationship', has('app/periksa/page.tsx', 'aria-controls="scanner-panel"') && has('app/periksa/page.tsx', 'role="tabpanel"')],
+  ['scanner uses plain-language hierarchy', has('app/periksa/page.tsx', 'Tempel apa pun yang ingin diperiksa.') && has('app/periksa/page.tsx', 'Periksa risikonya') && !has('app/periksa/page.tsx', 'CHECKPOINT / 01')],
+  ['scanner input status is conditional', has('app/periksa/page.tsx', 'hasInput &&') && has('app/periksa/page.tsx', 'Kami mengenali ini sebagai')],
   ['navigation exposes the current page', has('app/site-header.tsx', 'aria-current')],
   ['mobile and reduced-motion guardrails exist', has('app/ui-tokens.css', '@media (max-width: 720px)') && has('app/ui-tokens.css', 'prefers-reduced-motion')],
   ['implementation baseline is documented', existsSync(join(root, 'docs/uiux-implementation-baseline.md'))],

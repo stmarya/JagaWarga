@@ -107,3 +107,26 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+
+/* Scanner copy scale: instructions are for people, metadata is technical. */
+.scanner-card form > label {
+  font: 700 .82rem/1.35 Arial, Helvetica, sans-serif;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.scanner-privacy,
+.input-status {
+  font-size: .76rem;
+}
+
+.scanner-actions { align-items: flex-end; }
+
+@media (max-width: 720px) {
+  .scanner-actions { align-items: stretch; }
+}
+
+@media (max-width: 400px) {
+  .scanner-intro h1 { font-size: 2.8rem; }
+}
