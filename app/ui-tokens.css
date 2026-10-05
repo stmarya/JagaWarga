@@ -162,3 +162,19 @@
   .history-mobile-meta .comment-toggle { min-height: 32px; }
   .dashboard-lookup-secondary { margin-top: 20px; }
 }
+
+
+/* Education hierarchy: make the learning action readable before metadata. */
+.education-page .topic-card { min-height: 230px; }
+.education-page .topic-card > strong { max-width: 28ch; }
+.education-page .topic-card p { max-width: 52ch; }
+.education-page .level-tabs button { min-height: 76px; }
+.lesson-nav button { min-height: 44px; }
+.lesson-card > p:not(.step-label) { max-width: 68ch; line-height: 1.65; }
+.quiz-options button { min-height: 52px; text-align: left; }
+.quiz-explanation { max-width: 68ch; }
+
+@media (max-width: 720px) {
+  .education-page .topic-card { min-height: 200px; }
+  .education-page .topic-card > strong { max-width: none; }
+}

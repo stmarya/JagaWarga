@@ -9,9 +9,9 @@ export type EducationTopicDetail = Topic & {
 };
 
 const levels: Record<string, EducationTopicDetail['level']> = {
-  phishing: 'beginner', password: 'beginner', device: 'beginner', transaction: 'beginner', 'safe-chat': 'beginner',
-  mfa: 'intermediate', network: 'intermediate', privacy: 'intermediate', malware: 'intermediate',
-  work: 'advanced', 'ai-misinformation': 'advanced', 'incident-response': 'advanced',
+  phishing: 'beginner', password: 'beginner', transaction: 'beginner', 'safe-chat': 'beginner',
+  mfa: 'intermediate', privacy: 'intermediate',
+  'incident-response': 'advanced',
 };
 
 function detail(topic: Topic): EducationTopicDetail {
