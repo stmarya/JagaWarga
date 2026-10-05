@@ -12,7 +12,7 @@ type BarcodeDetectorType = new (options: { formats: string[] }) => {
 
 const errors: Record<string, string> = {
   RATE_LIMITED: 'Terlalu banyak permintaan. Tunggu sebentar lalu coba kembali.',
-  INDICATOR_UNSUPPORTED: 'Masukkan URL, domain, IP publik, hash, pesan, atau header email.',
+  INDICATOR_UNSUPPORTED: 'Masukkan tautan, alamat, sidik jari berkas, pesan, atau header email.',
   DOMAIN_INVALID: 'Format domain belum valid.',
   URL_PROTOCOL_UNSUPPORTED: 'Gunakan URL dengan http:// atau https://.',
   URL_CREDENTIALS_NOT_ALLOWED: 'Hapus username atau kata sandi dari URL.',
@@ -171,11 +171,11 @@ export default function ScannerPage() {
       <section className="scanner-intro">
         <p className="kicker">PUSAT CEK DIGITAL</p>
         <h1 id="scanner-title">Masukkan.<br /><span>Periksa.</span><br />Pahami.</h1>
-        <p>Satu tempat untuk memeriksa sinyal digital. Kami tampilkan keputusan singkat lebih dulu, lalu bukti teknis jika Anda membutuhkannya.</p>
+        <p>Tempel sesuatu yang mencurigakan. Kami tampilkan keputusan singkat lebih dulu, lalu bukti teknis jika Anda membutuhkannya.</p>
         <ul>
-          <li>Tanpa submission otomatis</li>
-          <li>File diubah menjadi hash di perangkat</li>
-          <li>Hasil dapat dibandingkan dengan riwayat warga</li>
+          <li>Berkas asli tidak diunggah</li>
+          <li>Berkas diperiksa sebagai sidik jari digital</li>
+          <li>Hasil dapat dibandingkan dengan pemeriksaan warga lain</li>
         </ul>
       </section>
 
@@ -187,16 +187,16 @@ export default function ScannerPage() {
         <div className="scanner-card-body">
           <p className="step-label">LANGKAH 1 DARI 3 · MASUKKAN INDIKATOR</p>
           <h2>Apa yang ingin diperiksa?</h2>
-          <p className="muted">Pilih jenisnya atau langsung tempel—kami tetap mengenalinya otomatis.</p>
+          <p className="muted">Pilih jenisnya atau langsung tempel. Kami akan mengenali jenisnya otomatis.</p>
           <div className="intake-tabs" role="tablist" aria-label="Jenis pemeriksaan">
-            <button type="button" role="tab" aria-selected={inputMode === 'link'} onClick={() => chooseMode('link')}><Icon name="link" /> <span>Tautan / IoC</span></button>
-            <button type="button" role="tab" aria-selected={inputMode === 'message'} onClick={() => chooseMode('message')}><Icon name="message" /> <span>Teks pesan</span></button>
-            <button type="button" role="tab" aria-selected={inputMode === 'file'} onClick={() => chooseMode('file')}><Icon name="file" /> <span>Berkas / APK</span></button>
+            <button type="button" role="tab" aria-selected={inputMode === 'link'} onClick={() => chooseMode('link')}><Icon name="link" /> <span>Tautan atau alamat</span></button>
+            <button type="button" role="tab" aria-selected={inputMode === 'message'} onClick={() => chooseMode('message')}><Icon name="message" /> <span>Pesan mencurigakan</span></button>
+            <button type="button" role="tab" aria-selected={inputMode === 'file'} onClick={() => chooseMode('file')}><Icon name="file" /> <span>Berkas atau aplikasi</span></button>
             <button type="button" role="tab" aria-selected={inputMode === 'qr'} onClick={() => chooseMode('qr')}><Icon name="qr" /> <span>Kode QR</span></button>
           </div>
           <form onSubmit={submit} onDrop={dropFile} onDragOver={(event) => event.preventDefault()}>
             {(inputMode === 'link' || inputMode === 'message') && <>
-              <label htmlFor="indicator">{inputMode === 'message' ? 'Tempel isi pesan yang ingin dianalisis' : 'Masukkan URL, domain, IP, atau hash'}</label>
+              <label htmlFor="indicator">{inputMode === 'message' ? 'Tempel isi pesan yang ingin dianalisis' : 'Tempel tautan, domain, IP, atau sidik jari berkas'}</label>
               {inputMode === 'message' ? <textarea
                 id="indicator"
                 value={value}
@@ -210,7 +210,7 @@ export default function ScannerPage() {
                 className="ioc-input"
                 value={value}
                 onChange={(event) => { setValue(event.target.value); setFileName(''); }}
-                placeholder="https://contoh.id, domain, IP, atau hash SHA-256 / MD5"
+                placeholder="https://contoh.id, domain, IP, atau sidik jari berkas"
                 autoComplete="off"
                 spellCheck="false"
               />}
@@ -245,11 +245,11 @@ export default function ScannerPage() {
 
             <div className="scanner-actions">
               <span className="scanner-privacy"><Icon name="shield" /> Diproses dengan data minimal</span>
-              <button type="submit" disabled={!canSubmit}>{loading ? 'Memeriksa…' : <>Periksa sekarang <Icon name="arrow" /></>}</button>
+              <button type="submit" disabled={!canSubmit}>{loading ? 'Memeriksa…' : <>Periksa risikonya <Icon name="arrow" /></>}</button>
             </div>
             <div className="input-status">
               <span>TERDETEKSI: <strong>{indicator.label}</strong>{fileName ? ` · ${fileName}` : ''}</span>
-              <span>Privasi: existing lookup only</span>
+              <span>Privasi: berkas asli tidak diunggah</span>
             </div>
           </form>
           {notice && <div className="inline-alert" role="status">{notice}</div>}
@@ -264,3 +264,4 @@ export default function ScannerPage() {
     </main>
   );
 }
+
