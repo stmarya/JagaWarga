@@ -65,7 +65,7 @@ function contextualActions(result: Result, reasons: string[]) {
   if (result.partial) steps.push('Ulangi pemeriksaan nanti karena sebagian sumber belum memberikan data.');
   steps.push('Simpan bukti seperti alamat, nama akun, waktu, dan tangkapan layar tanpa menyebarkan data pribadi.');
   if (result.risk >= 40) steps.push('Laporkan melalui kanal resmi platform atau pihak berwenang agar pengguna lain dapat dilindungi.');
-  return [...new Set([...(result.actions ?? []), ...steps])].slice(0, 7);
+  return [...new Set([...(result.actions ?? []), ...steps])].slice(0, 3);
 }
 
 function possibleThreats(result: Result, reasons: string[]) {
@@ -90,7 +90,7 @@ function possibleThreats(result: Result, reasons: string[]) {
   }
   if (result.analysisKind === 'message') add('Rekayasa sosial', 'Isi pesan dapat memancing panik, penasaran, atau rasa percaya agar Anda bertindak cepat.', 'Berhenti, baca ulang, lalu konfirmasi kepada pihak terkait.', 'message');
   if (result.analysisKind === 'email-header') add('Email palsu', 'Alamat pengirim dapat dipalsukan atau diarahkan ke alamat balasan yang berbeda.', 'Jangan balas; hubungi organisasi melalui situs resminya.', 'email');
-  return threats.slice(0, 6);
+  return threats.slice(0, 3);
 }
 
 function statPresentation(name: string) {
@@ -154,10 +154,51 @@ export default function ResultPage() {
   const [feedback, setFeedback] = useState('');
   const [comment, setComment] = useState('');
   const [sending, setSending] = useState(false);
+  const [loadingResult, setLoadingResult] = useState(true);
+  const [resultError, setResultError] = useState('');
 
   useEffect(() => {
-    const local = sessionStorage.getItem('jagawarga:last-result');
-    if (local) setResult(JSON.parse(local));
+    let cancelled = false;
+
+    async function loadResult() {
+      const historyId = new URLSearchParams(window.location.search).get('id');
+      const local = sessionStorage.getItem('jagawarga:last-result');
+      let localResult: Result | null = null;
+      if (local) {
+        try { localResult = JSON.parse(local) as Result; } catch { localResult = null; }
+      }
+
+      if (historyId) {
+        try {
+          const response = await fetch(`/api/history?id=${encodeURIComponent(historyId)}`, { cache: 'no-store' });
+          if (response.ok) {
+            const item = await response.json() as { id: string; result?: Result };
+            const restored = item.result ? { ...item.result, historyId: item.id } : null;
+            if (restored && !cancelled) {
+              setResult(restored);
+              sessionStorage.setItem('jagawarga:last-result', JSON.stringify(restored));
+              setLoadingResult(false);
+              return;
+            }
+          } else if (response.status !== 404) {
+            throw new Error('LOAD_FAILED');
+          }
+        } catch {
+          if (!cancelled) setResultError('Hasil belum dapat dimuat. Periksa koneksi lalu coba lagi.');
+        }
+      }
+
+      if (localResult && (!historyId || localResult.historyId === historyId)) {
+        if (!cancelled) setResult(localResult);
+      } else if (!historyId && local) {
+        if (!cancelled) setResultError('Data hasil pemeriksaan tidak dapat dibaca.');
+      }
+
+      if (!cancelled) setLoadingResult(false);
+    }
+
+    void loadResult();
+    return () => { cancelled = true; };
   }, []);
 
   async function sendFeedback(helpful: boolean) {
@@ -192,9 +233,15 @@ export default function ResultPage() {
     setSending(false);
   }
 
+  if (loadingResult) return (
+    <main className="compact-page">
+      <div className="empty-card"><p>Memuat hasil pemeriksaan…</p></div>
+    </main>
+  );
+
   if (!result) return (
     <main className="compact-page">
-      <div className="empty-card"><h1>Hasil tidak ditemukan</h1><p>Mulai pemeriksaan baru untuk melihat hasil.</p><Link className="primary-action" href="/#scanner">Mulai cek</Link></div>
+      <div className="empty-card"><h1>Hasil belum tersedia</h1><p>{resultError || 'Mulai pemeriksaan baru untuk melihat hasil.'}</p><Link className="primary-action" href="/periksa#scanner">Periksa lagi</Link></div>
     </main>
   );
 
@@ -268,7 +315,7 @@ export default function ResultPage() {
       </details>}
 
       <section className="detail-cta">
-        <div><p className="step-label">LANGKAH 3 · OPSIONAL</p><h2>Butuh seluruh detail IoC?</h2><p>Lihat statistik mesin, metadata, kategori, dan bukti dari seluruh sumber.</p></div>
+        <div><p className="step-label">LANGKAH 3 · OPSIONAL</p><h2>Ingin tahu alasan hasilnya?</h2><p>Lihat bukti teknis, kategori, dan sumber yang mendukung hasil pemeriksaan.</p></div>
         <Link className="primary-action" href={result.historyId ? `/details?id=${encodeURIComponent(result.historyId)}` : '/details'}>Cek detail <Icon name="arrow" /></Link>
       </section>
 
