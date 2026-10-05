@@ -1,0 +1,67 @@
+/* Phase 3: canonical UI tokens and hierarchy overrides. Keep this file last in layout imports. */
+:root {
+  --ui-content-max: 1120px;
+  --ui-copy-measure: 68ch;
+  --ui-control-height: 46px;
+  --ui-border-strong: 2px;
+  --ui-shadow-canonical: 0 4px 0 var(--ui-border);
+  --ui-space-section: 18px;
+}
+
+/* One readable measure for explanatory copy. */
+.landing-lead,
+.scanner-intro > p:not(.kicker),
+.page-heading > div:first-child > p:not(.kicker),
+.detail-header > p:not(.kicker),
+.tool-hero > p:not(.kicker) {
+  max-width: var(--ui-copy-measure);
+}
+
+/* The scanner renders an h1; keep its visual hierarchy aligned with the design. */
+.scanner-intro h1 {
+  margin: 0;
+  font-size: clamp(3rem, 6.4vw, 5.4rem);
+  line-height: .82;
+  letter-spacing: -.07em;
+}
+
+.scanner-intro h1 span { color: var(--ui-blue); }
+
+/* Canonical control height and focus treatment for primary actions. */
+.landing-primary,
+.landing-secondary,
+.primary-action,
+.secondary-action,
+.scanner-actions button,
+.dashboard-lookup form button {
+  min-height: var(--ui-control-height);
+}
+
+/* Keep the first decision readable before secondary details. */
+.summary-card,
+.threat-section,
+.result-grid,
+.detail-cta,
+.feedback-card {
+  margin-bottom: var(--ui-space-section);
+}
+
+.action-card ol {
+  max-width: var(--ui-copy-measure);
+}
+
+.action-card li { margin: 10px 0; }
+.action-card li::marker { color: var(--ui-blue); font-weight: 900; }
+
+/* Technical metadata remains available without competing with the decision. */
+.quick-technical,
+.detail-cta {
+  border-radius: var(--ui-radius);
+}
+
+@media (max-width: 680px) {
+  .scanner-intro h1 { font-size: 3.35rem; }
+  .landing-lead,
+  .scanner-intro > p:not(.kicker),
+  .page-heading > div:first-child > p:not(.kicker) { max-width: none; }
+}
