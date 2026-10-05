@@ -18,12 +18,12 @@ export function SiteHeader() {
           </span>
         </Link>
         <div className="nav-links">
-          <Link className={pathname.startsWith('/periksa') || pathname.startsWith('/scan') ? 'active' : ''} href="/periksa">Mulai Cek</Link>
-          <Link className={pathname.startsWith('/dashboard') ? 'active' : ''} href="/dashboard">Riwayat</Link>
-          <Link className={pathname.startsWith('/education') ? 'active' : ''} href="/education">Edukasi</Link>
-          <Link className={pathname.startsWith('/tools') ? 'active' : ''} href="/tools">Alat Bantu</Link>
+          <Link className={pathname.startsWith('/periksa') || pathname.startsWith('/scan') ? 'active' : ''} href="/periksa" aria-current={pathname.startsWith('/periksa') || pathname.startsWith('/scan') ? 'page' : undefined}>Mulai Cek</Link>
+          <Link className={pathname.startsWith('/dashboard') ? 'active' : ''} href="/dashboard" aria-current={pathname.startsWith('/dashboard') ? 'page' : undefined}>Riwayat</Link>
+          <Link className={pathname.startsWith('/education') ? 'active' : ''} href="/education" aria-current={pathname.startsWith('/education') ? 'page' : undefined}>Edukasi</Link>
+          <Link className={pathname.startsWith('/tools') ? 'active' : ''} href="/tools" aria-current={pathname.startsWith('/tools') ? 'page' : undefined}>Alat Bantu</Link>
         </div>
-        <Link className={`nav-emergency ${pathname.startsWith('/emergency') ? 'active' : ''}`} href="/emergency" title="Panduan jika sudah terlanjur klik atau transfer">
+        <Link className={`nav-emergency ${pathname.startsWith('/emergency') ? 'active' : ''}`} href="/emergency" aria-current={pathname.startsWith('/emergency') ? 'page' : undefined} title="Panduan jika sudah terlanjur klik atau transfer">
           <span className="emergency-icon" aria-hidden="true">!</span>
           <span>Darurat</span>
         </Link>
@@ -79,3 +79,4 @@ export function SiteFooter() {
     </footer>
   );
 }
+
