@@ -16,9 +16,9 @@ export default function Emergency() {
   return <main className="compact-page emergency-page">
     <header className="emergency-hero"><span><Icon name="alert" size={30} /></span><div><p className="kicker">PERTOLONGAN PERTAMA DIGITAL</p><h1>Apa yang sudah terjadi?</h1><p>Pilih kondisi yang paling mirip. Ikuti langkah dari atas ke bawah—tidak perlu melakukan semuanya sekaligus.</p></div></header>
     <div className="emergency-layout">
-      <nav className="emergency-cases" aria-label="Pilih kondisi darurat">{cases.map((item) => <button className={selected.id === item.id ? 'active' : ''} onClick={() => setSelected(item)} key={item.id}><Icon name={item.icon} /><span><strong>{item.title}</strong><small>{item.prompt}</small></span></button>)}</nav>
+      <nav className="emergency-cases" aria-label="Pilih kondisi darurat">{cases.map((item) => <button type="button" aria-pressed={selected.id === item.id} className={selected.id === item.id ? 'active' : ''} onClick={() => setSelected(item)} key={item.id}><Icon name={item.icon} /><span><strong>{item.title}</strong><small>{item.prompt}</small></span></button>)}</nav>
       <section className="emergency-steps">
-        <div className="urgency-label"><Icon name="alert" size={16} /> {selected.urgency}</div><h2>{selected.title}</h2>
+        <div className="urgency-label"><Icon name="alert" size={16} /> Lakukan sekarang · {selected.urgency}</div><h2>{selected.title}</h2>
         <ol>{selected.steps.map((step, index) => <li key={step}><span>{index + 1}</span><p>{step}</p></li>)}</ol>
         <div className="report-actions"><a href="https://patrolisiber.id/" target="_blank" rel="noreferrer">Lapor ke Patrolisiber</a><a href="https://iasc.ojk.go.id/" target="_blank" rel="noreferrer">Lapor transaksi ke IASC</a></div>
       </section>
