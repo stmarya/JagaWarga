@@ -189,12 +189,12 @@ export default function ScannerPage() {
           <h2>Apa yang ingin diperiksa?</h2>
           <p className="muted">Pilih jenisnya atau langsung tempel. Kami akan mengenali jenisnya otomatis.</p>
           <div className="intake-tabs" role="tablist" aria-label="Jenis pemeriksaan">
-            <button type="button" role="tab" aria-selected={inputMode === 'link'} onClick={() => chooseMode('link')}><Icon name="link" /> <span>Tautan atau alamat</span></button>
-            <button type="button" role="tab" aria-selected={inputMode === 'message'} onClick={() => chooseMode('message')}><Icon name="message" /> <span>Pesan mencurigakan</span></button>
-            <button type="button" role="tab" aria-selected={inputMode === 'file'} onClick={() => chooseMode('file')}><Icon name="file" /> <span>Berkas atau aplikasi</span></button>
-            <button type="button" role="tab" aria-selected={inputMode === 'qr'} onClick={() => chooseMode('qr')}><Icon name="qr" /> <span>Kode QR</span></button>
+            <button id="tab-link" type="button" role="tab" aria-controls="scanner-panel" aria-selected={inputMode === 'link'} onClick={() => chooseMode('link')}><Icon name="link" /> <span>Tautan atau alamat</span></button>
+            <button id="tab-message" type="button" role="tab" aria-controls="scanner-panel" aria-selected={inputMode === 'message'} onClick={() => chooseMode('message')}><Icon name="message" /> <span>Pesan mencurigakan</span></button>
+            <button id="tab-file" type="button" role="tab" aria-controls="scanner-panel" aria-selected={inputMode === 'file'} onClick={() => chooseMode('file')}><Icon name="file" /> <span>Berkas atau aplikasi</span></button>
+            <button id="tab-qr" type="button" role="tab" aria-controls="scanner-panel" aria-selected={inputMode === 'qr'} onClick={() => chooseMode('qr')}><Icon name="qr" /> <span>Kode QR</span></button>
           </div>
-          <form onSubmit={submit} onDrop={dropFile} onDragOver={(event) => event.preventDefault()}>
+          <form id="scanner-panel" role="tabpanel" tabIndex={0} aria-label="Area input pemeriksaan" onSubmit={submit} onDrop={dropFile} onDragOver={(event) => event.preventDefault()}>
             {(inputMode === 'link' || inputMode === 'message') && <>
               <label htmlFor="indicator">{inputMode === 'message' ? 'Tempel isi pesan yang ingin dianalisis' : 'Tempel tautan, domain, IP, atau sidik jari berkas'}</label>
               {inputMode === 'message' ? <textarea
@@ -247,7 +247,7 @@ export default function ScannerPage() {
               <span className="scanner-privacy"><Icon name="shield" /> Diproses dengan data minimal</span>
               <button type="submit" disabled={!canSubmit}>{loading ? 'Memeriksa…' : <>Periksa risikonya <Icon name="arrow" /></>}</button>
             </div>
-            <div className="input-status">
+            <div className="input-status" aria-live="polite">
               <span>TERDETEKSI: <strong>{indicator.label}</strong>{fileName ? ` · ${fileName}` : ''}</span>
               <span>Privasi: berkas asli tidak diunggah</span>
             </div>
