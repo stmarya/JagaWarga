@@ -14,7 +14,7 @@ const cases: Array<{ id: string; title: string; prompt: string; icon: IconName; 
 export default function Emergency() {
   const [selected, setSelected] = useState(cases[0]);
   return <main className="compact-page emergency-page">
-    <header className="emergency-hero"><span><Icon name="alert" size={30} /></span><div><p className="kicker">PERTOLONGAN PERTAMA DIGITAL</p><h1>Apa yang sudah terjadi?</h1><p>Pilih kondisi yang paling mirip. Ikuti langkah dari atas ke bawah—tidak perlu melakukan semuanya sekaligus.</p></div></header>
+    <header className="emergency-hero"><span><Icon name="alert" size={30} /></span><div><p className="kicker">PERTOLONGAN PERTAMA DIGITAL</p><h1>Apa yang sudah terjadi?</h1><p>Pilih kondisi yang paling mirip. Ikuti langkah dari atas ke bawah. Tidak perlu melakukan semuanya sekaligus.</p></div></header>
     <div className="emergency-layout">
       <nav className="emergency-cases" aria-label="Pilih kondisi darurat">{cases.map((item) => <button type="button" aria-pressed={selected.id === item.id} className={selected.id === item.id ? 'active' : ''} onClick={() => setSelected(item)} key={item.id}><Icon name={item.icon} /><span><strong>{item.title}</strong><small>{item.prompt}</small></span></button>)}</nav>
       <section className="emergency-steps">
