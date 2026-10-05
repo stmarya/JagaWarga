@@ -12,6 +12,7 @@
     "test:openapi": "node scripts/test-openapi.mjs",
     "test:ui": "node scripts/ui-smoke.mjs",
     "test:responsive": "node scripts/responsive-qa.mjs",
+    "test:uiux": "node scripts/uiux-qa.mjs",
     "launch:gate": "node scripts/launch-gate.mjs",
     "acceptance:local": "npm run build && node scripts/local-acceptance.mjs",
     "acceptance:runtime": "node scripts/local-acceptance.mjs",
