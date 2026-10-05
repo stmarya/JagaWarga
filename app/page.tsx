@@ -33,10 +33,10 @@ export default function Home() {
         <div className="landing-hero-copy">
           <p className="landing-kicker">PUSAT CEK DIGITAL UNTUK WARGA</p>
           <h1 id="landing-title">Berhenti sejenak.<br /><span>Periksa sebelum bertindak.</span></h1>
-          <p className="landing-lead">JagaWarga membantu Anda memahami tautan, pesan, berkas, dan kode QR yang mencurigakan—dengan bahasa sederhana dan langkah yang jelas.</p>
+          <p className="landing-lead">Tempel tautan, pesan, atau berkas yang mencurigakan. Pahami risikonya dengan bahasa sederhana dan langkah yang jelas.</p>
           <div className="landing-hero-actions">
-            <Link className="landing-primary" href="/periksa">Mulai periksa</Link>
-            <Link className="landing-secondary" href="/emergency">Saya sudah terlanjur</Link>
+            <Link className="landing-primary" href="/periksa">Periksa risikonya</Link>
+            <Link className="landing-secondary" href="/emergency">Amankan situasi sekarang</Link>
           </div>
           <ul className="landing-trust" aria-label="Prinsip utama JagaWarga">
             <li><Icon name="shield" /> Data minimal</li>
@@ -77,29 +77,29 @@ export default function Home() {
             <small>01 · PERIKSA</small>
             <strong>Saya menerima sesuatu yang mencurigakan</strong>
             <p>Periksa tautan, pesan, domain, IP, hash, berkas, atau kode QR.</p>
-            <b>Mulai pemeriksaan <Icon name="arrow" /></b>
+            <b>Periksa risikonya <Icon name="arrow" /></b>
           </Link>
           <Link href="/emergency" className="orientation-card orientation-emergency">
             <span className="orientation-icon"><Icon name="alert" size={24} /></span>
             <small>02 · BERTINDAK</small>
             <strong>Saya sudah klik, transfer, atau memberi data</strong>
             <p>Ikuti langkah darurat untuk menghentikan kerugian dan mengamankan akun.</p>
-            <b>Buka panduan darurat <Icon name="arrow" /></b>
+            <b>Amankan situasi <Icon name="arrow" /></b>
           </Link>
           <Link href="/education" className="orientation-card orientation-learn">
             <span className="orientation-icon"><Icon name="book" size={24} /></span>
             <small>03 · BELAJAR</small>
             <strong>Saya ingin lebih siap menghadapi penipuan</strong>
             <p>Pelajari modus dengan contoh sederhana, evaluasi, dan tingkat bertahap.</p>
-            <b>Mulai belajar <Icon name="arrow" /></b>
+            <b>Pelajari cara mengenalinya <Icon name="arrow" /></b>
           </Link>
         </div>
       </section>
 
       <section className="landing-next" aria-labelledby="next-title">
         <div>
-          <p className="kicker">LEBIH DARI PEMERIKSAAN</p>
-          <h2 id="next-title">Bangun kebiasaan digital yang lebih aman.</h2>
+          <p className="kicker">LANGKAH BERIKUTNYA</p>
+          <h2 id="next-title">Setelah memeriksa, ambil langkah yang lebih aman.</h2>
           <p>Gunakan hasil pemeriksaan sebagai awal. Bandingkan pengalaman warga lain, pelajari modusnya, lalu gunakan alat yang sesuai.</p>
         </div>
         <nav aria-label="Jelajahi fitur JagaWarga">
