@@ -24,6 +24,7 @@
     "local:up": "npm run local:env && docker compose --env-file .env.local-deploy up --build -d --wait --force-recreate",
     "local:down": "docker compose --env-file .env.local-deploy down",
     "local:verify": "node scripts/local-verify.mjs",
+    "local:deploy": "bash scripts/local-deploy.sh",
     "deploy:init": "node deploy/self-hosted/init-env.mjs",
     "deploy:verify": "node deploy/self-hosted/verify-config.mjs",
     "preflight": "node scripts/preflight.mjs",
