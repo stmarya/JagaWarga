@@ -36,7 +36,7 @@ jobs:
           IMAGE_REF: ${{ inputs.image_ref }}
         shell: bash
         run: '[[ "$IMAGE_REF" =~ ^ghcr\.io/stmarya/jagawarga@sha256:[a-f0-9]{64}$ ]]'
-      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
