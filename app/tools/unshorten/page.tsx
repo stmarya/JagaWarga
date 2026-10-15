@@ -1,208 +1,31 @@
 'use client';
-
 import Link from 'next/link';
-import { useState } from 'react';
-import { Icon } from '@/components/icon';
-
-type RedirectHop = {
-  url: string;
-  status: number;
-  location?: string;
-};
-
-type UnshortenResult = {
-  originalUrl: string;
-  finalUrl: string;
-  finalHost: string;
-  redirectCount: number;
-  hops: RedirectHop[];
-  isSuspicious: boolean;
-  suspiciousReasons: string[];
-};
-
+import { useEffect, useRef, useState } from 'react';
+import { InvestigationNav } from '@/components/investigation-nav';
+import { normalizeIndicator } from '@/lib/analyst/indicators';
+import type { RedirectTrace } from '@/lib/security/redirect-trace';
+import '../../analyst/analyst.css';
 export default function UnshortenPage() {
-  const [url, setUrl] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [result, setResult] = useState<UnshortenResult | null>(null);
-
-  const handleCheck = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!url.trim()) return;
-
-    setLoading(true);
-    setError('');
-    setResult(null);
-
+  const [url, setUrl] = useState(''); const [consent, setConsent] = useState(false); const [enabled, setEnabled] = useState(false); const [policyLoaded, setPolicyLoaded] = useState(false);
+  const [busy, setBusy] = useState(false); const [notice, setNotice] = useState(''); const [result, setResult] = useState<RedirectTrace | null>(null); const controller = useRef<AbortController | null>(null); const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; const abort = new AbortController(); fetch('/api/policy', { signal: abort.signal }).then((r) => { if (!r.ok) throw new Error(); return r.json(); }).then((p) => { if (mounted.current) setEnabled(p.features?.activeRedirects === true); }).catch(() => {}).finally(() => { if (mounted.current) setPolicyLoaded(true); }); return () => { mounted.current = false; abort.abort(); controller.current?.abort(); }; }, []);
+  async function trace(event: React.FormEvent) {
+    event.preventDefault(); if (!enabled || !consent || busy) return;
+    let safe: string;
+    try { safe = normalizeIndicator(/^https?:\/\//i.test(url.trim()) ? url.trim() : `https://${url.trim()}`).value; if (new URL(safe).port || safe.length > 2048) throw new Error(); }
+    catch { setNotice('URL tidak valid, memakai port khusus, atau memuat pola rahasia. Bersihkan sebelum mengirim.'); return; }
+    setBusy(true); setResult(null); setNotice('Menelusuri header HTTP…'); const abort = new AbortController(); controller.current = abort; const timer = setTimeout(() => abort.abort(), 15_000);
     try {
-      const res = await fetch('/api/tools/unshorten', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: url.trim() }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.message || 'Gagal memeriksa tautan singkat.');
-      } else {
-        setResult(data);
-      }
-    } catch {
-      setError('Koneksi terputus. Pastikan perangkat Anda terhubung ke internet.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const sampleShortUrls = [
-    'bit.ly/undangan-digital-nikah',
-    's.id/surat-tilang-etle',
-    'tinyurl.com/paket-sicepat-kurir',
-  ];
-
-  return (
-    <main className="compact-page tool-workspace">
-      <Link className="back-link" href="/tools">
-        ← Semua alat
-      </Link>
-      <header className="tool-hero">
-        <span>
-          <Icon name="link" size={30} />
-        </span>
-        <div>
-          <p className="kicker">PEMERIKSA TAUTAN SINGKAT</p>
-          <h1>Buka alamat asli di balik tautan singkat.</h1>
-          <p>
-            Ketahui alamat tujuan sebenarnya dari bit.ly, s.id, tinyurl, dan sejenisnya secara aman tanpa membuka browser atau mengunduh virus ke perangkat Anda.
-          </p>
-        </div>
-      </header>
-
-      <div className="tool-layout">
-        <section className="tool-form-card">
-          <div className="tool-card-heading">
-            <h2>Masukkan Tautan Singkat</h2>
-            <div className="input-helpers">
-              {sampleShortUrls.map((sample) => (
-                <button
-                  key={sample}
-                  type="button"
-                  className="sample-button"
-                  onClick={() => setUrl(sample)}
-                >
-                  {sample.split('/')[0]}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <form onSubmit={handleCheck}>
-            <label htmlFor="short-url-input">Tautan Pendek (URL)</label>
-            <input
-              id="short-url-input"
-              type="text"
-              className="ioc-input"
-              placeholder="Contoh: bit.ly/3XYZ123 atau s.id/tilang"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              disabled={loading}
-              required
-            />
-            <button type="submit" className="primary-action" disabled={loading || !url.trim()}>
-              <Icon name="search" size={16} />
-              {loading ? 'Menelusuri Pengalihan…' : 'Periksa Tujuan Asli'}
-            </button>
-          </form>
-
-          {error && <p className="inline-alert" style={{ marginTop: '14px', color: '#c92d49' }}>{error}</p>}
-
-          {result && (
-            <div className="unshorten-result-card" style={{ marginTop: '20px' }}>
-              <div
-                className={`severity-panel ${result.isSuspicious ? 'severity-panel-high' : 'severity-panel-low'}`}
-                style={{ width: '100%', minHeight: 'auto', marginBottom: '16px' }}
-              >
-                <span className="severity-panel-kicker">HASIL PENELUSURAN PENGALIHAN</span>
-                <strong>{result.isSuspicious ? '⚠️ Tujuan Mencurigakan' : '✓ Alamat Terverifikasi'}</strong>
-                <p style={{ margin: '6px 0 0', fontSize: '0.8rem', opacity: 0.9 }}>
-                  {result.isSuspicious
-                    ? 'Tautan ini diarahkan ke alamat yang memiliki tanda-tanda penipuan atau file berbahaya.'
-                    : 'Pengalihan berjalan normal menuju domain yang terdeteksi.'}
-                </p>
-              </div>
-
-              {result.suspiciousReasons.length > 0 && (
-                <div className="threat-section" style={{ marginTop: '0', marginBottom: '16px' }}>
-                  <div className="section-heading-simple">
-                    <h2 style={{ fontSize: '1rem', color: '#c92d49' }}>Peringatan Keamanan</h2>
-                  </div>
-                  <ul style={{ margin: '0', paddingLeft: '20px', color: '#871a2e', fontSize: '0.85rem' }}>
-                    {result.suspiciousReasons.map((reason, idx) => (
-                      <li key={idx} style={{ margin: '4px 0' }}>{reason}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              <div className="hash-result">
-                <span>TUJUAN AKHIR ASLI:</span>
-                <code style={{ fontSize: '0.92rem', fontWeight: 700, color: '#131722' }}>{result.finalUrl}</code>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '10px' }}>
-                  <Link
-                    className="primary-action"
-                    href={`/?ioc=${encodeURIComponent(result.finalUrl)}#scanner`}
-                  >
-                    <Icon name="shield" size={16} /> Pindai di JagaWarga
-                  </Link>
-                  <button
-                    type="button"
-                    className="secondary-action"
-                    onClick={() => {
-                      if (navigator.clipboard) {
-                        navigator.clipboard.writeText(result.finalUrl);
-                        alert('Alamat tujuan berhasil disalin!');
-                      }
-                    }}
-                  >
-                    <Icon name="clipboard" size={16} /> Salin Alamat
-                  </button>
-                </div>
-              </div>
-
-              {result.hops.length > 1 && (
-                <div style={{ marginTop: '16px', background: '#f5f6f8', padding: '14px', borderRadius: '8px' }}>
-                  <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#596170' }}>
-                    JEJAK PENGALIHAN ({result.redirectCount} lompatan):
-                  </span>
-                  <ol style={{ margin: '8px 0 0', paddingLeft: '20px', fontSize: '0.78rem' }}>
-                    {result.hops.map((hop, i) => (
-                      <li key={i} style={{ margin: '4px 0', wordBreak: 'break-all' }}>
-                        <code>{hop.url}</code> <span style={{ color: '#7c8390' }}>({hop.status})</span>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-              )}
-            </div>
-          )}
-        </section>
-
-        <aside className="tool-guide">
-          <h2>Mengapa Tautan Singkat Berbahaya?</h2>
-          <ul>
-            <li><strong>Menyembunyikan Nama Domain Sebenarnya</strong>: Penipu menyamarkan domain phishing tiruan (misal <code>bri-mo-update.xyz</code>) dengan tautan singkat.</li>
-            <li><strong>Menghindari Pemindaian WhatsApp</strong>: Link pendek terkadang lolos dari filter spam otomatis aplikasi chat.</li>
-            <li><strong>Pengalihan Ganda</strong>: Sering kali tautan diputar beberapa kali untuk menyulitkan pelacakan.</li>
-          </ul>
-
-          <div className="guide-note">
-            <Icon name="alert" size={20} />
-            <p>
-              Jangan pernah memasukkan nomor rekening, PIN, atau mengunduh aplikasi setelah membuka tautan singkat dari nomor asing.
-            </p>
-          </div>
-        </aside>
-      </div>
-    </main>
-  );
+      const response = await fetch('/api/tools/unshorten', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: safe, consent: true }), signal: abort.signal });
+      if (!response.ok) throw new Error(response.status === 403 ? 'Fitur dinonaktifkan operator.' : response.status === 429 ? 'Batas penelusuran tercapai. Tunggu sebelum mencoba lagi.' : 'Penelusuran gagal atau diblokir. Tidak ada kesimpulan keamanan.');
+      const data = await response.json(); if (typeof data.stopReason !== 'string' || data.stopReason.length > 100 || (data.finalUrl !== null && (typeof data.finalUrl !== 'string' || data.finalUrl.length > 2048)) || typeof data.completed !== 'boolean' || !Array.isArray(data.hops) || data.hops.length > 6 || !data.hops.every((h: { url?: unknown; status?: unknown }) => typeof h.url === 'string' && h.url.length <= 2048 && typeof h.status === 'number')) throw new Error('Respons penelusuran tidak valid.');
+      if (mounted.current) { setResult(data); setNotice('Observasi selesai; bukan verifikasi keamanan situs.'); }
+    } catch (e) { if (mounted.current) setNotice(e instanceof Error && e.name === 'AbortError' ? 'Penelusuran dibatalkan atau waktu tunggu habis.' : e instanceof Error ? e.message : 'Koneksi gagal.'); }
+    finally { clearTimeout(timer); if (mounted.current) setBusy(false); controller.current = null; }
+  }
+  return <main className="compact-page batch-page analyst-page investigation-tool"><InvestigationNav current="tools" /><Link href="/tools">← Semua alat</Link><header className="batch-heading"><p className="batch-eyebrow">PENELUSUR PENGALIHAN · KONEKSI AKTIF</p><h1>Amati pengalihan, bukan reputasi.</h1><p>Server mengirim permintaan HEAD ke tujuan. Pemilik situs dapat melihat koneksi, mencatat token unik, atau memicu aksi pada URL. Jangan masukkan tautan reset sandi, unsubscribe, tautan sekali pakai, atau data rahasia.</p></header>
+    <aside className="batch-alert">Penelusuran tidak membuka situs di browser Anda, tidak menjalankan JavaScript, dan tidak mengambil isi halaman. Namun koneksi aktif tetap dapat berdampak pada server tujuan; ini bukan sandbox atau jaminan bebas malware.</aside>
+    <section className="batch-card"><h2>Tautan yang akan dihubungi</h2><p>{!policyLoaded ? 'Memeriksa kebijakan operator…' : enabled ? 'Fitur aktif diizinkan operator. Tetap diperlukan persetujuan untuk setiap input.' : 'Penelusuran aktif dinonaktifkan. Anda masih dapat menilai reputasi IoC lewat Bulk triage; lookup tidak sama dengan mengunjungi target.'}</p><form onSubmit={trace}><label htmlFor="short-url-input">URL publik HTTP/HTTPS tanpa kredensial atau token</label><input id="short-url-input" type="text" maxLength={2048} value={url} disabled={busy} onChange={(e) => { setUrl(e.target.value); setConsent(false); setResult(null); setNotice(''); }} placeholder="https://example.org/path" /><label className="analyst-check"><input type="checkbox" checked={consent} disabled={busy || !enabled} onChange={(e) => setConsent(e.target.checked)} /> Saya memahami server akan menghubungi tujuan dan sudah menghapus data sensitif. Saya berwenang memeriksa tautan ini.</label><div className="batch-actions"><button className="batch-primary" disabled={busy || !enabled || !consent || !url.trim()}>Telusuri pengalihan HEAD</button><button type="button" disabled={!busy} onClick={() => controller.current?.abort()}>Batalkan penelusuran</button><button type="button" className="batch-danger-text" disabled={busy} onClick={() => { setUrl(''); setConsent(false); setResult(null); setNotice('Input dan hasil dibuang.'); }}>Hapus input dan hasil</button></div></form><p>Port standar saja, maksimal 6 hop, tanpa cookie browser/kredensial Anda. DNS dipatok ke IP publik per koneksi; batas ini tidak membuktikan situs aman.</p></section><p role="status" className="batch-notice">{notice}</p>
+    {result && <section className="batch-card"><h2>{result.completed ? 'Tujuan merespons permintaan HEAD' : 'Jejak belum lengkap'}</h2><p>Status: {result.stopReason}. HTTP sukses tidak membuktikan reputasi baik; HEAD dapat berbeda dari perilaku browser atau lokasi lain.</p>{result.completed && typeof result.finalUrl === 'string' && <><p className="analyst-indicator">Tujuan teramati: {result.finalUrl}</p><Link className="batch-secondary" href={`/periksa?ioc=${encodeURIComponent(result.finalUrl)}`}>Tinjau indikator di Periksa</Link></>}<ol className="case-timeline">{result.hops.map((h, i) => <li key={i}><p className="analyst-indicator">{h.url}</p><p>HTTP {h.status}</p></li>)}</ol><p>Tidak ada tujuan yang dibuka otomatis di browser dan tidak ada data disimpan sebagai kasus.</p></section>}
+  </main>;
 }

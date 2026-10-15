@@ -6,7 +6,7 @@
 
 [![Production](https://img.shields.io/badge/Production-jagawarga.cloud-22c55e?style=for-the-badge&logo=googlechrome&logoColor=white)](https://jagawarga.cloud)
 [![Version](https://img.shields.io/badge/version-v0.13.0--rc.4-blue?style=for-the-badge)](package.json)
-[![Tests](https://img.shields.io/badge/tests-177%20passed-success?style=for-the-badge&logo=vitest&logoColor=white)](vitest.config.mjs)
+[![Tests](https://img.shields.io/badge/tests-199%20passed-success?style=for-the-badge&logo=vitest&logoColor=white)](vitest.config.mjs)
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 
@@ -17,6 +17,16 @@
 ---
 
 </div>
+
+## Batch 3 — analyst workflow and investigation tools (unreleased)
+
+Explicit selected/batch evidence attachment, responsive triage cards, manual
+429 resume, dirty local-case forms and cross-tab conflict/deletion protection.
+Message/header tools expose heuristic limits; hash/QR remain bounded/local.
+Active redirect tracing is **off by default**, requires operator flags plus
+explicit consent, and is not a reputation verdict. Existing callers must migrate
+to the new consented HEAD contract. No merge/deploy or production enablement.
+[Scope, security boundaries and QA](docs/BATCH-3-INVESTIGATION.md).
 
 ## Batch 2 — shared UI, emergency and technical evidence (unreleased)
 
@@ -224,7 +234,7 @@ Seluruh endpoint terstandarisasi OpenAPI 3.1 dan dapat diakses di `/openapi.json
 | `POST` | `/api/lookups` | Agregasi reputasi IoC (URL, Domain, IP, File Hash) |
 | `POST` | `/api/analyze/message` | Analisis konten pesan teks indikasi penipuan |
 | `POST` | `/api/analyze/email-header` | Analisis otentikasi header email (SPF, DKIM, DMARC) |
-| `POST` | `/api/tools/unshorten` | Membuka rantai pengalihan URL dengan anti-SSRF |
+| `POST` | `/api/tools/unshorten` | Observasi HEAD aktif: default off, operator flags + consent; bukan reputasi |
 | `POST` | `/api/ai/chat` | AI Security Assistant dengan grounded knowledge |
 | `GET` | `/api/education` | Mengambil katalog topik edukasi literasi siber |
 | `GET/POST/DELETE`| `/api/history` | Publikasi komunitas dengan consent (nonaktif secara default; TTL 24 jam) |

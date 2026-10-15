@@ -755,7 +755,7 @@
     },
     "/api/tools/unshorten": {
       "post": {
-        "summary": "Unshorten and follow URL redirects safely",
+        "summary": "Operator-gated, consented active HEAD redirect trace (not reputation verification)",
         "requestBody": {
           "required": true,
           "content": {
@@ -763,11 +763,17 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "url"
+                  "url",
+                  "consent"
                 ],
                 "properties": {
                   "url": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 2048
+                  },
+                  "consent": {
+                    "type": "boolean",
+                    "const": true
                   }
                 }
               }
@@ -776,7 +782,7 @@
         },
         "responses": {
           "200": {
-            "description": "Redirect chain details",
+            "description": "Bounded HEAD observations, completion flag and stop reason; no safety verdict",
             "content": {
               "application/json": {
                 "schema": {
@@ -787,6 +793,66 @@
           },
           "400": {
             "description": "Invalid URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active tracing disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON content type required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Client rate limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Network trace blocked or incomplete",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Bounded queue full",
             "content": {
               "application/json": {
                 "schema": {

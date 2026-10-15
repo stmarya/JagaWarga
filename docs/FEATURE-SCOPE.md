@@ -18,6 +18,19 @@ fail-closed, or removed from launch scope.
 - Health, live, ready, version, policy, protected metrics, OpenAPI,
   security.txt, robots, and sitemap endpoints.
 
+## Batch 3 investigation workflow (unreleased)
+
+- Explicit selected/batch evidence attachment, 429 manual resume with bounded
+  Retry-After, mobile triage cards and per-source evidence provenance.
+- Dirty case drafts, search/status filters, explicit saved-vs-exported state,
+  optimistic cross-tab updates/deleted-case protection and reload recovery.
+- Bounded local hash/QR tools, non-IoC QR remains local, cancellable pattern tools;
+  email header reading is not independent DKIM verification.
+- Active redirect tracing is off by default; operator flags + explicit consent,
+  pinned public DNS HEAD per hop, bounded queue/deadline/hops, no body download.
+  Enabling requires separate operator network/egress/privacy/abuse review and is
+  not approved for public release. Preflight requires the flag off.
+
 ## Explicitly deferred and fail-closed
 
 - Community reporting remains off by default. Batch 1 adds an unreleased,

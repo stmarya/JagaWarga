@@ -44,7 +44,7 @@ if (process.env.REQUIRE_REPUTATION_PROVIDER === 'true') {
   if (!reputationReady) throw new Error('Reputation provider is required but not enabled');
 }
 const policy = await json('/api/policy');
-for (const flag of ['fileUpload', 'urlSubmission', 'communityReporting']) {
+for (const flag of ['fileUpload', 'urlSubmission', 'communityReporting', 'activeRedirects']) {
   if (policy.body.features?.[flag]) throw new Error(`Risky feature enabled: ${flag}`);
 }
 const version = await json('/api/version');

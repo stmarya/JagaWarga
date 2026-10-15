@@ -55,7 +55,7 @@ export async function listCases() {
   const rows = await transaction<InvestigationCase[]>('readonly', (store) => store.getAll());
   return rows.map(validateCase).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
-export async function saveCase(c: InvestigationCase, expectedUpdatedAt = c.updatedAt) {
+export async function saveCase(c: InvestigationCase, expectedUpdatedAt = c.updatedAt, requireExisting = false) {
   const safe = validateCase(c);
   const db = await database();
   await new Promise<void>((resolve, reject) => {
@@ -64,7 +64,7 @@ export async function saveCase(c: InvestigationCase, expectedUpdatedAt = c.updat
     const current = store.get(safe.id);
     let conflict = false;
     current.onsuccess = () => {
-      if (current.result && current.result.updatedAt !== expectedUpdatedAt) {
+      if ((!current.result && requireExisting) || (current.result && current.result.updatedAt !== expectedUpdatedAt)) {
         conflict = true; tx.abort(); return;
       }
       store.put(safe);

@@ -31,6 +31,19 @@
   before deployment; upgrading does not add TTL to old keys. See
   `BATCH-1-PRIVACY-UX.md` and `npm run privacy:legacy-history`.
 
+## Active redirect tracing (unreleased Batch 3)
+
+- Off by default; BOTH `ALLOW_RISKY_FEATURES` and `FEATURE_ACTIVE_REDIRECTS`
+  plus explicit request consent are required. Public preflight requires it off.
+- Separate from existing-lookup providers: the server makes HEAD connections to
+  target sites, which may record the connection or act on a unique URL. No request
+  bodies/pages are downloaded, no JavaScript run, no browser cookies forwarded.
+- URLs/observations stay in the page request/result memory; no case/publication is
+  created. Clearing UI does not erase target-site records or reverse side effects.
+- Secret patterns are rejected but detection is incomplete. Never send one-time,
+  reset, unsubscribe, private, or credential-bearing URLs. Operator egress, abuse
+  and privacy review is required before enabling. It is not a reputation verdict.
+
 ## Operations and deletion
 
 - In-memory runtime state clears on restart. Redis operational rate limits,

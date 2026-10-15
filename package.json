@@ -33,7 +33,8 @@
     "privacy:legacy-history": "tsx scripts/purge-legacy-community-history.ts",
     "test:batch1": "node scripts/batch1-smoke.mjs",
     "test:batch1-api": "node scripts/batch1-api-smoke.mjs",
-    "test:batch2": "node scripts/batch2-smoke.mjs"
+    "test:batch2": "node scripts/batch2-smoke.mjs",
+    "test:batch3": "node scripts/batch3-smoke.mjs"
   },
   "dependencies": {
     "ipaddr.js": "2.2.0",

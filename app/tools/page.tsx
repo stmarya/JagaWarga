@@ -18,17 +18,17 @@ const categories: Array<{
     title: 'Analisis komunikasi',
     description: 'Baca pola manipulasi pada pesan, tautan tersembunyi, dan autentikasi email.',
     tools: [
-      { name: 'Pemeriksa tautan singkat', href: '/tools/unshorten', copy: 'Buka alamat asli di balik bit.ly, s.id, dan tinyurl tanpa mengeklik langsung.', icon: 'link', meta: 'Tautan · pelacakan pengalihan' },
+      { name: 'Pemeriksa tautan singkat', href: '/tools/unshorten', copy: 'Observasi HEAD aktif dengan persetujuan; nonaktif secara default dan bukan pemeriksaan reputasi.', icon: 'link', meta: 'Tautan · koneksi aktif dibatasi operator' },
       { name: 'Analisis pesan', href: '/tools/message', copy: 'Temukan urgensi, permintaan OTP, transaksi, dan penyamaran identitas.', icon: 'message', meta: 'Teks · diproses sementara' },
-      { name: 'Pemeriksaan email', href: '/tools/email-header', copy: 'Periksa SPF, DKIM, DMARC, jalur penerimaan, dan ketidaksesuaian Reply-To.', icon: 'email', meta: 'Header email · tanpa penyimpanan' },
+      { name: 'Pemeriksaan email', href: '/tools/email-header', copy: 'Baca field SPF/DKIM/DMARC dan Reply-To; bukan verifikasi tanda tangan independen.', icon: 'email', meta: 'Header email · tanpa penyimpanan' },
     ],
   },
   {
     title: 'Pemeriksaan berkas',
     description: 'Periksa identitas berkas tanpa mengunggah isinya.',
     tools: [
-      { name: 'Hash berkas lokal', href: '/tools/file-hash', copy: 'Hitung sidik jari SHA-256 untuk APK, dokumen, gambar, atau arsip.', icon: 'hash', meta: 'Semua format · proses lokal' },
-      { name: 'Pembaca kode QR', href: '/tools/qr', copy: 'Baca alamat tujuan QR tanpa membuka tautan secara otomatis.', icon: 'qr', meta: 'Gambar atau kamera · proses lokal' },
+      { name: 'Hash berkas lokal', href: '/tools/file-hash', copy: 'Hitung sidik jari SHA-256 untuk APK, dokumen, gambar, atau arsip.', icon: 'hash', meta: 'Maksimal 25 MB · proses lokal' },
+      { name: 'Pembaca kode QR', href: '/tools/qr', copy: 'Baca alamat tujuan QR tanpa membuka tautan secara otomatis.', icon: 'qr', meta: 'Maksimal 10 MB · proses lokal' },
     ],
   },
 ];

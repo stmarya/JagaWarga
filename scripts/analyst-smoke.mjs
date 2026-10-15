@@ -29,10 +29,11 @@ try {
     const { indicator } = route.request().postDataJSON();
     if (mode === 'slow') { slowSeen = true; await new Promise((resolve) => setTimeout(resolve, 600)); }
     const code = mode === 'quota' ? 429 : indicator === 'failed.example.org' ? 500 : 200;
-    try { await route.fulfill({ status: code, contentType: 'application/json', body: JSON.stringify(code === 200 ? result(indicator, calls) : { error: 'FIXTURE_ERROR' }) }); }
+    try { await route.fulfill({ status: code, contentType: 'application/json', headers: { 'Retry-After': '1' }, body: JSON.stringify(code === 200 ? result(indicator, calls) : { error: 'FIXTURE_ERROR' }) }); }
     catch { /* Browser request may have been cancelled deliberately. */ }
   });
   async function preview(text) {
+    if (!(await page.locator('#batch-input').isVisible())) await page.getByText('1. Masukkan atau impor indikator', { exact: true }).click();
     await page.locator('#batch-input').fill(text);
     await page.getByRole('button', { name: 'Preview lokal', exact: true }).click();
   }
@@ -59,7 +60,7 @@ try {
   if (process.env.QA_DIR) { await mkdir(process.env.QA_DIR, { recursive: true }); await page.evaluate(() => { window.scrollTo({ top: 0, behavior: 'instant' }); document.querySelectorAll('.analyst-scroll').forEach((el) => { el.scrollLeft = 0; }); }); await page.screenshot({ path: `${process.env.QA_DIR}/analyst-mobile.png`, fullPage: true }); }
 
   await page.locator('#triage-filter').selectOption('suspicious');
-  assert.equal(await page.locator('section').first().locator('tbody tr').count(), 2);
+  assert.equal(await page.locator('.triage-desktop tbody tr').count(), 2);
   await page.locator('#triage-filter').selectOption('all');
   const evidenceDownload = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Ekspor evidence JSON', exact: true }).click();
@@ -68,7 +69,7 @@ try {
   await preview('quota.example.org'); mode = 'quota'; await approve();
   await page.getByRole('button', { name: 'Mulai / lanjutkan lookup' }).click();
   await page.getByRole('status').filter({ hasText: 'Batas lookup tercapai' }).waitFor();
-  assert.equal(await page.getByRole('button', { name: 'Mulai / lanjutkan lookup' }).isEnabled(), true);
+  await page.waitForFunction(() => ![...document.querySelectorAll('button')].find((b) => b.textContent === 'Mulai / lanjutkan lookup')?.disabled);
   mode = 'success'; await page.getByRole('button', { name: 'Mulai / lanjutkan lookup' }).click();
   await page.getByRole('status').filter({ hasText: 'Batch selesai' }).waitFor();
 
@@ -104,9 +105,10 @@ try {
   await preview('example.org'); await approve();
   await page.getByRole('button', { name: 'Mulai / lanjutkan lookup' }).click();
   await page.getByRole('status').filter({ hasText: 'Batch selesai' }).waitFor();
+  await page.locator('#attach-scope').selectOption('batch');
   await page.locator('#case-select').selectOption({ label: 'Investigasi fixture' });
   await page.getByRole('button', { name: 'Simpan evidence ke kasus', exact: true }).click();
-  await page.getByRole('status').filter({ hasText: 'Evidence tersimpan' }).waitFor();
+  await page.getByRole('status').filter({ hasText: /evidence tersimpan/i }).waitFor();
   await page.goto(`${baseURL}/analyst/cases`);
   await page.getByRole('button', { name: 'Investigasi fixture', exact: true }).click();
   await page.getByRole('button', { name: 'Lihat snapshot 1', exact: true }).click();
@@ -119,6 +121,7 @@ try {
   await page.getByRole('status').filter({ hasText: 'Paket diimpor' }).waitFor();
   await page.getByRole('button', { name: 'Investigasi fixture', exact: true }).nth(1).waitFor();
   assert.equal(await page.getByRole('button', { name: 'Investigasi fixture', exact: true }).count(), 2, 'import must not overwrite');
+  await page.getByText('Muat ulang atau hapus kasus', { exact: true }).click();
   await page.getByRole('button', { name: 'Hapus kasus ini', exact: true }).click();
   await page.getByRole('status').filter({ hasText: 'Kasus lokal dihapus' }).waitFor();
   await page.waitForFunction(() => [...document.querySelectorAll('button')].filter((b) => b.textContent === 'Investigasi fixture').length === 1);

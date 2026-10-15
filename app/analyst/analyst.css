@@ -19,4 +19,51 @@
 .analyst-facts dd { margin: .25rem 0; overflow-wrap: anywhere; }
 .analyst-page .case-list { padding-left: 1.2rem; }
 .analyst-page .case-list li { margin-block: .6rem; overflow-wrap: anywhere; }
-@media (max-width: 600px) { .analyst-page .content-card { padding: 1rem; } .analyst-facts { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .analyst-page .content-card { padding: 1rem; } .analyst-facts { grid-template-columns: 1fr; } }/* Batch 3: workflow hierarchy, readable mobile cards and explicit destructive actions. */
+.analyst-page { max-width: 1120px; font-size: 16px; }
+.investigation-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 32px; }
+.investigation-nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 16px; border: 1px solid #64748b; border-radius: 8px; text-decoration: none; background: white; font-size: 16px; font-weight: 700; color: #182236; }
+.investigation-nav a[aria-current] { background: #244dcc; border-color: #244dcc; color: white; }
+.analyst-page .batch-primary { background: #244dcc; color: white; border-color: #244dcc; }
+.analyst-page .batch-danger-text { color: #a21b2b; border-color: #a21b2b; }
+.analyst-page .content-card { margin-block: 24px; border: 1px solid #a6b0bf; }
+.analyst-page input:not([type=checkbox]), .analyst-page textarea, .analyst-page select { background: white; min-height: 44px; font-size: 16px; }
+.analyst-page button { font-size: 16px; margin: 0; max-width: 100%; white-space: normal; }
+.analyst-actions { gap: 12px; margin: 16px 0; }
+.analyst-check { min-height: 44px; padding-block: 8px; }
+.analyst-page progress { display: block; width: 100%; height: 20px; accent-color: #244dcc; margin-top: 8px; }
+.analyst-page details>summary { display: list-item; padding-block: 8px; }
+.analyst-page .analyst-scroll { border: 1px solid #a6b0bf; border-radius: 8px; }
+.analyst-page table { min-width: 760px; font-size: 14px; table-layout: fixed; }
+.analyst-page th, .analyst-page td { overflow-wrap: anywhere; }
+.analyst-page thead { background: #eef2ff; }
+.analyst-page caption { padding: 12px; color: #475569; }
+.triage-mobile-list { display: none; }
+.evidence-selection-heading { scroll-margin-top: 140px; }
+.evidence-source-cards article { padding: 20px 0; border-top: 1px solid #cbd5e1; }
+.evidence-source-cards h4 { font-size: 20px; margin: 0 0 12px; overflow-wrap: anywhere; }
+.evidence-source-cards code { font-size: 14px; overflow-wrap: anywhere; }
+.analyst-facts dt { font-size: 14px; color: #475569; }
+.analyst-facts dd { margin-top: 4px; }
+.analyst-indicator { max-width: none; }
+.case-browser-list { list-style: none; padding: 0; }
+.case-browser-list li { border-top: 1px solid #cbd5e1; padding: 20px 0; }
+.case-browser-list .case-open { text-align: left; justify-content: flex-start; overflow-wrap: anywhere; font-weight: 700; }
+.case-browser-list .case-open[aria-pressed=true] { border: 2px solid #244dcc; background: #eef2ff; }
+.case-editor h2 { scroll-margin-top: 140px; }
+.case-editor fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.case-save-state { color: #475569; }
+.case-timeline { padding-left: 24px; }
+.case-timeline>li { padding: 16px 0; border-top: 1px solid #cbd5e1; overflow-wrap: anywhere; }
+.case-timeline time { font-size: 14px; color: #475569; }
+@media(max-width:720px) {
+ .triage-desktop { display: none; }
+ .triage-mobile-list { display: grid; gap: 16px; padding: 0; list-style: none; }
+ .triage-mobile-list>li { padding: 16px; border: 1px solid #a6b0bf; border-radius: 8px; min-width: 0; }
+ .triage-error { color: #a21b2b; }
+ .analyst-page .content-card { padding: 20px; }
+ .investigation-nav { gap: 8px; }
+ .investigation-nav a { padding: 8px 12px; font-size: 14px; }
+ .analyst-page .batch-actions { align-items: stretch; }
+ .analyst-facts { grid-template-columns: 1fr; }
+}

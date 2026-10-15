@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+- Batch 3: responsive bulk triage, bounded Retry-After/manual resume, explicit selected-vs-batch evidence attachment and source-focused evidence cards.
+- Local cases: dirty state, search/status filters, save-vs-export clarity, monotonic optimistic revisions, deleted-case protection and conflict reload.
+- Investigation tools: cancellable heuristic message/header analysis with truthful authentication limits, bounded local hash/QR and safe explicit lookup handoff.
+- BREAKING: active redirect endpoint now off by default behind operator flags and consent; pinned-public-DNS HEAD observations replace generic GET/safety heuristics, with bounded hops/headers/time/queue/rate. Requires separate deployment egress review.
 - Batch 2: shared readable navigation, 44px controls, semantic progress, focus/skip links, inline assistance and reduced-motion support.
 - Emergency: five incident-specific first actions, financial priority, ephemeral follow-up checklists, official reference links and evidence/recovery caveats.
 - Technical details: guarded local/public loading, source provenance and uncertainty, bounded/collapsible metadata, engine filter/pagination, allowlisted evidence export and truthful browser print/PDF.
