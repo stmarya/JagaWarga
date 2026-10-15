@@ -21,7 +21,7 @@ export function SiteHeader() {
           <Link className={['/periksa', '/scan', '/result', '/details'].some((route) => pathname === route) ? 'active' : ''} aria-current={['/periksa', '/scan', '/result', '/details'].includes(pathname) ? 'page' : undefined} href="/periksa">Mulai Cek</Link>
           <Link className={pathname.startsWith('/dashboard') ? 'active' : ''} aria-current={pathname.startsWith('/dashboard') ? 'page' : undefined} href="/dashboard">Riwayat</Link>
           <Link className={pathname.startsWith('/education') ? 'active' : ''} aria-current={pathname.startsWith('/education') ? 'page' : undefined} href="/education">Edukasi</Link>
-          <Link className={pathname.startsWith('/tools') ? 'active' : ''} aria-current={pathname.startsWith('/tools') ? 'page' : undefined} href="/tools">Alat Bantu</Link>
+          <Link className={(pathname.startsWith('/tools') || pathname.startsWith('/analyst')) ? 'active' : ''} aria-current={(pathname.startsWith('/tools') || pathname.startsWith('/analyst')) ? 'page' : undefined} href="/tools">Alat Bantu</Link>
         </div>
         <Link className={`nav-emergency ${pathname.startsWith('/emergency') ? 'active' : ''}`} aria-current={pathname === '/emergency' ? 'page' : undefined} href="/emergency" title="Panduan jika sudah terlanjur klik atau transfer">
           <span className="emergency-icon" aria-hidden="true">!</span>

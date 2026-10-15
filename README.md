@@ -266,3 +266,7 @@ Proyek ini dilisensikan di bawah lisensi terbuka [**MIT License**](LICENSE).
 <div align="center">
   <sub>Dibangun dengan dedikasi untuk menjaga ruang digital warga Indonesia yang lebih aman, berdaya, dan teredukasi.</sub>
 </div>
+
+### Batches 4–6: experience and hardening
+
+Searchable tools, explicit local learning progress, responsive supporting pages, honest offline fallback and refreshed runtime regression. See `docs/BATCH-4-6-EXPERIENCE.md`. Production release gates remain mandatory; merge is not deployment approval.

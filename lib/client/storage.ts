@@ -73,13 +73,23 @@ export function getWatchlist() { const value = read<unknown>(WATCHLIST, []); ret
 export function addWatchlist(value: string) { write(WATCHLIST, [...new Set([value, ...getWatchlist()])].slice(0, 50)); }
 export function removeWatchlist(value: string) { write(WATCHLIST, getWatchlist().filter((item) => item !== value)); }
 
-export type Progress = { xp: number; badges: string[] };
-export function getProgress() { const value = read<Progress>(PROGRESS, { xp: 0, badges: [] }); return { xp: Number.isFinite(value?.xp) && value.xp >= 0 ? value.xp : 0, badges: Array.isArray(value?.badges) ? value.badges.filter((b) => typeof b === 'string') : [] }; }
+export type Progress = { xp: number; badges: string[]; completedTopics?: string[] };
+export function getProgress() { const value = read<Progress>(PROGRESS, { xp: 0, badges: [] }); return { xp: Number.isFinite(value?.xp) && value.xp >= 0 ? value.xp : 0, badges: Array.isArray(value?.badges) ? value.badges.filter((b) => typeof b === 'string') : [], completedTopics: Array.isArray(value?.completedTopics) ? [...new Set(value.completedTopics.filter((id) => typeof id === 'string' && /^[a-z0-9-]{1,80}$/.test(id)))].slice(0,100) : [] }; }
 export function addXp(amount: number) {
   const progress = getProgress();
   const xp = progress.xp + amount;
   const badges = [...new Set([...progress.badges, ...(xp >= 10 ? ['Cek Sebelum Klik'] : []), ...(xp >= 50 ? ['Detektif Digital'] : [])])];
-  const next = { xp, badges };
+  const next = { ...progress, xp, badges };
+  write(PROGRESS, next);
+  return next;
+}
+/** Local learning marker, not a qualification or signed record. Sequential retries are idempotent. */
+export function completeEducation(slug: string) {
+  if (!/^[a-z0-9-]{1,80}$/.test(slug)) throw new Error('Topik tidak valid.');
+  const progress = getProgress();
+  if (progress.completedTopics?.includes(slug)) return progress;
+  if ((progress.completedTopics?.length ?? 0) >= 100) throw new Error('Batas progres lokal tercapai.');
+  const next = { ...progress, xp: progress.xp + 50, completedTopics: [...(progress.completedTopics ?? []), slug] };
   write(PROGRESS, next);
   return next;
 }

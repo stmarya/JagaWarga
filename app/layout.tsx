@@ -3,6 +3,7 @@ import './globals.css';
 import './refine.css';
 import './batch1.css';
 import './batch2.css';
+import './experience.css';
 import { ServiceWorkerRegister } from './sw-register';
 import { SiteFooter, SiteHeader } from './site-header';
 import { ScrollToTop } from '@/components/page-navigation';
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
   description: 'Periksa tautan, pesan, berkas, dan kode QR yang mencurigakan. Pahami risikonya dengan bahasa sederhana lalu ambil langkah yang aman.',
   openGraph: {
     title: 'JagaWarga — Periksa Sebelum Bertindak',
-    description: 'Security scanner & IoC lookup cepat untuk warga digital Indonesia. Cek tautan, file hash, IP, dan ancaman siber dengan aman.',
+    description: 'Bantuan awal untuk meninjau sinyal pada tautan, pesan, hash, dan IP. Hasil bukan jaminan keamanan.',
     url: 'https://jagawarga.cloud',
     siteName: 'JagaWarga',
     locale: 'id_ID',
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'JagaWarga — Periksa Sebelum Bertindak',
-    description: 'Security scanner & IoC lookup cepat untuk warga digital Indonesia.',
+    description: 'Tinjau sinyal digital, pahami bukti, lalu ambil langkah yang sesuai.',
   },
 };
 

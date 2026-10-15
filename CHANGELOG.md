@@ -1,5 +1,11 @@
 # Changelog
 
+## Batches 4–6 — experience and hardening
+- Updated runtime dependencies and provider cancellation/response-bound tests without lowering CI gates.
+- Searchable tools and structured learning flow with explicit local completion; learning summaries are not certificates.
+- Consistent supporting-page hierarchy, partial operational errors, defensive content corrections and explicit offline notice.
+- Refreshed real-local acceptance and broader responsive smoke; existing public-release blockers unchanged.
+
 ## Unreleased
 - Batch 3: responsive bulk triage, bounded Retry-After/manual resume, explicit selected-vs-batch evidence attachment and source-focused evidence cards.
 - Local cases: dirty state, search/status filters, save-vs-export clarity, monotonic optimistic revisions, deleted-case protection and conflict reload.

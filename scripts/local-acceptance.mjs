@@ -7,7 +7,7 @@ const baseURL = `http://127.0.0.1:${port}`;
 const version = JSON.parse(await readFile('package.json', 'utf8')).version;
 const startedAt = new Date().toISOString();
 const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'start', '-p', String(port), '-H', '127.0.0.1'], {
-  env: { ...process.env, NODE_ENV: 'production', APP_VERSION: version },
+  env: { ...process.env, NODE_ENV: 'production', APP_VERSION: version, DISABLE_CLOUDFLARE_DNS: 'true', DISABLE_GOOGLE_DNS: 'true', FEATURE_PREMIUM_PROVIDERS: 'false', ALLOW_RISKY_FEATURES: 'false', FEATURE_ACTIVE_REDIRECTS: 'false' },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
 

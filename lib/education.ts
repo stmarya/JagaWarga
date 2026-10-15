@@ -23,25 +23,25 @@ export const educationTopics: Topic[] = [
       {
         title: 'Penyamaran Berkas .APK',
         summary: 'Penipu mengirim berkas aplikasi Android berekstensi .apk dengan nama palsu seperti "Surat Undangan Pernikahan.apk", "Foto Paket J&T.apk", atau "Surat Tilang ETLE.apk" agar korban penasaran.',
-        safe: 'Tolak memasang berkas chat dan hapus seketika. Surat tilang resmi dikirim via pos, dan resi kurir dicek di aplikasi resmi.',
+        safe: 'Jangan pasang berkas aplikasi dari chat. Verifikasi undangan, pengiriman, atau pemberitahuan melalui kanal resmi yang Anda cari sendiri; simpan bukti yang diperlukan tanpa membuka berkas.',
         risky: 'Mengklik dan memasang berkas berekstensi .apk hanya karena foto profil pengirim meyakinkan.',
       },
       {
         title: 'Pencurian Izin SMS & Notifikasi',
-        summary: 'Begitu terpasang, aplikasi meminta izin "Akses Notifikasi" dan "Membaca SMS". Ini dipakai untuk meneruskan kode OTP bank korban langsung ke Telegram penipu.',
+        summary: 'Aplikasi berbahaya dapat menyalahgunakan akses notifikasi, SMS, atau aksesibilitas untuk membaca kode dan mengendalikan perangkat. Kemampuan berbeda menurut aplikasi, izin, dan perangkat.',
         safe: 'Batalkan seketika jika aplikasi meminta izin membaca SMS, notifikasi, atau aksesibilitas yang tidak masuk akal.',
         risky: 'Menekan "Izinkan / Allow" pada semua permintaan izin aplikasi tanpa membaca.',
       },
       {
         title: 'Pengirim Bernomor Asing',
         summary: 'Pesan penipuan sering kali dikirim oleh nomor ponsel acak yang memasang logo resmi ekspedisi atau instansi kepolisian.',
-        safe: 'Verifikasi nomor melalui aplikasi identifikasi nomor atau cek situs resmi sebelum merespons.',
+        safe: 'Cari kanal resmi organisasi secara mandiri. Label aplikasi identifikasi nomor bukan bukti identitas pengirim.',
         risky: 'Mempercayai pesan hanya karena tampilan foto profil WhatsApp memasang logo instansi.',
       },
       {
-        title: 'Tindakan 5 Menit Jika Terlanjur Pasang',
-        summary: 'Kecepatan reaksi menentukan keselamatan saldo rekening Anda sebelum pelaku sempat mengeksekusi transfer.',
-        safe: 'Langsung hidupkan Mode Pesawat (Airplane Mode), cabut kartu SIM, lalu hapus aplikasi dari menu Pengaturan HP.',
+        title: 'Tindakan Awal Jika Terlanjur Pasang',
+        summary: 'Kurangi komunikasi perangkat yang diduga disusupi dan amankan akun penting dari perangkat lain yang dipercaya. Langkah ini tidak menjamin dana atau data selamat.',
+        safe: 'Putuskan koneksi perangkat yang dicurigai, termasuk Wi-Fi. Jangan gunakan untuk bank atau email. Gunakan perangkat lain untuk menghubungi layanan resmi; minta panduan jika aplikasi sulit dihapus, sambil menjaga bukti yang diperlukan.',
         risky: 'Membiarkan ponsel tetap terhubung ke internet sambil panik bertanya pada penipu.',
       },
       {
@@ -244,20 +244,20 @@ export const educationTopics: Topic[] = [
   },
   {
     slug: 'incident-response',
-    title: 'Tanggap Darurat Insiden Digital (Langkah 5 Menit)',
+    title: 'Tanggap Awal Insiden Digital',
     badge: 'Koordinator Tanggap',
     description: 'Prosedur penyelamatan darurat saat uang, akun, atau ponsel Anda sudah menjadi korban kejahatan siber.',
     lessons: [
       {
         title: 'Langkah 1: Isolasi Koneksi Seketika',
-        summary: 'Hentikan transmisi data agar malware tidak sempat menyedot kode verifikasi baru atau mengunci berkas.',
+        summary: 'Untuk perangkat yang dicurigai disusupi, kurangi koneksi jaringan tanpa membuka aplikasi mencurigakan. Isolasi bukan bukti ancaman sudah hilang.',
         safe: 'Aktifkan Mode Pesawat (Airplane Mode) dan matikan koneksi Wi-Fi dalam hitungan detik.',
         risky: 'Tetap menyalakan internet untuk mencari tutorial di ponsel yang sedang diretas.',
       },
       {
         title: 'Langkah 2: Hubungi Call Center Resmi Bank',
         summary: 'Waktu adalah faktor paling kritis untuk menahan dana sebelum ditarik tunai oleh sindikat penipu di ATM.',
-        safe: 'Telepon hotline darurat bank Anda (BCA: 1500888, Mandiri: 14000, BRI: 1500017, BNI: 1500046) dan minta blokir rekening tujuan.',
+        safe: 'Hubungi bank atau e-wallet dari aplikasi, kartu, atau situs resminya menggunakan perangkat yang dipercaya. Minta pengamanan akun dan penanganan transaksi penipuan. Jangan memakai nomor dari pengirim yang dicurigai.',
         risky: 'Menunggu esok hari untuk datang ke kantor cabang bank karena jam kantor tutup.',
       },
       {
@@ -267,15 +267,15 @@ export const educationTopics: Topic[] = [
         risky: 'Menghapus obrolan chat karena kesal atau takut dimarahi keluarga.',
       },
       {
-        title: 'Langkah 4: Lapor ke CekRekening.id & Patroli Siber',
-        summary: 'Laporan resmi membekukan rekening penipu di seluruh ekosistem perbankan nasional.',
-        safe: 'Kunjungi CekRekening.id (Kemenkominfo) dan PatroliSiber.id (Polri) untuk pengaduan tindak pidana.',
+        title: 'Langkah 4: Ikuti Kanal Pelaporan Resmi',
+        summary: 'Pelaporan dapat membantu penanganan finansial dan proses hukum, tetapi tidak menjamin pembekuan rekening atau pengembalian dana.',
+        safe: 'Setelah menghubungi bank/PJP, gunakan IASC OJK untuk jalur penanganan finansial dan ikuti proses Laporan Polisi untuk jalur hukum. Simpan nomor laporan; jalur finansial tidak menggantikan Laporan Polisi.',
         risky: 'Membayar jasa "hacker pengembali uang" di media sosial yang sebenarnya adalah penipuan putaran kedua.',
       },
       {
         title: 'Langkah 5: Pemulihan Total Perangkat',
         summary: 'Jika ponsel terinfeksi berkas APK berbahaya, malware mungkin meninggalkan backdoor yang sulit dideteksi.',
-        safe: 'Lakukan Cadangkan Data Penting (hanya foto/kontak) lalu lakukan Reset ke Setelan Pabrik (Factory Reset).',
+        safe: 'Ikuti petunjuk resmi perangkat atau teknisi terpercaya. Reset dapat menghapus bukti dan data; pertimbangkan kebutuhan dokumentasi dan cadangan terlebih dahulu. Jangan memulihkan aplikasi yang dicurigai.',
         risky: 'Hanya menghapus ikon aplikasi di layar utama tanpa memeriksa aplikasi sistem.',
       },
     ],
