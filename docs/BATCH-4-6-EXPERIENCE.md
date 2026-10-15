@@ -19,7 +19,7 @@ Next.js 16.4.1 and updated lockfile remove the runtime advisories observed at im
 ## Operational and offline boundaries
 - Operations uses five public endpoints, independent results, ten-second timeout and manual refresh. It does not accept admin tokens or claim a successful HTTP response means readiness.
 - Service worker v3 caches only an explicit offline notice. It removes old app-owned shell caches, does not intercept API/POST/assets/external requests and never substitutes home HTML for results or incident routes. Offline notice is not a result or loaded emergency plan. Does not delete local histories/cases/progress.
-- Runtime acceptance explicitly disables reputation/DNS/active providers. Browser fixture tests are separate from real local endpoint checks. No external redirect target is contacted.
+- Runtime acceptance explicitly disables reputation and active providers, uses disposable single-process state and a hash-only lookup. Metadata providers remain configured for readiness, but no domain lookup is requested. Browser fixture tests are separate from real local endpoint checks. No external redirect target is contacted.
 
 ## Validation
 Run `npm run security:audit`, `npm test`, `npm run test:coverage`, `npx --no-install tsc --noEmit`, `npm run build`, `npm run security:secrets`, `npm run test:openapi`, `npm run test:launch-gate`, `npm run acceptance:runtime`, `npm run performance:proof`, `npm run operations:proof`.

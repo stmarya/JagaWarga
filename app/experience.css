@@ -83,3 +83,8 @@
  .education-v4 { width:100%; max-width:none; }
  .learning-summary { break-inside:avoid; }
 }
+/* Readability corrections from visual QA. */
+.v4-levels button { display:block; }
+.landing-page .landing-trust li, .landing-page .landing-trust span { font-size:14px; }
+.tools-page .privacy-banner p { font-size:16px; line-height:1.6; }
+@media(max-width:760px) { .v4-levels button { display:flex; } }
