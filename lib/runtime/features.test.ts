@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { enabledProviderNames, featureFlags, providerDiagnostics, virusTotalApiKeys } from './features';
 
 describe('feature governance', () => {
+  it('requires both operator flags for active redirect connections', () => { expect(featureFlags({ NODE_ENV: 'test', FEATURE_ACTIVE_REDIRECTS: 'true' }).activeRedirects).toBe(false); expect(featureFlags({ NODE_ENV: 'test', FEATURE_ACTIVE_REDIRECTS: 'true', ALLOW_RISKY_FEATURES: 'true' }).activeRedirects).toBe(true); });
   it('denies risky features by default', () => {
     expect(featureFlags({ NODE_ENV: 'test', FEATURE_FILE_UPLOAD: 'true', FEATURE_URL_SUBMISSION: 'true' })).toMatchObject({
       fileUpload: false,

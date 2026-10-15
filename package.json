@@ -28,11 +28,19 @@
     "preflight": "node scripts/preflight.mjs",
     "release:manifest": "node scripts/release-manifest.mjs",
     "security:secrets": "node scripts/check-secrets.mjs",
-    "security:audit": "npm audit --omit=dev --audit-level=high"
+    "security:audit": "npm audit --omit=dev --audit-level=high",
+    "test:analyst": "node scripts/analyst-smoke.mjs",
+    "privacy:legacy-history": "tsx scripts/purge-legacy-community-history.ts",
+    "test:batch1": "node scripts/batch1-smoke.mjs",
+    "test:batch1-api": "node scripts/batch1-api-smoke.mjs",
+    "test:batch2": "node scripts/batch2-smoke.mjs",
+    "test:batch3": "node scripts/batch3-smoke.mjs",
+    "test:batch456": "node scripts/batch456-smoke.mjs",
+    "test:experience": "node scripts/experience-regression.mjs"
   },
   "dependencies": {
     "ipaddr.js": "2.2.0",
-    "next": "16.3.6",
+    "next": "16.4.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "redis": "^5.8.2"

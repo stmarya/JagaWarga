@@ -12,7 +12,7 @@ type SafeFetchOptions = {
 
 export function validateProviderUrl(raw: string): URL {
   const url = new URL(raw);
-  if (url.protocol !== 'https:' || !ALLOWED_PROVIDER_HOSTS.has(url.hostname) || url.username || url.password) {
+  if (url.protocol !== 'https:' || url.port || !ALLOWED_PROVIDER_HOSTS.has(url.hostname) || url.username || url.password) {
     throw new Error('PROVIDER_URL_NOT_ALLOWED');
   }
   return url;
@@ -23,6 +23,7 @@ export async function safeFetchJson<T>(
   signal?: AbortSignal,
   options: SafeFetchOptions = {},
 ): Promise<T> {
+  if (signal?.aborted) throw new Error('PROVIDER_ABORTED');
   const url = validateProviderUrl(raw);
   const extraHeaders = options.headers ?? {};
   for (const [name, value] of Object.entries(extraHeaders)) {
@@ -30,7 +31,15 @@ export async function safeFetchJson<T>(
       throw new Error('PROVIDER_HEADER_NOT_ALLOWED');
     }
   }
-  const addresses = await lookup(url.hostname, { all: true, verbatim: true });
+  const addresses = await new Promise<Array<{address: string; family: number}>>((resolve, reject) => {
+    const abort = () => { cleanup(); reject(new Error('PROVIDER_ABORTED')); };
+    const timer = setTimeout(() => { cleanup(); reject(new Error('PROVIDER_TIMEOUT')); }, 4_000);
+    const cleanup = () => { clearTimeout(timer); signal?.removeEventListener('abort', abort); };
+    signal?.addEventListener('abort', abort, { once: true });
+    lookup(url.hostname, { all: true, verbatim: true }).then(value => { cleanup(); resolve(value); }, error => { cleanup(); reject(error); });
+    if (signal?.aborted) abort();
+  });
+  if (signal?.aborted) throw new Error('PROVIDER_ABORTED');
   if (!addresses.length) throw new Error('PROVIDER_DNS_EMPTY');
   const pinned = addresses.map((item) => ({ ...item, address: assertPublicIp(item.address) }))[0];
 
@@ -67,6 +76,7 @@ export async function safeFetchJson<T>(
           reject(new Error('PROVIDER_CONTENT_TYPE'));
           return;
         }
+        response.on('error', reject);
         const chunks: Buffer[] = [];
         let size = 0;
         response.on('data', (chunk: Buffer) => {

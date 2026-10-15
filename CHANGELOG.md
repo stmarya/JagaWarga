@@ -1,6 +1,25 @@
 # Changelog
 
+## Batches 4–6 — experience and hardening
+- Updated runtime dependencies and provider cancellation/response-bound tests without lowering CI gates.
+- Searchable tools and structured learning flow with explicit local completion; learning summaries are not certificates.
+- Consistent supporting-page hierarchy, partial operational errors, defensive content corrections and explicit offline notice.
+- Refreshed real-local acceptance and broader responsive smoke; existing public-release blockers unchanged.
+
 ## Unreleased
+- Batch 3: responsive bulk triage, bounded Retry-After/manual resume, explicit selected-vs-batch evidence attachment and source-focused evidence cards.
+- Local cases: dirty state, search/status filters, save-vs-export clarity, monotonic optimistic revisions, deleted-case protection and conflict reload.
+- Investigation tools: cancellable heuristic message/header analysis with truthful authentication limits, bounded local hash/QR and safe explicit lookup handoff.
+- BREAKING: active redirect endpoint now off by default behind operator flags and consent; pinned-public-DNS HEAD observations replace generic GET/safety heuristics, with bounded hops/headers/time/queue/rate. Requires separate deployment egress review.
+- Batch 2: shared readable navigation, 44px controls, semantic progress, focus/skip links, inline assistance and reduced-motion support.
+- Emergency: five incident-specific first actions, financial priority, ephemeral follow-up checklists, official reference links and evidence/recovery caveats.
+- Technical details: guarded local/public loading, source provenance and uncertainty, bounded/collapsible metadata, engine filter/pagination, allowlisted evidence export and truthful browser print/PDF.
+- Batch 1: checks are private by default; local history is opt-in, results lead with actions/evidence/limitations, and personal/public history is separated.
+- Replaced automatic community storage with operator-gated consent, host-only preview, server-derived normalized evidence, 24-hour per-record TTL, publisher-only deletion capabilities, and an explicit legacy purge migration.
+- Unified privacy export/local clear with IndexedDB cases; clarified server/model flows and removed absolute privacy claims.
+- Added an advanced analyst MVP: consent-gated sequential bulk IoC lookup, evidence explorer, and IndexedDB case workspaces with versioned import/export/delete.
+- Fixed suspicious evidence being downgraded by confidence multiplication; versioned severity independently of confidence and exposed provider coverage/conflicts.
+- Added analyst unit/regression tests and fixture-based browser smoke coverage. No production deployment or external-provider acceptance is implied.
 - Redesigned the product interface with an original dark civic-cybersecurity visual system inspired by security analysis consoles.
 - Added a shared responsive header and footer, clearer scan hierarchy, richer result presentation, and semantic destructive actions.
 - Preserved all existing functionality while passing mobile UI smoke and serious/critical accessibility checks.

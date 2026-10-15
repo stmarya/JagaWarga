@@ -23,7 +23,9 @@
                 "properties": {
                   "messages": {
                     "type": "array",
-                    "items": { "type": "object" }
+                    "items": {
+                      "type": "object"
+                    }
                   },
                   "context": {
                     "type": "object"
@@ -40,10 +42,17 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["reply", "model"],
+                  "required": [
+                    "reply",
+                    "model"
+                  ],
                   "properties": {
-                    "reply": { "type": "object" },
-                    "model": { "type": "string" }
+                    "reply": {
+                      "type": "object"
+                    },
+                    "model": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -279,7 +288,7 @@
     },
     "/api/history": {
       "get": {
-        "summary": "Community lookup history",
+        "summary": "Consented public history (empty when community publication is disabled)",
         "responses": {
           "200": {
             "description": "Community history items",
@@ -303,28 +312,65 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "Request rejected or feature unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
       "post": {
-        "summary": "Submit community lookup history",
+        "summary": "Publish normalized server-rechecked indicator after explicit consent (operator-gated)",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object"
+                "type": "object",
+                "required": [
+                  "indicator",
+                  "consent"
+                ],
+                "properties": {
+                  "indicator": {
+                    "type": "string",
+                    "maxLength": 2048
+                  },
+                  "consent": {
+                    "const": true
+                  }
+                },
+                "description": "URL is reduced to host. Client-supplied results are not trusted or stored."
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Created item",
+            "description": "Publication plus private deletion capability for publisher only",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "type": "object",
+                  "required": [
+                    "item",
+                    "deletionToken"
+                  ],
+                  "properties": {
+                    "item": {
+                      "type": "object"
+                    },
+                    "deletionToken": {
+                      "type": "string",
+                      "description": "Never present in public GET responses."
+                    }
+                  }
                 }
               }
             }
@@ -341,6 +387,46 @@
           },
           "429": {
             "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request rejected or feature unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request rejected or feature unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request rejected or feature unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Request rejected or feature unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -352,30 +438,62 @@
         }
       },
       "patch": {
-        "summary": "Add community comment to history item",
+        "summary": "Public comments are deferred and fail closed",
+        "responses": {
+          "403": {
+            "description": "Request rejected or feature unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete own publication using the private deletion capability even when sharing is disabled",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object"
+                "type": "object",
+                "required": [
+                  "id",
+                  "deletionToken"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "deletionToken": {
+                    "type": "string"
+                  }
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Updated item",
+            "description": "Publication deleted",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "type": "object",
+                  "properties": {
+                    "deleted": {
+                      "const": true
+                    }
+                  }
                 }
               }
             }
           },
           "400": {
-            "description": "Invalid input",
+            "description": "Request rejected or feature unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -385,7 +503,27 @@
             }
           },
           "404": {
-            "description": "Item not found",
+            "description": "Request rejected or feature unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request rejected or feature unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request rejected or feature unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -395,7 +533,17 @@
             }
           },
           "429": {
-            "description": "Rate limited",
+            "description": "Request rejected or feature unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Request rejected or feature unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -607,7 +755,7 @@
     },
     "/api/tools/unshorten": {
       "post": {
-        "summary": "Unshorten and follow URL redirects safely",
+        "summary": "Operator-gated, consented active HEAD redirect trace (not reputation verification)",
         "requestBody": {
           "required": true,
           "content": {
@@ -615,11 +763,17 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "url"
+                  "url",
+                  "consent"
                 ],
                 "properties": {
                   "url": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 2048
+                  },
+                  "consent": {
+                    "type": "boolean",
+                    "const": true
                   }
                 }
               }
@@ -628,7 +782,7 @@
         },
         "responses": {
           "200": {
-            "description": "Redirect chain details",
+            "description": "Bounded HEAD observations, completion flag and stop reason; no safety verdict",
             "content": {
               "application/json": {
                 "schema": {
@@ -639,6 +793,66 @@
           },
           "400": {
             "description": "Invalid URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active tracing disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON content type required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Client rate limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Network trace blocked or incomplete",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Bounded queue full",
             "content": {
               "application/json": {
                 "schema": {
@@ -725,6 +939,37 @@
           },
           "requestId": {
             "type": "string"
+          },
+          "scoringVersion": {
+            "type": "string",
+            "description": "Versioned deterministic severity policy; risk is not a probability."
+          },
+          "conflictingEvidence": {
+            "type": "boolean",
+            "description": "Benign and threat evidence coexist."
+          },
+          "coverage": {
+            "type": "object",
+            "required": [
+              "requested",
+              "assessed",
+              "failed"
+            ],
+            "properties": {
+              "requested": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "assessed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "failed": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "description": "Unique providers requested, able to assess reputation, and failed. DNS is not reputation."
           }
         }
       },

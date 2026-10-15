@@ -1,0 +1,91 @@
+/* Batches 4–5: retain the fixed light brand, align hierarchy and interaction states. */
+.experience-page { max-width:1120px; font-size:16px; line-height:1.6; padding-bottom:48px; }
+.experience-page h1 { font-size:clamp(28px,3.4vw,44px); line-height:1.15; letter-spacing:-.025em; color:#141824; }
+.experience-page h2 { font-size:24px; line-height:1.3; margin:0 0 16px; }
+.experience-page h3 { font-size:18px; }
+.experience-page p { margin:12px 0; }
+.experience-page :is(button,input,select,summary) { font:inherit; min-height:44px; }
+.experience-page :is(button,a,input,summary):focus-visible { outline:3px solid #244dcc; outline-offset:4px; }
+.experience-page button { cursor:pointer; }
+.experience-page button:disabled { cursor:not-allowed; opacity:.65; }
+.experience-page input { padding:12px; border:1px solid #64748b; background:#fff; color:#182236; width:100%; border-radius:8px; }
+.experience-page .v4-label { display:block; font-weight:700; margin:24px 0 8px; }
+.v4-heading { max-width:760px; margin:24px 0 32px; }
+.v4-heading h1 { margin:12px 0 20px; scroll-margin-top:150px; }
+.v4-heading p { color:#36465e; }
+.v4-card { background:#fff; border:1px solid #a6b0bf; border-radius:8px; padding:24px; margin:24px 0; min-width:0; overflow-wrap:anywhere; }
+.v4-card summary { padding:8px 0; font-weight:700; }
+.v4-notice { padding:20px 24px; border-left:4px solid #a25b00; background:#fff6df; margin:24px 0; overflow-wrap:anywhere; }
+.v4-related { border-top:1px solid #a6b0bf; padding-top:24px; margin-top:48px; }
+.resource-context { display:flex; flex-wrap:wrap; gap:8px; color:#475569; font-size:14px; }
+.resource-context a { display:inline-flex; align-items:center; min-height:44px; }
+.v4-primary,.v4-secondary { display:inline-flex; align-items:center; justify-content:center; min-height:44px; border:1px solid #64748b; padding:10px 16px; border-radius:8px; text-decoration:none; font-weight:700; line-height:1.4; }
+.v4-primary { background:#244dcc; color:#fff; border-color:#244dcc; }
+.v4-secondary { background:#fff; color:#182236; }
+.v4-actions { display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-top:24px; }
+.v4-related .v4-actions a { min-height:44px; display:inline-flex; align-items:center; }
+.v4-meta,.experience-page small { color:#475569; font-size:14px; }
+.v4-definition { margin:0; }
+.v4-definition>div { display:grid; grid-template-columns:200px minmax(0,1fr); gap:24px; padding:20px 0; border-top:1px solid #cbd5e1; }
+.v4-definition dt { font-weight:700; }
+.v4-definition dd { margin:0; }
+.v4-levels { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:32px 0; }
+.v4-levels button { background:#fff; color:#182236; border:1px solid #64748b; border-radius:8px; padding:16px; text-align:left; }
+.v4-levels button[aria-pressed=true] { border:2px solid #244dcc; background:#eef2ff; }
+.v4-levels span { display:block; font-size:14px; margin-top:4px; }
+.v4-topic-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; margin:24px 0; }
+.v4-topic { background:#fff; color:#182236; border:1px solid #a6b0bf; border-radius:8px; padding:24px; display:flex; flex-direction:column; align-items:flex-start; gap:16px; text-align:left; }
+.v4-topic strong { font-size:22px; line-height:1.3; }
+.v4-topic b { margin-top:auto; color:#244dcc; }
+.v4-topic:hover { border-color:#244dcc; }
+.v4-lesson-layout { display:grid; grid-template-columns:280px minmax(0,1fr); gap:24px; align-items:start; }
+.v4-lesson-layout .v4-card { margin-top:0; }
+.v4-lesson-nav { display:grid; gap:8px; }
+.v4-lesson-nav button { display:flex; gap:12px; text-align:left; border:1px solid #a6b0bf; border-radius:8px; background:#fff; color:#182236; padding:12px; }
+.v4-lesson-nav button[aria-current] { border:2px solid #244dcc; background:#eef2ff; font-weight:700; }
+.v4-guidance section { border-left:3px solid #244dcc; background:#eef2ff; padding:16px; margin:20px 0; }
+.v4-guidance section:last-child { border-color:#a21b2b; background:#fff2f0; }
+.v4-guidance h3 { margin:0; }
+.v4-quiz { display:grid; gap:12px; margin:24px 0; }
+.v4-quiz button { padding:16px; background:#fff; color:#182236; text-align:left; border:1px solid #64748b; border-radius:8px; }
+.v4-quiz button.selected { border:2px solid #244dcc; background:#eef2ff; opacity:1; }
+.v4-feedback { background:#eef2ff; border-left:4px solid #244dcc; padding:20px; }
+.v4-status-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; }
+.v4-status-grid .v4-card { margin:0; }
+.v4-status-grid h2 { font-size:20px; overflow-wrap:anywhere; }
+.v4-status-grid pre { white-space:pre-wrap; overflow-wrap:anywhere; max-height:360px; overflow:auto; font:14px/1.6 Consolas,monospace; }
+.v4-tool-intro { margin:24px 0; max-width:760px; border-left:4px solid #244dcc; padding:16px 24px; background:#eef2ff; }
+.tools-page .tool-card { min-width:0; border:1px solid #a6b0bf; border-radius:8px; }
+.tools-page .tool-card-content { min-width:0; overflow-wrap:anywhere; }
+.tools-page .tool-card-content small { font-size:14px; }
+.tools-page .tool-card-content strong { font-size:22px; }
+.tools-page .tool-card-content p { font-size:16px; }
+.landing-page .landing-trust { flex-wrap:wrap; }
+.landing-page .signal-card-top { gap:16px; flex-wrap:wrap; }
+.landing-page .signal-card-top span { max-width:260px; font-size:14px; }
+.landing-page .landing-next nav small { font-size:14px; }
+:where(main) :is(input,textarea,select,button,a,summary):focus-visible { outline:3px solid #244dcc; outline-offset:3px; }
+@media(max-width:760px) {
+ .experience-page { width:calc(100% - 32px); }
+ .v4-heading { margin-top:20px; }
+ .v4-topic-grid,.v4-lesson-layout,.v4-status-grid { grid-template-columns:1fr; }
+ .v4-levels { grid-template-columns:1fr; gap:8px; }
+ .v4-levels button { display:flex; justify-content:space-between; gap:12px; align-items:center; }
+ .v4-levels span { margin:0; text-align:right; }
+ .v4-card { padding:20px; }
+ .v4-definition>div { grid-template-columns:1fr; gap:8px; }
+ .v4-lesson-nav { grid-template-columns:1fr; }
+ .tools-page .tool-card { padding:20px; }
+ .v4-actions>* { max-width:100%; }
+}
+@media print {
+ .learning-summary button,.education-v4 .resource-context,.education-v4 .v4-related,.education-v4>button { display:none!important; }
+ .education-v4 { width:100%; max-width:none; }
+ .learning-summary { break-inside:avoid; }
+}
+/* Readability corrections from visual QA. */
+.v4-levels button { display:block; }
+.landing-page .landing-trust li, .landing-page .landing-trust span { font-size:14px; }
+.tools-page .privacy-banner p { font-size:16px; line-height:1.6; }
+@media(max-width:760px) { .v4-levels button { display:flex; } }
+.resource-page .v4-card li>a { display:inline-flex; align-items:center; min-height:44px; }

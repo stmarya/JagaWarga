@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -7,7 +8,7 @@ const baseURL = `http://127.0.0.1:${port}`;
 const version = JSON.parse(await readFile('package.json', 'utf8')).version;
 const startedAt = new Date().toISOString();
 const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'start', '-p', String(port), '-H', '127.0.0.1'], {
-  env: { ...process.env, NODE_ENV: 'production', APP_VERSION: version },
+  env: { ...process.env, NODE_ENV: 'production', APP_VERSION: version, DISABLE_CLOUDFLARE_DNS: 'false', DISABLE_GOOGLE_DNS: 'false', RUNTIME_TOPOLOGY: 'single', REDIS_URL: '', ADMIN_METRICS_TOKEN: `local-acceptance-${randomUUID()}`, FEATURE_PREMIUM_PROVIDERS: 'false', ALLOW_RISKY_FEATURES: 'false', FEATURE_ACTIVE_REDIRECTS: 'false' },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
 

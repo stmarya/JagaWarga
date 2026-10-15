@@ -4,8 +4,8 @@
   "version": "0.13.0-rc.4",
   "runtime": "native-nextjs-production",
   "bind": "127.0.0.1:3100",
-  "startedAt": "2026-09-30T14:52:00.000Z",
-  "completedAt": "2026-09-30T14:52:30.000Z",
+  "startedAt": "2026-10-15T12:59:50.292Z",
+  "completedAt": "2026-10-15T13:00:17.642Z",
   "checks": {
     "build": "passed-before-run",
     "preflight": {
@@ -17,21 +17,21 @@
         "google-dns"
       ]
     },
-    "uiSmoke": "Mobile lookup, status, tools, dashboard, and service-worker smoke passed.",
+    "uiSmoke": "Real local runtime smoke passed: private lookup, operations, server pattern tools, local hash/QR, dashboard, private support, SW cleanup and explicit offline fallback. No production/provider acceptance.",
     "load": {
       "total": 500,
       "passed": 500,
       "concurrency": 25,
-      "p95Ms": 49,
-      "maxMs": 229
+      "p95Ms": 186,
+      "maxMs": 858
     },
     "analyzerLoad": {
       "endpoint": "/api/analyze/message",
       "total": 10,
       "passed": 10,
       "concurrency": 5,
-      "p95Ms": 28,
-      "maxMs": 28
+      "p95Ms": 53,
+      "maxMs": 53
     }
   },
   "limitations": [

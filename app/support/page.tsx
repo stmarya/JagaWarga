@@ -1,26 +1,7 @@
 import Link from 'next/link';
-
-export default function SupportPage() {
-  return (
-    <main className="page">
-      <Link href="/">← Beranda</Link>
-      <p className="eyebrow">DUKUNGAN & ESKALASI</p>
-      <h1>Dapatkan bantuan tanpa membagikan data sensitif.</h1>
-      <section className="panel">
-        <h2>Masalah hasil atau penggunaan</h2>
-        <p>Catat ID permintaan yang tampil di hasil, jenis input, waktu kejadian, dan langkah reproduksi. Jangan sertakan indikator mentah, password, OTP, isi pesan pribadi, atau API key.</p>
-        <p><a href="https://github.com/stmarya/JagaWarga/issues/new" target="_blank" rel="noreferrer">Buat issue non-sensitif</a></p>
-      </section>
-      <section className="panel">
-        <h2>Kerentanan atau kebocoran data</h2>
-        <p>Jangan membuka issue publik. Gunakan private security advisory agar detail tidak terekspos.</p>
-        <p><a href="https://github.com/stmarya/JagaWarga/security/advisories/new" target="_blank" rel="noreferrer">Laporkan secara privat</a></p>
-      </section>
-      <section className="panel">
-        <h2>Keadaan darurat</h2>
-        <p>Jika akun atau transaksi sudah terdampak, ikuti panduan tindakan segera.</p>
-        <Link href="/emergency">Buka panduan darurat</Link>
-      </section>
-    </main>
-  );
-}
+import { ResourceLayout } from '@/components/resource-layout';
+export default function SupportPage(){return <ResourceLayout kicker="BANTUAN & ESKALASI" title="Pilih bantuan tanpa membuka data pribadi." intro="Pisahkan gangguan penggunaan, laporan keamanan, dan insiden yang membutuhkan tindakan segera.">
+<section className="v4-notice"><h2>Uang atau akun sudah terdampak?</h2><p>Hubungi layanan resmi terkait dan gunakan panduan darurat. JagaWarga bukan bank, kepolisian, atau layanan pemulihan akun.</p><Link className="v4-primary" href="/emergency">Buka langkah darurat</Link></section>
+<section className="v4-card"><h2>Masalah hasil atau penggunaan</h2><p>Siapkan ID permintaan, jenis pemeriksaan, waktu, perilaku yang diharapkan, dan langkah untuk mengulang masalah. Jika perlu, buat contoh sintetis tanpa data asli.</p><p>Jangan sertakan URL bertoken, isi percakapan, identitas, kata sandi, OTP, API key, atau tangkapan layar yang belum disunting. Issue GitHub bersifat publik.</p><a className="v4-secondary" href="https://github.com/stmarya/JagaWarga/issues/new" target="_blank" rel="noopener noreferrer">Buat issue non-sensitif ↗</a></section>
+<section className="v4-card"><h2>Dugaan kerentanan atau kebocoran data</h2><p>Jangan mengirim detail eksploitasi atau data korban lewat issue publik maupun chat AI. Gunakan kanal pelaporan keamanan privat repositori.</p><a className="v4-secondary" href="https://github.com/stmarya/JagaWarga/security/advisories/new" target="_blank" rel="noopener noreferrer">Buka pelaporan keamanan privat ↗</a><p className="v4-meta">Memerlukan akun dan ketersediaan private reporting di GitHub. Jika kanal tidak tersedia, jangan beralih mempublikasikan rahasia di issue publik. Tidak ada waktu respons atau hasil pemulihan yang dijamin.</p></section>
+<details className="v4-card"><summary>Pemeriksaan gagal atau hasil belum cukup</summary><ul><li>Catat ID permintaan dan waktu; jangan mengulang berlebihan saat dibatasi kuota.</li><li>Hasil unknown atau sumber gagal berarti penilaian belum cukup, bukan bukti objek aman.</li><li>Jika data sesi sudah hilang, lakukan pemeriksaan baru. Publikasi yang tidak tersedia tidak diganti dengan sesi pribadi lain.</li></ul></details><p className="v4-meta">Tautan bertanda ↗ membuka layanan eksternal di tab baru.</p></ResourceLayout>;}

@@ -26,6 +26,9 @@ jobs:
       - run: npm run test:openapi
       - run: npm run build
       - run: npm run acceptance:runtime
+      - name: Install browser for experience regression
+        run: npx --no-install playwright install --with-deps chromium
+      - run: npm run test:experience
       - run: npm run performance:proof
       - run: npm run operations:proof
       - run: node -e "JSON.parse(require('fs').readFileSync('public/openapi.json')); JSON.parse(require('fs').readFileSync('public/launch-status.json')); JSON.parse(require('fs').readFileSync('extension/manifest.json'))"

@@ -1,4 +1,4 @@
-import { aggregateEvidence } from './evidence';
+import { aggregateEvidence, SCORING_VERSION } from './evidence';
 import { CloudflareDnsAdapter, GoogleDnsAdapter } from './providers/dns';
 import { VirusTotalAdapter } from './providers/virustotal';
 import { applyFreshnessPolicy } from './providers/freshness';
@@ -114,7 +114,7 @@ export async function performLookup(
   const lookupStarted = performance.now();
   const indicator = canonicalizeIndicator(raw);
   const adapterNames = adapters.map((adapter) => adapter.name).sort().join(',');
-  const key = `${indicator.type}:${indicator.value}:providers=${adapterNames}`;
+  const key = `${SCORING_VERSION}:${indicator.type}:${indicator.value}:providers=${adapterNames}`;
   const existing = inFlight.get(key);
   if (existing) {
     await recordMetric('lookup.coalesced', 0);

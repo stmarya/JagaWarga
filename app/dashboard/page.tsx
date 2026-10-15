@@ -1,129 +1,65 @@
 'use client';
-
 import Link from 'next/link';
-import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { addHistory, addXp } from '@/lib/client/storage';
-import { Icon } from '@/components/icon';
+import { useEffect, useMemo, useState } from 'react';
+import { clearHistory, exportLocalData, getHistory, removeHistory, type LocalHistoryItem } from '@/lib/client/storage';
+import { deletePublication, getPublicationReceipts, type PublicationReceipt } from '@/lib/client/publications';
+import { downloadJson, readSnapshot } from '@/lib/analyst/snapshot';
 
-type HistoryItem = {
-  id: string;
-  indicator: { type: string; displayValue: string };
-  verdict: string;
-  risk: number;
-  confidence: string;
-  checkedAt: string;
-  comments: Array<{ id: string; author: string; message: string; createdAt: string }>;
-};
-
+type PublicItem = { id: string; indicator: { type: string; displayValue: string }; verdict: string; checkedAt: string; expiresAt: string };
 export default function Dashboard() {
-  const router = useRouter();
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [historyQuery, setHistoryQuery] = useState('');
-  const [filter, setFilter] = useState('all');
-  const [lookupValue, setLookupValue] = useState('');
-  const [lookupLoading, setLookupLoading] = useState(false);
-  const [lookupNotice, setLookupNotice] = useState('');
-  const [openComments, setOpenComments] = useState<string | null>(null);
-
+  const [tab, setTab] = useState<'private' | 'community'>('private');
+  const [history, setHistory] = useState<LocalHistoryItem[]>([]);
+  const [community, setCommunity] = useState<PublicItem[]>([]);
+  const [receipts, setReceipts] = useState<PublicationReceipt[]>([]);
+  const [enabled, setEnabled] = useState(false);
+  const [query, setQuery] = useState(''); const [filter, setFilter] = useState('all');
+  const [loading, setLoading] = useState(false); const [notice, setNotice] = useState(''); const [busy, setBusy] = useState(false);
+  function refreshLocal() { setHistory(getHistory()); setReceipts(getPublicationReceipts()); }
+  useEffect(() => { refreshLocal(); const update = () => refreshLocal(); window.addEventListener('storage', update); return () => window.removeEventListener('storage', update); }, []);
   useEffect(() => {
-    fetch('/api/history')
-      .then((response) => response.ok ? response.json() : [])
-      .then(setHistory)
-      .finally(() => setLoading(false));
-  }, []);
-
-  const rows = useMemo(() => history.filter((item) => {
-    const matchesText = item.indicator.displayValue.toLowerCase().includes(historyQuery.toLowerCase())
-      || item.indicator.type.toLowerCase().includes(historyQuery.toLowerCase());
-    return matchesText && (filter === 'all' || item.verdict === filter);
-  }), [history, historyQuery, filter]);
-
-  async function lookup(event: FormEvent) {
-    event.preventDefault();
-    if (!lookupValue.trim() || lookupLoading) return;
-    setLookupLoading(true);
-    setLookupNotice('');
+    if (tab !== 'community') return;
+    const controller = new AbortController(); setLoading(true);
+    fetch('/api/history', { signal: controller.signal }).then(async (response) => {
+      if (!response.ok) throw new Error();
+      setEnabled(response.headers.get('X-Community-Enabled') === 'true');
+      const rows = await response.json(); if (!Array.isArray(rows)) throw new Error(); setCommunity(rows);
+    }).catch(() => { if (!controller.signal.aborted) setNotice('Riwayat komunitas belum dapat dimuat. Riwayat pribadi tetap tersedia.'); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [tab]);
+  const rows = useMemo(() => (tab === 'private' ? history.map((h) => ({ id: h.id, indicator: { type: h.type, displayValue: h.displayValue }, verdict: h.verdict, checkedAt: h.checkedAt })) : community)
+    .filter((r) => `${r.indicator.displayValue} ${r.indicator.type}`.toLowerCase().includes(query.toLowerCase()) && (filter === 'all' || r.verdict === filter)), [tab, history, community, query, filter]);
+  function openLocal(id: string) {
     try {
-      const response = await fetch('/api/lookups', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ indicator: lookupValue }),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error ?? 'LOOKUP_FAILED');
-      const shared = await fetch('/api/history', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ result }),
-      });
-      const historyId = shared.ok ? (await shared.json()).id : '';
-      addHistory({
-        id: historyId || crypto.randomUUID(),
-        type: result.indicator.type,
-        displayValue: result.indicator.displayValue,
-        verdict: result.verdict,
-        checkedAt: result.checkedAt,
-      });
-      addXp(10);
-      sessionStorage.setItem('jagawarga:last-result', JSON.stringify({ ...result, historyId }));
-      router.push(historyId ? `/result?id=${encodeURIComponent(historyId)}` : '/result');
-    } catch {
-      setLookupNotice('Indikator tidak dapat diperiksa. Pastikan format URL, domain, IP, atau hash sudah benar.');
-    } finally {
-      setLookupLoading(false);
-    }
+      const item = history.find((h) => h.id === id);
+      if (!item?.snapshot) throw new Error('Riwayat lama hanya berisi ringkasan. Jalankan pemeriksaan baru untuk bukti terkini.');
+      sessionStorage.setItem('jagawarga:last-result', JSON.stringify(readSnapshot(item.snapshot))); window.location.assign('/result');
+    } catch (e) { setNotice(e instanceof Error ? e.message : 'Hasil lokal tidak dapat dibuka.'); }
   }
-
-  return (
-    <main className="compact-page history-page">
-      <header className="page-heading">
-        <div><p className="kicker">RIWAYAT KOMUNITAS</p><h1>Hasil yang sudah diperiksa</h1><p>Temukan indikator yang pernah dicek dan baca konteks dari warga lain.</p></div>
-        <Link className="secondary-action" href="/#scanner">Scanner lengkap</Link>
-      </header>
-
-      <section className="dashboard-lookup">
-        <div className="dashboard-lookup-copy"><Icon name="search" size={26} /><div><h2>Periksa IoC langsung</h2><p>Masukkan URL, domain, IP publik, atau hash. Hasil akan disimpan ke riwayat komunitas.</p></div></div>
-        <form onSubmit={lookup}>
-          <label className="sr-only" htmlFor="dashboard-lookup">Indikator yang ingin diperiksa</label>
-          <input id="dashboard-lookup" value={lookupValue} onChange={(event) => setLookupValue(event.target.value)} placeholder="contoh.id, 8.8.8.8, atau hash SHA-256" autoComplete="off" spellCheck="false" />
-          <button disabled={!lookupValue.trim() || lookupLoading}>{lookupLoading ? 'Memeriksa…' : <>Periksa <Icon name="arrow" /></>}</button>
-        </form>
-        {lookupNotice && <p className="inline-alert" role="alert">{lookupNotice}</p>}
-      </section>
-
-      <div className="history-section-heading"><div><p className="kicker">ARSIP PEMERIKSAAN</p><h2>Cari riwayat sebelumnya</h2></div></div>
-      <section className="history-toolbar">
-        <label><span className="sr-only">Cari indikator</span><input value={historyQuery} onChange={(event) => setHistoryQuery(event.target.value)} placeholder="Cari di dalam riwayat…" /></label>
-        <label><span className="sr-only">Filter status</span><select value={filter} onChange={(event) => setFilter(event.target.value)}><option value="all">Semua status</option><option value="high-risk">Risiko tinggi</option><option value="suspicious">Mencurigakan</option><option value="no-indication">Belum ada sinyal</option><option value="insufficient-data">Data kurang</option></select></label>
-      </section>
-
-      <section className="history-summary">
-        <span><strong>{history.length}</strong> pemeriksaan</span>
-        <span><strong>{history.reduce((total, item) => total + item.comments.length, 0)}</strong> komentar</span>
-        <span><strong>{history.filter((item) => item.verdict === 'high-risk').length}</strong> risiko tinggi</span>
-      </section>
-
-      {loading ? <div className="empty-card"><p>Memuat riwayat…</p></div> : rows.length ? (
-        <div className="history-table">
-          <div className="history-row history-head"><span>Indikator</span><span>Status</span><span>Skor</span><span>Komentar</span><span>Waktu</span></div>
-          {rows.map((item) => <article className="history-entry" key={item.id}>
-            <div className="history-row">
-              <Link className="history-indicator" href={`/details?id=${encodeURIComponent(item.id)}`}><strong>{item.indicator.displayValue}</strong><small>{item.indicator.type.toUpperCase()} · buka detail</small></Link>
-              <span><b className={`status-chip status-${item.verdict}`}>{item.verdict.replaceAll('-', ' ')}</b></span>
-              <span>{item.risk}/100</span>
-              <button className="comment-toggle" type="button" disabled={!item.comments.length} onClick={() => setOpenComments(openComments === item.id ? null : item.id)}>{item.comments.length ? `${item.comments.length} komentar` : 'Belum ada'}</button>
-              <time>{new Date(item.checkedAt).toLocaleString('id-ID')}</time>
-            </div>
-            {openComments === item.id && <div className="history-comments">{item.comments.map((comment) => <article key={comment.id}><div><strong>{comment.author}</strong><time>{new Date(comment.createdAt).toLocaleString('id-ID')}</time></div><p>{comment.message}</p></article>)}</div>}
-          </article>)}
-        </div>
-      ) : (
-        <div className="empty-card"><h2>Belum ada hasil yang cocok</h2><p>Coba kata kunci lain atau mulai pemeriksaan baru.</p><Link className="primary-action" href="/#scanner">Mulai cek</Link></div>
-      )}
-
-      <aside className="privacy-banner"><strong>Catatan komunitas</strong><p>Jangan masukkan data pribadi, token, kata sandi, atau rahasia organisasi ke kolom pemeriksaan maupun komentar.</p></aside>
-    </main>
-  );
+  async function deleteShared(receipt: PublicationReceipt) {
+    if (!window.confirm('Hapus publikasi ini dari server? Salinan yang sudah diunduh orang lain tidak dapat ditarik kembali.')) return;
+    setBusy(true);
+    try { await deletePublication(receipt); setCommunity((items) => items.filter((item) => item.id !== receipt.id)); refreshLocal(); setNotice('Publikasi dihapus dari server.'); }
+    catch (e) { setNotice(e instanceof Error ? e.message : 'Penghapusan gagal.'); } finally { setBusy(false); }
+  }
+  return <main className="compact-page batch-page history-v2">
+    <header className="batch-heading"><p className="batch-eyebrow">RIWAYAT PEMERIKSAAN</p><h1>Pribadi dan publik, dipisahkan.</h1><p>Pemeriksaan baru tidak dipublikasikan otomatis. Riwayat pribadi hanya disimpan jika Anda memilihnya di halaman Periksa.</p><Link className="batch-primary" href="/periksa">Mulai pemeriksaan</Link></header>
+    <div className="batch-tabs" role="group" aria-label="Pilih jenis riwayat"><button type="button" aria-pressed={tab === 'private'} onClick={() => { setTab('private'); setNotice(''); }}>Riwayat saya (lokal)</button><button type="button" aria-pressed={tab === 'community'} onClick={() => { setTab('community'); setNotice(''); }}>Riwayat komunitas (publik)</button></div>
+    <section className="batch-card"><h2>{tab === 'private' ? 'Hanya di browser ini' : 'Publikasi dengan persetujuan'}</h2>
+      <p>{tab === 'private' ? 'Data tidak terenkripsi oleh aplikasi dan dapat hilang saat browser dibersihkan. Menghapus riwayat lokal tidak menghapus publikasi server.' : 'Hanya publikasi yang disetujui pemiliknya yang ditampilkan. Data kedaluwarsa maksimal 24 jam; bukan daftar semua pemeriksaan JagaWarga.'}</p>
+      {tab === 'community' && !loading && !enabled && <p className="batch-alert">Fitur komunitas belum diaktifkan operator. Tidak ada publikasi otomatis.</p>}
+      <div className="batch-filter"><label htmlFor="history-search">Cari indikator<input id="history-search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Domain, IP, URL, atau hash" /></label><label htmlFor="history-verdict">Filter verdict<select id="history-verdict" value={filter} onChange={(e) => setFilter(e.target.value)}><option value="all">Semua verdict</option>{['high-risk', 'suspicious', 'no-indication', 'insufficient-data'].map((v) => <option key={v} value={v}>{v}</option>)}</select></label></div>
+      {loading ? <p role="status">Memuat publikasi…</p> : <>
+        <p>Menampilkan {rows.length} dari {tab === 'private' ? history.length : community.length} record.</p>
+        <ul className="batch-history-list">{rows.map((row) => <li key={row.id}>
+          <div><strong className="batch-indicator">{row.indicator.displayValue}</strong><p>{row.indicator.type} · {row.verdict}</p><small>Diperiksa {row.checkedAt}</small></div>
+          <div className="batch-actions">{tab === 'private' ? <><button type="button" onClick={() => openLocal(row.id)}>Buka hasil lokal</button><button className="batch-danger-text" type="button" onClick={() => { removeHistory(row.id); refreshLocal(); }}>Hapus riwayat ini</button></> : <Link className="batch-secondary" href={`/result?id=${encodeURIComponent(row.id)}`}>Buka publikasi</Link>}</div>
+        </li>)}</ul>
+        {!rows.length && <div className="batch-empty"><strong>{query || filter !== 'all' ? 'Tidak ada hasil yang cocok.' : tab === 'private' ? 'Belum ada riwayat pribadi.' : 'Belum ada publikasi tersedia.'}</strong><p>{tab === 'private' ? 'Aktifkan “Simpan hasil IoC di riwayat browser ini” saat memeriksa bila Anda membutuhkannya.' : 'Pemeriksaan privat tidak otomatis masuk ke daftar ini.'}</p></div>}
+      </>}
+      {tab === 'private' && <div className="batch-actions"><button type="button" disabled={!history.length} onClick={() => { try { downloadJson('jagawarga-local-history.json', JSON.parse(exportLocalData())); } catch { setNotice('Ekspor belum berhasil.'); } }}>Ekspor data lokal</button><button className="batch-danger-text" type="button" disabled={!history.length} onClick={() => { if (window.confirm('Hapus seluruh riwayat pribadi di browser ini? Publikasi server dan kasus tidak ikut dihapus.')) { clearHistory(); refreshLocal(); setNotice('Riwayat pribadi dihapus.'); } }}>Hapus semua riwayat pribadi</button></div>}
+    </section>
+    {tab === 'community' && receipts.length > 0 && <section className="batch-card"><h2>Publikasi saya yang masih berlaku</h2><p>Bukti penghapusan hanya ada di browser ini. Penghapusan tetap tersedia saat operator menonaktifkan publikasi baru.</p><ul className="batch-history-list">{receipts.map((receipt) => <li key={receipt.id}><div><strong>Publikasi {receipt.id.slice(0, 8)}</strong><p>Kedaluwarsa {receipt.expiresAt}</p></div><button type="button" className="batch-danger-text" disabled={busy} onClick={() => deleteShared(receipt)}>Hapus publikasi saya</button></li>)}</ul></section>}
+    <p className="batch-notice" role="status" aria-live="polite">{notice}</p><p><Link href="/privacy">Kelola seluruh data dan pengaturan privasi →</Link></p>
+  </main>;
 }

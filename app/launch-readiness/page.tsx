@@ -1,30 +1,6 @@
-import Link from 'next/link';
-
-const internal = [
-  'Technical Fase 1–8 complete',
-  'Automated QA dan fail-closed launch gate',
-  'Protected production workflow',
-  'SBOM, rollback, dan incident runbooks',
-  'Public machine-readable launch status',
-];
-const external = [
-  ['Human usability study', 11],
-  ['Legal/privacy approval', 12],
-  ['Provider Terms confirmation', 13],
-  ['External penetration test', 14],
-  ['Production infrastructure review', 15],
-  ['Operator incident drill', 16],
-] as const;
-export default function LaunchReadiness() {
-  return <main className="page">
-    <Link href="/">← Beranda</Link>
-    <p className="eyebrow">LAUNCH READINESS · v0.13.0-rc.2</p>
-    <h1>Local acceptance READY. Public production NO-GO.</h1>
-    <p>Fase 10 local acceptance selesai. Public deployment baru dapat dimulai setelah seluruh evidence terverifikasi oleh launch gate.</p>
-    <div className="grid">
-      <section className="panel"><h2>Internal readiness</h2><ul>{internal.map((item) => <li key={item}>✅ {item}</li>)}</ul></section>
-      <section className="panel"><h2>External gates</h2><ul>{external.map(([item, issue]) => <li key={item}>⏳ <a href={`https://github.com/stmarya/JagaWarga/issues/${issue}`}>{item}</a></li>)}</ul></section>
-    </div>
-    <p><a href="/launch-status.json">Baca status machine-readable</a>. Halaman ini bukan persetujuan public launch.</p>
-  </main>;
-}
+import { ResourceLayout } from '@/components/resource-layout';
+const gates=[['Studi kegunaan pengguna',11],['Persetujuan legal dan privasi',12],['Konfirmasi ketentuan provider',13],['Pentest eksternal',14],['Peninjauan infrastruktur produksi',15],['Latihan respons insiden operator',16]] as const;
+export default function LaunchReadiness(){return <ResourceLayout kicker="KESIAPAN RILIS" title="Perubahan kode bukan persetujuan rilis publik." intro="Build, tes lokal, dan merge tidak membuktikan layanan siap melindungi pengguna di produksi.">
+<section className="v4-notice"><h2>Produksi publik: belum disetujui oleh halaman ini.</h2><p>Status runtime dan artefak rilis harus diperiksa untuk versi serta digest yang benar. Halaman ini bukan dashboard langsung, sertifikasi keamanan, atau bukti bahwa seluruh gate sudah selesai.</p><a className="v4-secondary" href="/launch-status.json">Baca status machine-readable</a></section>
+<section className="v4-card"><h2>Bukti teknis yang perlu diperiksa</h2><ul><li>CI, audit dependensi, build, pengujian runtime dan container pada commit yang akan dirilis.</li><li>Konfigurasi produksi, backend state terdistribusi, retensi, rollback, dan monitoring.</li><li>Pembersihan riwayat komunitas legacy pada backend yang disetujui operator; menyembunyikan data lama tidak sama dengan menghapusnya.</li><li>Fitur berisiko tetap nonaktif sampai peninjauan izin, privasi, dan jaringan selesai.</li></ul></section>
+<section className="v4-card"><h2>Gate eksternal: verifikasi buktinya</h2><p>Tautan berikut adalah referensi pelacakan, bukan pernyataan status terkini atau bukti persetujuan.</p><ul>{gates.map(([label,id])=><li key={id}><a href={`https://github.com/stmarya/JagaWarga/issues/${id}`} target="_blank" rel="noopener noreferrer">{label} ↗</a></li>)}</ul></section></ResourceLayout>;}

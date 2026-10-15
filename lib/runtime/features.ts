@@ -1,5 +1,6 @@
 export type FeatureFlags = {
   communityReporting: boolean;
+  activeRedirects: boolean;
   fileUpload: boolean;
   urlSubmission: boolean;
   premiumProviders: boolean;
@@ -19,6 +20,7 @@ export function virusTotalApiKeys(env: NodeJS.ProcessEnv = process.env) {
 export function featureFlags(env: NodeJS.ProcessEnv = process.env): FeatureFlags {
   const riskyEnabled = enabled(env.ALLOW_RISKY_FEATURES);
   return {
+    activeRedirects: riskyEnabled && enabled(env.FEATURE_ACTIVE_REDIRECTS),
     communityReporting: riskyEnabled && enabled(env.FEATURE_COMMUNITY_REPORTING),
     fileUpload: riskyEnabled && enabled(env.FEATURE_FILE_UPLOAD),
     urlSubmission: riskyEnabled && enabled(env.FEATURE_URL_SUBMISSION),

@@ -1,0 +1,97 @@
+/* Batch 2 shared foundations; preserve the existing fixed light brand theme. */
+:root { --action-primary: #244dcc; --text-secondary: #475569; --control-border: #64748b; }
+body { font-size: 16px; line-height: 1.55; }
+button, .button, .primary-action, .secondary-action, .file-action { min-height: 44px; }
+button:hover, .primary-action:hover, .secondary-action:hover, .file-action:hover { transform: none; box-shadow: none; }
+:focus-visible { outline: 3px solid #244dcc; outline-offset: 3px; }
+#main-content { outline: none; }
+.site-header { background: #f7f4ec; backdrop-filter: none; transition: none; }
+.site-nav { min-height: 72px; }
+.wordmark { min-height: 44px; }
+.wordmark small { font-size: 12px; color: #475569; }
+.nav-links a { min-height: 44px; font-size: 14px; padding: 10px 12px; }
+.nav-emergency { min-height: 44px; font-size: 16px; box-shadow: none; border-color: #a21c28; background: #ad2130; }
+.nav-emergency:hover { background: #8c1724; transform: none; box-shadow: none; }
+.nav-emergency[aria-current=page] { outline: 2px solid #ad2130; outline-offset: 3px; }
+.site-footer p, .site-footer small, .site-footer nav a, .footer-bottom, .report-link small { font-size: 14px; }
+.footer-brand small, .footer-bottom, .report-link small, .footer-external-note { color: #bdc7d9; }
+.site-footer nav a, .footer-bottom a { min-height: 44px; display: inline-flex; align-items: center; }
+.report-link { min-height: 60px; }
+.footer-external-note { display: block; margin-top: 12px; }
+.ai-inline-launcher .ai-fab-btn { max-width: 100%; white-space: normal; text-align: left; }
+.ai-chat-window { color: #182236; }
+.ai-chat-window :is(p, li, label, input, button, small, a, strong, span, h3, summary, b), .ai-chat-window .ai-privacy-note, .ai-chat-window .ai-user-message, .ai-chat-window .ai-reply-card, .ai-chat-window .ai-context-banner { font-size: 14px; }
+.ai-chat-window button, .ai-response-links a, .ai-sources a { min-height: 44px; }
+.ai-chat-window .ai-sources small, .ai-chat-window .ai-reply-feedback, .ai-chat-window .ai-context-banner span { color: #475569; }
+.progress-breadcrumb { padding: 8px; width: max-content; max-width: 100%; }
+.progress-breadcrumb ol { display: flex; align-items: center; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.progress-breadcrumb li { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.progress-breadcrumb a, .progress-breadcrumb .progress-step { min-height: 44px; font-size: 14px; gap: 6px; color: #475569!important; }
+.progress-breadcrumb a>span, .progress-breadcrumb .progress-step>span { flex-shrink: 0; }
+.progress-breadcrumb .active .progress-step { color: #182236!important; }
+.progress-breadcrumb .active .progress-step>span { background: #244dcc!important; color: #fff!important; }
+.emergency-v2-layout { display: grid; grid-template-columns: minmax(260px, .85fr) minmax(0, 1.3fr); gap: 32px; align-items: start; margin: 32px 0; }
+.emergency-money { margin: 24px 0; }
+.emergency-money p { margin: 8px 0 16px; }
+.emergency-v2-choices { display: grid; gap: 12px; scroll-margin-top: 140px; }
+.emergency-v2-choices button { display: grid; gap: 8px; text-align: left; justify-content: stretch; padding: 16px; font-weight: 400; }
+.emergency-v2-choices button span { color: #475569; font-size: 14px; }
+.emergency-v2-choices button[aria-pressed=true] { background: #eef2ff; border: 2px solid #244dcc; }
+.emergency-hint { color: #475569; font-size: 14px; }
+.emergency-plan { margin: 0; min-width: 0; }
+.emergency-plan h2 { scroll-margin-top: 140px; }
+.emergency-plan h3 { margin-top: 24px; font-size: 20px; }
+.emergency-first { background: #fff2ed; border-left: 4px solid #a21b2b; padding: 16px; font-weight: 700; }
+.emergency-checklist { padding-left: 24px; }
+.emergency-checklist li { padding-left: 4px; }
+.emergency-checklist label { min-height: 44px; padding: 8px 0; display: flex; gap: 12px; align-items: flex-start; font-weight: 400!important; }
+.emergency-checklist input { width: 20px; height: 20px; margin: 3px 0 0; flex-shrink: 0; accent-color: #244dcc; }
+.emergency-source-list li { margin: 16px 0; }
+.emergency-source-list a { display: inline-flex; align-items: center; min-height: 44px; color: #193ca5; }
+.technical-page section { min-width: 0; }
+.technical-warning { padding: 12px 16px; background: #fff6df; color: #6b3900; border-left: 4px solid #985400; }
+.technical-sources article { padding: 24px 0; border-top: 1px solid #cbd5e1; }
+.technical-sources h3 { margin-top: 0; font-size: 20px; overflow-wrap: anywhere; }
+.technical-source-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.technical-source-facts dt { color: #475569; font-size: 14px; font-weight: 700; }
+.technical-source-facts dd { margin: 4px 0 0; overflow-wrap: anywhere; }
+.technical-codes { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; list-style: none; }
+.technical-codes code { font: 14px/1.5 Consolas, monospace; overflow-wrap: anywhere; }
+.technical-codes li { min-width: 0; max-width: 100%; padding: 4px 8px; border: 1px solid #a6b0bf; border-radius: 4px; }
+.technical-page summary { display: list-item; min-height: 44px; overflow-wrap: anywhere; }
+.technical-page pre { font: 14px/1.5 Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 420px; overflow: auto; background: #f3f5f8; padding: 16px; }
+.technical-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px; }
+.technical-stats>div { border: 1px solid #a6b0bf; padding: 16px; border-radius: 8px; }
+.technical-stats dt { overflow-wrap: anywhere; font-size: 14px; color: #475569; }
+.technical-stats dd { font-size: 24px; font-weight: 700; margin: 8px 0 0; }
+.technical-filter { display: block; min-height: 44px; padding: 10px; width: 100%; margin-top: 8px; font-size: 16px; }
+.technical-table-scroll { max-width: 100%; overflow: auto; border: 1px solid #a6b0bf; border-radius: 8px; margin: 16px 0; }
+.technical-table-scroll table { width: 100%; min-width: 600px; border-collapse: collapse; font-size: 14px; table-layout: fixed; }
+.technical-table-scroll caption { text-align: left; padding: 12px; color: #475569; }
+.technical-table-scroll th, .technical-table-scroll td { text-align: left; vertical-align: top; padding: 12px; border-top: 1px solid #cbd5e1; overflow-wrap: anywhere; }
+.technical-table-scroll thead { background: #eef2ff; }
+@media(max-width: 760px) {
+  .site-nav { width: calc(100% - 32px); display: grid; grid-template-columns: 1fr auto; padding: 8px 0; gap: 8px; }
+  .wordmark>span:last-child { display: none; }
+  .nav-links { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-column: 1/-1; grid-row: 2; width: 100%; margin: 0; gap: 2px; overflow: visible; }
+  .nav-links a { min-width: 0; white-space: normal; padding: 8px 4px; font-size: 14px; text-align: center; justify-content: center; }
+  .nav-emergency { grid-column: 2; grid-row: 1; font-size: 16px; }
+  html { scroll-padding-top: 132px; }
+  .emergency-v2-layout { grid-template-columns: 1fr; gap: 24px; }
+  .progress-breadcrumb { width: 100%; overflow: visible; }
+  .progress-breadcrumb ol { width: 100%; gap: 4px; justify-content: space-between; }
+  .progress-breadcrumb li { gap: 4px; }
+  .progress-breadcrumb a, .progress-breadcrumb .progress-step { font-size: 14px; white-space: normal; gap: 4px; }
+  .progress-breadcrumb a>span, .progress-breadcrumb .progress-step>span { width: 22px; height: 22px; }
+  .progress-breadcrumb li>svg { display: none; }
+}
+@media(prefers-reduced-motion: reduce) { html { scroll-behavior: auto!important; } *, *::before, *::after { animation: none!important; transition: none!important; scroll-behavior: auto!important; } }
+@media print {
+  .skip-link, .emergency-v2-choices { display: none!important; }
+  .technical-page .batch-card { break-inside: auto; border-color: #666; }
+  .technical-page .batch-heading { max-width: none; }
+  .technical-page .technical-table-scroll { overflow: visible; }
+  .technical-page .technical-table-scroll table { min-width: 0; font-size: 10pt; }
+  .technical-page .batch-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .technical-page .technical-sources article { break-inside: avoid; }
+}

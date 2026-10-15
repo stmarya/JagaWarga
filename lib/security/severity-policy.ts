@@ -22,7 +22,8 @@ export const RISK_THRESHOLDS = {
 
 export function severityFor({ risk, verdict = '', confidence }: SeverityInput): Severity {
   const score = Math.max(0, Math.min(100, Number.isFinite(risk) ? risk : 0));
-  if (verdict === 'insufficient-data' || confidence === 'low') {
+  if (verdict === 'insufficient-data'
+    || (confidence === 'low' && score < RISK_THRESHOLDS.warning && !['high-risk', 'phishing', 'malicious', 'suspicious'].includes(verdict))) {
     return {
       level: 'unknown',
       label: 'Belum dapat dinilai',

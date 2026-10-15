@@ -90,6 +90,7 @@ function ReplyCard({ reply, onFeedback, feedbackSent }: { reply: AiReply; onFeed
 
 export function AiAssistant() {
   const pathname = usePathname() || '/';
+  const inlineLauncher = true;
   const [isOpen, setIsOpen] = useState(false);
   const [items, setItems] = useState<ConversationItem[]>([{ role: 'assistant', reply: WELCOME }]);
   const [input, setInput] = useState('');
@@ -120,7 +121,7 @@ export function AiAssistant() {
     const previousOverflow = document.body.style.overflow;
     if (window.innerWidth <= 480) document.body.style.overflow = 'hidden';
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') { setIsOpen(false); launcherRef.current?.focus(); return; }
+      if (event.key === 'Escape') { event.preventDefault(); close(); return; }
       if (event.key !== 'Tab' || !dialogRef.current) return;
       const focusable = [...dialogRef.current.querySelectorAll<HTMLElement>('a[href],button:not([disabled]),input:not([disabled]),summary,[tabindex]:not([tabindex="-1"])')];
       if (!focusable.length) return;
@@ -132,7 +133,7 @@ export function AiAssistant() {
     return () => { document.removeEventListener('keydown', onKeyDown); document.body.style.overflow = previousOverflow; };
   }, [isOpen]);
 
-  useEffect(() => { if (isOpen) endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [items, loading, isOpen]);
+  useEffect(() => { if (isOpen) endRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' }); }, [items, loading, isOpen]);
 
   function persist(next: ConversationItem[]) {
     setItems(next);
@@ -168,9 +169,10 @@ export function AiAssistant() {
     }).catch(() => undefined);
   }
 
-  return <aside className="ai-assistant-wrapper no-print" aria-label="Pendamping keamanan digital">
+  return <aside className={`ai-assistant-wrapper no-print ${inlineLauncher && !isOpen ? 'ai-inline-launcher' : ''}`} aria-label="Pendamping keamanan digital">
     {!isOpen && <button ref={launcherRef} type="button" className="ai-fab-btn" onClick={() => setIsOpen(true)} aria-label="Buka pendamping keamanan digital" title="Tanya JagaWarga — Pendamping Keamanan">
       <span className="ai-brand-mark" aria-hidden="true">JW</span>
+      {inlineLauncher && <span>Tanya pendamping JagaWarga</span>}
       <span className="ai-live-pulse-dot" aria-hidden="true" />
       <span className="sr-only">Tanya JagaWarga — Pendamping Keamanan</span>
     </button>}

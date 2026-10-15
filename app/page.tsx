@@ -1,13 +1,12 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/icon';
 
 export default function Home() {
   const router = useRouter();
-  const [quickInput, setQuickInput] = useState('');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -16,16 +15,6 @@ export default function Home() {
       router.replace(`/periksa?ioc=${encodeURIComponent(shared)}`);
     }
   }, [router]);
-
-  function handleQuickSubmit(e: FormEvent) {
-    e.preventDefault();
-    const trimmed = quickInput.trim();
-    if (trimmed) {
-      router.push(`/periksa?ioc=${encodeURIComponent(trimmed)}`);
-    } else {
-      router.push('/periksa');
-    }
-  }
 
   return (
     <main className="landing-page">
@@ -39,15 +28,15 @@ export default function Home() {
             <Link className="landing-secondary" href="/emergency">Saya sudah terlanjur</Link>
           </div>
           <ul className="landing-trust" aria-label="Prinsip utama JagaWarga">
-            <li><Icon name="shield" /> Data minimal</li>
+            <li><Icon name="shield" /> Data seperlunya</li>
             <li><Icon name="check" /> Bahasa mudah dipahami</li>
-            <li><Icon name="users" /> Riwayat komunitas</li>
+            <li><Icon name="users" /> Tanpa publikasi otomatis</li>
           </ul>
         </div>
 
         <div className="landing-signal-card" aria-label="Contoh cara JagaWarga membantu mengambil keputusan">
           <div className="signal-card-top">
-            <span>CONTOH SITUASI</span>
+            <span>CONTOH EDUKASI · BUKAN HASIL PEMERIKSAAN</span>
             <b>Pesan masuk</b>
           </div>
           <blockquote>
@@ -100,11 +89,12 @@ export default function Home() {
         <div>
           <p className="kicker">LEBIH DARI PEMERIKSAAN</p>
           <h2 id="next-title">Bangun kebiasaan digital yang lebih aman.</h2>
-          <p>Gunakan hasil pemeriksaan sebagai awal. Bandingkan pengalaman warga lain, pelajari modusnya, lalu gunakan alat yang sesuai.</p>
+          <p>Gunakan hasil pemeriksaan sebagai awal. Pelajari modus, pahami bukti teknis, lalu pilih alat sesuai pengalaman Anda. Hasil pemeriksaan adalah bantuan awal, bukan jaminan aman.</p>
         </div>
         <nav aria-label="Jelajahi fitur JagaWarga">
-          <Link href="/dashboard"><Icon name="users" /><span><strong>Riwayat komunitas</strong><small>Lihat pemeriksaan dan komentar warga</small></span><Icon name="arrow" /></Link>
+          <Link href="/dashboard"><Icon name="users" /><span><strong>Riwayat pemeriksaan</strong><small>Data pribadi dan publik dipisahkan</small></span><Icon name="arrow" /></Link>
           <Link href="/tools"><Icon name="work" /><span><strong>Alat bantu keamanan</strong><small>Pesan, email, hash, QR, dan tautan pendek</small></span><Icon name="arrow" /></Link>
+        <Link href="/analyst"><Icon name="shield" /><span><strong>Mode Analis</strong><small>Bulk IoC, evidence, dan kasus lokal</small></span><Icon name="arrow" /></Link>
         </nav>
       </section>
     </main>

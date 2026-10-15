@@ -18,9 +18,23 @@ fail-closed, or removed from launch scope.
 - Health, live, ready, version, policy, protected metrics, OpenAPI,
   security.txt, robots, and sitemap endpoints.
 
+## Batch 3 investigation workflow (unreleased)
+
+- Explicit selected/batch evidence attachment, 429 manual resume with bounded
+  Retry-After, mobile triage cards and per-source evidence provenance.
+- Dirty case drafts, search/status filters, explicit saved-vs-exported state,
+  optimistic cross-tab updates/deleted-case protection and reload recovery.
+- Bounded local hash/QR tools, non-IoC QR remains local, cancellable pattern tools;
+  email header reading is not independent DKIM verification.
+- Active redirect tracing is off by default; operator flags + explicit consent,
+  pinned public DNS HEAD per hop, bounded queue/deadline/hops, no body download.
+  Enabling requires separate operator network/egress/privacy/abuse review and is
+  not approved for public release. Preflight requires the flag off.
+
 ## Explicitly deferred and fail-closed
 
-- Community reporting.
+- Community reporting remains off by default. Batch 1 adds an unreleased,
+  operator-gated explicit consent/TTL/deletion contract; it is not a launch promise.
 - External notifications.
 - Organization workspaces and server-side membership/audit persistence.
 - File upload and URL submission.
@@ -28,6 +42,21 @@ fail-closed, or removed from launch scope.
 - A second reputation provider. The accepted limitation is documented publicly;
   DNS sources are not treated as reputation, and stale benign evidence cannot
   produce a safe verdict.
+
+## Advanced MVP (unreleased)
+
+- `/analyst`: up to 20 IoCs, newline TXT or one-column CSV, local preview,
+  normalization/deduplication, explicit provider disclosure and consent.
+- Sequential lookup reuses `/api/lookups` and its authoritative validation,
+  quotas, queue, budgets, circuit breakers, and existing-lookup policy.
+- Pause, cancellation, partial results, per-item errors, retry preparation,
+  filters, normalized JSON export, and evidence inspection.
+- Severity-independent scoring v1, provider coverage, and conflict disclosure.
+- `/analyst/cases`: IndexedDB case metadata, analyst notes/hypotheses,
+  conclusions/mitigation, lookup timeline, evidence snapshots, versioned
+  import/export and deletion. No team sync, accounts, server persistence,
+  encrypted storage, forensic chain-of-custody, or automatic monitoring.
+- Acceptance scope and limitations: `docs/ADVANCED-MVP.md`.
 
 ## Experimental and excluded from launch
 
@@ -41,3 +70,13 @@ The release acceptance baseline is the current stable Chromium engine on mobile
 and desktop viewports. Firefox and Safari are best-effort until their automated
 runners are added. QR decoding depends on the browser `BarcodeDetector` API and
 shows an explicit unsupported-browser message instead of uploading the image.
+## Batch 1 privacy/UX (unreleased)
+
+- Private checks by default, explicit local history opt-in, and no automatic
+  community POST from scanner or dashboard.
+- Evidence-first result hierarchy; private and public history are separate.
+- Unified archive/export and local deletion including IndexedDB cases.
+- Public v2 publications require operator gates and consent; 24-hour TTL,
+  normalized server-rechecked host/IoC evidence, and publisher-only deletion.
+- Mandatory operator-approved legacy v1 cleanup before deployment.
+- Scope, migration, and acceptance limits: `BATCH-1-PRIVACY-UX.md`.

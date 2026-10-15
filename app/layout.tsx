@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import './refine.css';
+import './batch1.css';
+import './batch2.css';
+import './experience.css';
 import { ServiceWorkerRegister } from './sw-register';
 import { SiteFooter, SiteHeader } from './site-header';
 import { ScrollToTop } from '@/components/page-navigation';
@@ -15,7 +18,7 @@ export const metadata: Metadata = {
   description: 'Periksa tautan, pesan, berkas, dan kode QR yang mencurigakan. Pahami risikonya dengan bahasa sederhana lalu ambil langkah yang aman.',
   openGraph: {
     title: 'JagaWarga — Periksa Sebelum Bertindak',
-    description: 'Security scanner & IoC lookup cepat untuk warga digital Indonesia. Cek tautan, file hash, IP, dan ancaman siber dengan aman.',
+    description: 'Bantuan awal untuk meninjau sinyal pada tautan, pesan, hash, dan IP. Hasil bukan jaminan keamanan.',
     url: 'https://jagawarga.cloud',
     siteName: 'JagaWarga',
     locale: 'id_ID',
@@ -24,7 +27,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'JagaWarga — Periksa Sebelum Bertindak',
-    description: 'Security scanner & IoC lookup cepat untuk warga digital Indonesia.',
+    description: 'Tinjau sinyal digital, pahami bukti, lalu ambil langkah yang sesuai.',
   },
 };
 
@@ -35,7 +38,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <a className="skip-link" href="#main-content">Lewati ke konten utama</a>
         <ServiceWorkerRegister />
         <SiteHeader />
-        <div id="main-content">{children}</div>
+        <div id="main-content" tabIndex={-1}>{children}</div>
         <ScrollToTop />
         <AiAssistant />
         <SiteFooter />
