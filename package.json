@@ -39,7 +39,7 @@
     "test:experience": "node scripts/experience-regression.mjs"
   },
   "dependencies": {
-    "ipaddr.js": "2.2.0",
+    "ipaddr.js": "2.5.0",
     "next": "16.4.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
