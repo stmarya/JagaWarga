@@ -17,3 +17,5 @@ artifacts/*
 deploy/self-hosted/.env.production
 deploy/self-hosted/backups/
 .DS_Store
+
+*.tsbuildinfo

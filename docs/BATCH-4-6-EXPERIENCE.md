@@ -25,4 +25,16 @@ Next.js 16.4.1 and updated lockfile remove the runtime advisories observed at im
 Run `npm run security:audit`, `npm test`, `npm run test:coverage`, `npx --no-install tsc --noEmit`, `npm run build`, `npm run security:secrets`, `npm run test:openapi`, `npm run test:launch-gate`, `npm run acceptance:runtime`, `npm run performance:proof`, `npm run operations:proof`.
 On the local production server run `test:batch456`, `test:batch1`, `test:batch2`, `test:batch3`, `test:analyst` with BASE_URL/CHROMIUM_PATH. `test:responsive` covers 21 routes and ten widths. Native QR remains browser-dependent; detector fixture tests are not cross-browser hardware acceptance.
 
-Final outcomes are recorded after QA. Merge is not deployment, operator consent, production migration or public launch approval. Existing legacy-data cleanup, Redis/egress/provider acceptance and external legal/privacy/pentest/infrastructure/incident gates remain mandatory. Do not change NO-GO or enable risky features merely because CI is green.
+## Validated locally
+
+- 234 unit tests / 42 files passed. TypeScript and production build passed.
+- Coverage passed unchanged gates: statements 81.06%, branches 75.09%, functions 78.61%, lines 85.30%.
+- Runtime audit reported zero vulnerabilities at validation time (Next.js 16.4.1, Sharp 0.35.5, source-map-js 1.2.2).
+- OpenAPI checks cover 15 API routes; secret scan and launch-gate regression passed.
+- Real local acceptance, performance and operations proof scripts passed; not production load, Redis, provider or egress acceptance.
+- Batch 1/2/3, analyst and Batch 4–6 browser suites passed. Real local catalogue/lessons and offline notice supplement fixture states.
+- Responsive checks passed at ten widths across 21 routes. Scoped serious/critical axe checks passed; not full accessibility certification.
+- 28 captures individually reviewed. Fixed desktop learning-label spacing, privacy-copy readability and readiness link targets before final captures.
+- `test:experience` repeats all five browser suites plus the responsive matrix against its own loopback production server; CI invokes it after real-runtime acceptance. The metadata providers are configured but no domain indicator lookup is requested; reputation/active/model providers are disabled.
+
+ Merge is not deployment, operator consent, production migration or public launch approval. Existing legacy-data cleanup, Redis/egress/provider acceptance and external legal/privacy/pentest/infrastructure/incident gates remain mandatory. Do not change NO-GO or enable risky features merely because CI is green.

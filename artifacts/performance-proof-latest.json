@@ -1,6 +1,6 @@
 {
   "decision": "PASSED",
-  "generatedAt": "2026-09-27T12:49:32.256Z",
+  "generatedAt": "2026-10-15T13:00:19.523Z",
   "mode": "approved-provider-mocks",
   "capacityLimits": {
     "lookupConcurrencyPerReplica": 4,
@@ -13,12 +13,12 @@
   "lookup": {
     "uncached": {
       "samples": 100,
-      "p95Ms": 2.29,
+      "p95Ms": 6.21,
       "targetP95Ms": 5000
     },
     "cached": {
       "samples": 100,
-      "p95Ms": 0.02,
+      "p95Ms": 0.11,
       "targetP95Ms": 1500,
       "providerCalls": 0
     }
@@ -33,7 +33,7 @@
   },
   "slo": {
     "status": "healthy",
-    "evaluatedAt": "2026-09-27T12:49:32.256Z",
+    "evaluatedAt": "2026-10-15T13:00:19.523Z",
     "minimumSamples": 20,
     "objectives": [
       {

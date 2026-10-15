@@ -88,3 +88,4 @@
 .landing-page .landing-trust li, .landing-page .landing-trust span { font-size:14px; }
 .tools-page .privacy-banner p { font-size:16px; line-height:1.6; }
 @media(max-width:760px) { .v4-levels button { display:flex; } }
+.resource-page .v4-card li>a { display:inline-flex; align-items:center; min-height:44px; }

@@ -6,7 +6,7 @@
 
 [![Production](https://img.shields.io/badge/Production-jagawarga.cloud-22c55e?style=for-the-badge&logo=googlechrome&logoColor=white)](https://jagawarga.cloud)
 [![Version](https://img.shields.io/badge/version-v0.13.0--rc.4-blue?style=for-the-badge)](package.json)
-[![Tests](https://img.shields.io/badge/tests-199%20passed-success?style=for-the-badge&logo=vitest&logoColor=white)](vitest.config.mjs)
+[![Tests](https://img.shields.io/badge/tests-234%20passed-success?style=for-the-badge&logo=vitest&logoColor=white)](vitest.config.mjs)
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 
