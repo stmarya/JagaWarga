@@ -7,6 +7,14 @@ const categories: Array<{
   tools: Array<{ name: string; href: string; copy: string; icon: IconName; meta: string }>;
 }> = [
   {
+    title: 'Investigasi advanced',
+    description: 'Triage banyak indikator, telusuri evidence, dan susun kasus lokal.',
+    tools: [
+      { name: 'Mode Analis', href: '/analyst', copy: 'Preview, deduplikasi, bulk lookup, dan perbandingan evidence. Maksimal 20 indikator per batch.', icon: 'shield', meta: 'IoC · existing lookup only' },
+      { name: 'Case Workspace lokal', href: '/analyst/cases', copy: 'Simpan snapshot, catatan, hipotesis, dan kesimpulan pada browser pribadi.', icon: 'file', meta: 'IndexedDB · tanpa sinkronisasi server' },
+    ],
+  },
+  {
     title: 'Analisis komunikasi',
     description: 'Baca pola manipulasi pada pesan, tautan tersembunyi, dan autentikasi email.',
     tools: [

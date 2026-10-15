@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+- Added an advanced analyst MVP: consent-gated sequential bulk IoC lookup, evidence explorer, and IndexedDB case workspaces with versioned import/export/delete.
+- Fixed suspicious evidence being downgraded by confidence multiplication; versioned severity independently of confidence and exposed provider coverage/conflicts.
+- Added analyst unit/regression tests and fixture-based browser smoke coverage. No production deployment or external-provider acceptance is implied.
 - Redesigned the product interface with an original dark civic-cybersecurity visual system inspired by security analysis consoles.
 - Added a shared responsive header and footer, clearer scan hierarchy, richer result presentation, and semantic destructive actions.
 - Preserved all existing functionality while passing mobile UI smoke and serious/critical accessibility checks.

@@ -6,7 +6,7 @@
 
 [![Production](https://img.shields.io/badge/Production-jagawarga.cloud-22c55e?style=for-the-badge&logo=googlechrome&logoColor=white)](https://jagawarga.cloud)
 [![Version](https://img.shields.io/badge/version-v0.13.0--rc.4-blue?style=for-the-badge)](package.json)
-[![Tests](https://img.shields.io/badge/tests-112%20passed-success?style=for-the-badge&logo=vitest&logoColor=white)](vitest.config.ts)
+[![Tests](https://img.shields.io/badge/tests-137%20passed-success?style=for-the-badge&logo=vitest&logoColor=white)](vitest.config.mjs)
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 
@@ -58,6 +58,13 @@ Perangkat pembantu investigasi praktis:
 - **URL Unshortener**: Membongkar rantai pengalihan (*redirect hops*) tautan pendek seperti `bit.ly`, `tinyurl.com`, `s.id` lengkap dengan validasi anti-SSRF ketat (blokir IP privat/link-local).
 - **Email Header Analyzer**: Membedah header email mentah untuk memvalidasi autentikasi pengirim: SPF (*Sender Policy Framework*), DKIM (*DomainKeys Identified Mail*), dan DMARC.
 - **Standalone QR Decoder & Hasher**.
+
+### Mode Analis Advanced — Unreleased MVP (`/analyst`)
+- **Bulk IoC triage**: preview lokal, normalisasi dan deduplikasi hingga 20 indikator; lookup berurutan setelah persetujuan pengiriman ke provider, dengan jeda/batal dan hasil parsial.
+- **Evidence Explorer**: severity terpisah dari confidence, coverage sumber, konflik evidence, waktu observasi/pengambilan, serta ekspor JSON ternormalisasi.
+- **Case Workspace lokal** (`/analyst/cases`): simpan snapshot, ruang lingkup, hipotesis, kesimpulan, dan timeline lookup di IndexedDB; impor/ekspor paket kasus dan penghapusan.
+- Kasus tidak disinkronkan ke server atau otomatis dikirim ke AI. Penyimpanan/ekspor tidak dienkripsi oleh aplikasi. Gunakan perangkat pribadi dan tinjau data sebelum berbagi.
+- Belum mencakup workspace tim, scanning aktif, sandbox malware, atau monitoring otomatis. Detail batasan dan pengujian: [Advanced MVP](docs/ADVANCED-MVP.md).
 
 ### 5. 📚 Akademi Literasi Digital & Gamifikasi ([`/education`](https://jagawarga.cloud/education))
 - Modul belajar interaktif dengan contoh kasus nyata di Indonesia (penipuan kurir, tugas like-subscribe telegram, fake update banking).
@@ -178,7 +185,7 @@ npm run local:up
 JagaWarga memiliki suite pengujian otomatis komprehensif untuk memastikan reliabilitas dan stabilitas fail-closed:
 
 ```bash
-# Menjalankan 112 Unit & Contract Tests
+# Menjalankan Unit & Contract Tests
 npm test
 
 # Menjalankan pengujian kepatuhan kontrak OpenAPI 3.1 (15 API routes)

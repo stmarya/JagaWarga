@@ -50,6 +50,7 @@ export function SiteFooter() {
           <Link href="/dashboard">Riwayat komunitas</Link>
           <Link href="/education">Belajar keamanan</Link>
           <Link href="/tools">Alat bantu</Link>
+          <Link href="/analyst">Mode Analis</Link>
         </nav>
         <div className="footer-report-column">
           <strong>Laporkan ancaman</strong>

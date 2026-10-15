@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { performLookup } from '../lookup';
 import type { Evidence, ProviderAdapter } from './types';
+import { VirusTotalAdapter } from './virustotal';
 
 class FixtureAdapter implements ProviderAdapter {
   readonly name: string;
@@ -20,6 +21,19 @@ const base = {
 };
 
 describe('provider contract', () => {
+  it('preserves an isolated suspicious VirusTotal detection through the full lookup', async () => {
+    const adapter = new VirusTotalAdapter('fixture-key', async () => ({
+      data: { attributes: {
+        last_analysis_date: Math.floor(Date.now() / 1000),
+        last_analysis_stats: { malicious: 1, harmless: 30, undetected: 30 },
+      } },
+    }));
+    const result = await performLookup(`suspicious-${crypto.randomUUID()}.example`, [adapter]);
+    expect(result).toMatchObject({
+      risk: 60, verdict: 'suspicious', confidence: 'medium',
+      scoringVersion: 'severity-independent-v1', policy: { submissionOccurred: false },
+    });
+  });
   it('aggregates independent existing-lookup evidence without submission', async () => {
     const result = await performLookup('example.com', [
       new FixtureAdapter('one', { ...base, verdict: 'malicious' }),

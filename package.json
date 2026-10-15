@@ -28,7 +28,8 @@
     "preflight": "node scripts/preflight.mjs",
     "release:manifest": "node scripts/release-manifest.mjs",
     "security:secrets": "node scripts/check-secrets.mjs",
-    "security:audit": "npm audit --omit=dev --audit-level=high"
+    "security:audit": "npm audit --omit=dev --audit-level=high",
+    "test:analyst": "node scripts/analyst-smoke.mjs"
   },
   "dependencies": {
     "ipaddr.js": "2.2.0",

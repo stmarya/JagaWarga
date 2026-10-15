@@ -12,4 +12,8 @@ describe('severity policy', () => {
   it('does not call low-confidence data safe', () => {
     expect(severityFor({ risk: 0, confidence: 'low' }).level).toBe('unknown');
   });
+  it('keeps low-confidence threat warnings visible', () => {
+    expect(severityFor({ risk: 95, verdict: 'high-risk', confidence: 'low' }).level).toBe('critical');
+    expect(severityFor({ risk: 60, verdict: 'suspicious', confidence: 'low' }).level).toBe('warning');
+  });
 });

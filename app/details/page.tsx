@@ -98,6 +98,7 @@ export default function DetailsPage() {
           <p>Data teknis dipisahkan dari ringkasan agar hasil utama tetap mudah dipahami.</p>
         </div>
         <div className="detail-header-actions">
+          <Link className="no-print" href="/analyst?session=1">Buka di Mode Analis</Link>
           <span className="verdict-pill">{result.verdict.replaceAll('-', ' ')}</span>
           <div className="no-print action-buttons-group">
             <button

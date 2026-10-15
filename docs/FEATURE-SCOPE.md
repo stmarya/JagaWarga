@@ -29,6 +29,21 @@ fail-closed, or removed from launch scope.
   DNS sources are not treated as reputation, and stale benign evidence cannot
   produce a safe verdict.
 
+## Advanced MVP (unreleased)
+
+- `/analyst`: up to 20 IoCs, newline TXT or one-column CSV, local preview,
+  normalization/deduplication, explicit provider disclosure and consent.
+- Sequential lookup reuses `/api/lookups` and its authoritative validation,
+  quotas, queue, budgets, circuit breakers, and existing-lookup policy.
+- Pause, cancellation, partial results, per-item errors, retry preparation,
+  filters, normalized JSON export, and evidence inspection.
+- Severity-independent scoring v1, provider coverage, and conflict disclosure.
+- `/analyst/cases`: IndexedDB case metadata, analyst notes/hypotheses,
+  conclusions/mitigation, lookup timeline, evidence snapshots, versioned
+  import/export and deletion. No team sync, accounts, server persistence,
+  encrypted storage, forensic chain-of-custody, or automatic monitoring.
+- Acceptance scope and limitations: `docs/ADVANCED-MVP.md`.
+
 ## Experimental and excluded from launch
 
 - The Manifest V3 browser extension is a developer preview. It only copies the

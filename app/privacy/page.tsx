@@ -3,18 +3,24 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Icon } from '@/components/icon';
+import { deleteAllCases, listCases } from '@/lib/analyst/cases';
+import { clearAllLocalData, getHistory } from '@/lib/client/storage';
 
 export default function PrivacyPage() {
   const [localHistoryCount, setLocalHistoryCount] = useState<number>(0);
   const [hasAiSession, setHasAiSession] = useState<boolean>(false);
   const [clearedNotice, setClearedNotice] = useState<string>('');
+  const [caseCount, setCaseCount] = useState(0);
+  const [clearing, setClearing] = useState(false);
 
   useEffect(() => {
     try {
+      setLocalHistoryCount(getHistory().length);
+      listCases().then((cases) => setCaseCount(cases.length)).catch(() => {});
       const historyStr = localStorage.getItem('jagawarga:history');
       if (historyStr) {
         const parsed = JSON.parse(historyStr);
-        if (Array.isArray(parsed)) setLocalHistoryCount(parsed.length);
+        if (Array.isArray(parsed)) setLocalHistoryCount((count) => count + parsed.length);
       }
       const aiSession = sessionStorage.getItem('jagawarga:ai-assistant:v1');
       if (aiSession) setHasAiSession(true);
@@ -23,19 +29,24 @@ export default function PrivacyPage() {
     }
   }, []);
 
-  const handleClearLocalData = () => {
+  const handleClearLocalData = async () => {
+    if (!window.confirm('Hapus semua data lokal termasuk kasus investigasi? Ekspor terlebih dahulu bila diperlukan.')) return;
+    setClearing(true);
     try {
+      await deleteAllCases();
+      clearAllLocalData();
       localStorage.removeItem('jagawarga:history');
       localStorage.removeItem('jagawarga:user-xp');
       sessionStorage.removeItem('jagawarga:ai-assistant:v1');
       sessionStorage.removeItem('jagawarga:last-result');
       setLocalHistoryCount(0);
       setHasAiSession(false);
+      setCaseCount(0);
       setClearedNotice('Semua data lokal dan riwayat sesi browser berhasil dibersihkan!');
       setTimeout(() => setClearedNotice(''), 4000);
     } catch {
       setClearedNotice('Gagal menghapus penyimpanan lokal browser.');
-    }
+    } finally { setClearing(false); }
   };
 
   const handleExportData = () => {
@@ -81,7 +92,7 @@ export default function PrivacyPage() {
             <p className="step-label">KONTROL DATA MANDIRI</p>
             <h2 style={{ margin: '0 0 4px', fontSize: '1.25rem' }}>Data yang Tersimpan di Browser Anda</h2>
             <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--ui-muted)' }}>
-              Data pemeriksaan disimpan hanya di memori peramban Anda dan tidak pernah dikirim ke database profil kami.
+              Riwayat tersimpan di browser; kasus analis disimpan di IndexedDB sampai Anda menghapusnya. Kasus tidak disinkronkan ke server.
             </p>
           </div>
         </div>
@@ -106,7 +117,7 @@ export default function PrivacyPage() {
             type="button"
             className="secondary-action"
             onClick={handleClearLocalData}
-            disabled={localHistoryCount === 0 && !hasAiSession}
+            disabled={clearing}
           >
             <Icon name="close" size={16} /> Bersihkan Semua Data Lokal
           </button>
@@ -119,6 +130,7 @@ export default function PrivacyPage() {
             <Icon name="file" size={16} /> Ekspor Data Saya (JSON)
           </button>
         </div>
+        <p>{caseCount} kasus investigasi lokal. <Link href="/analyst/cases">Ekspor paket kasus melalui Case Workspace</Link>. Catatan dan ekspor tidak dienkripsi oleh aplikasi.</p>
 
         {clearedNotice && (
           <p className="inline-alert" style={{ marginTop: '12px', color: '#08795a', fontWeight: 700 }}>

@@ -23,7 +23,9 @@
                 "properties": {
                   "messages": {
                     "type": "array",
-                    "items": { "type": "object" }
+                    "items": {
+                      "type": "object"
+                    }
                   },
                   "context": {
                     "type": "object"
@@ -40,10 +42,17 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["reply", "model"],
+                  "required": [
+                    "reply",
+                    "model"
+                  ],
                   "properties": {
-                    "reply": { "type": "object" },
-                    "model": { "type": "string" }
+                    "reply": {
+                      "type": "object"
+                    },
+                    "model": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -725,6 +734,37 @@
           },
           "requestId": {
             "type": "string"
+          },
+          "scoringVersion": {
+            "type": "string",
+            "description": "Versioned deterministic severity policy; risk is not a probability."
+          },
+          "conflictingEvidence": {
+            "type": "boolean",
+            "description": "Benign and threat evidence coexist."
+          },
+          "coverage": {
+            "type": "object",
+            "required": [
+              "requested",
+              "assessed",
+              "failed"
+            ],
+            "properties": {
+              "requested": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "assessed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "failed": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "description": "Unique providers requested, able to assess reputation, and failed. DNS is not reputation."
           }
         }
       },
