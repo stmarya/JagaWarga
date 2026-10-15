@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+- Batch 2: shared readable navigation, 44px controls, semantic progress, focus/skip links, inline assistance and reduced-motion support.
+- Emergency: five incident-specific first actions, financial priority, ephemeral follow-up checklists, official reference links and evidence/recovery caveats.
+- Technical details: guarded local/public loading, source provenance and uncertainty, bounded/collapsible metadata, engine filter/pagination, allowlisted evidence export and truthful browser print/PDF.
 - Batch 1: checks are private by default; local history is opt-in, results lead with actions/evidence/limitations, and personal/public history is separated.
 - Replaced automatic community storage with operator-gated consent, host-only preview, server-derived normalized evidence, 24-hour per-record TTL, publisher-only deletion capabilities, and an explicit legacy purge migration.
 - Unified privacy export/local clear with IndexedDB cases; clarified server/model flows and removed absolute privacy claims.

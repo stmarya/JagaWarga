@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import './refine.css';
 import './batch1.css';
+import './batch2.css';
 import { ServiceWorkerRegister } from './sw-register';
 import { SiteFooter, SiteHeader } from './site-header';
 import { ScrollToTop } from '@/components/page-navigation';
@@ -36,7 +37,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <a className="skip-link" href="#main-content">Lewati ke konten utama</a>
         <ServiceWorkerRegister />
         <SiteHeader />
-        <div id="main-content">{children}</div>
+        <div id="main-content" tabIndex={-1}>{children}</div>
         <ScrollToTop />
         <AiAssistant />
         <SiteFooter />

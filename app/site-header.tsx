@@ -18,12 +18,12 @@ export function SiteHeader() {
           </span>
         </Link>
         <div className="nav-links">
-          <Link className={pathname.startsWith('/periksa') || pathname.startsWith('/scan') ? 'active' : ''} href="/periksa">Mulai Cek</Link>
-          <Link className={pathname.startsWith('/dashboard') ? 'active' : ''} href="/dashboard">Riwayat</Link>
-          <Link className={pathname.startsWith('/education') ? 'active' : ''} href="/education">Edukasi</Link>
-          <Link className={pathname.startsWith('/tools') ? 'active' : ''} href="/tools">Alat Bantu</Link>
+          <Link className={['/periksa', '/scan', '/result', '/details'].some((route) => pathname === route) ? 'active' : ''} aria-current={['/periksa', '/scan', '/result', '/details'].includes(pathname) ? 'page' : undefined} href="/periksa">Mulai Cek</Link>
+          <Link className={pathname.startsWith('/dashboard') ? 'active' : ''} aria-current={pathname.startsWith('/dashboard') ? 'page' : undefined} href="/dashboard">Riwayat</Link>
+          <Link className={pathname.startsWith('/education') ? 'active' : ''} aria-current={pathname.startsWith('/education') ? 'page' : undefined} href="/education">Edukasi</Link>
+          <Link className={pathname.startsWith('/tools') ? 'active' : ''} aria-current={pathname.startsWith('/tools') ? 'page' : undefined} href="/tools">Alat Bantu</Link>
         </div>
-        <Link className={`nav-emergency ${pathname.startsWith('/emergency') ? 'active' : ''}`} href="/emergency" title="Panduan jika sudah terlanjur klik atau transfer">
+        <Link className={`nav-emergency ${pathname.startsWith('/emergency') ? 'active' : ''}`} aria-current={pathname === '/emergency' ? 'page' : undefined} href="/emergency" title="Panduan jika sudah terlanjur klik atau transfer">
           <span className="emergency-icon" aria-hidden="true">!</span>
           <span>Darurat</span>
         </Link>
@@ -53,7 +53,7 @@ export function SiteFooter() {
           <Link href="/analyst">Mode Analis</Link>
         </nav>
         <div className="footer-report-column">
-          <strong>Laporkan ancaman</strong>
+          <strong>Laporkan ancaman</strong><small className="footer-external-note">Layanan eksternal · terbuka di tab baru</small>
           <a className="report-link report-komdigi" href="https://aduankonten.id/" target="_blank" rel="noreferrer">
             <Icon name="alert" />
             <span><b>Konten berbahaya</b><small>Komdigi · Aduan Konten</small></span>
