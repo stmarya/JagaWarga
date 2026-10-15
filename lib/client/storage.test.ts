@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { addHistory, clearAllLocalData, exportLocalData, getHistory } from './storage';
+import { addHistory, clearAllLocalData, clearHistory, exportLocalData, getHistory, remembersHistory, setRememberHistory } from './storage';
 
 class MemoryStorage {
   private values = new Map<string, string>();
@@ -27,6 +27,25 @@ describe('local storage schema', () => {
     addHistory({ id: 'two', type: 'domain', displayValue: 'example.org', verdict: 'high-risk', checkedAt: new Date().toISOString() });
     expect(JSON.parse(exportLocalData())).toMatchObject({ schemaVersion: 2 });
     clearAllLocalData();
+    expect(getHistory()).toEqual([]);
+  });
+  it('defaults to session-only history, with an explicit local opt-in', () => {
+    expect(remembersHistory()).toBe(false);
+    setRememberHistory(true); expect(remembersHistory()).toBe(true);
+    clearAllLocalData(); expect(remembersHistory()).toBe(false);
+  });
+  it('clears both history versions and preserves other data until clear-all', () => {
+    localStorage.setItem('jagawarga:history:v1', '[]');
+    clearHistory(); expect(localStorage.getItem('jagawarga:history:v1')).toBeNull();
+    localStorage.setItem('jagawarga:community-receipts:v1', '[]');
+    localStorage.setItem('jagawarga:history', '[]');
+    localStorage.setItem('jagawarga:user-xp', '2');
+    expect(JSON.parse(exportLocalData()).legacy).toMatchObject({ history: [], xp: 2 });
+    clearAllLocalData(); expect(localStorage.getItem('jagawarga:community-receipts:v1')).toBeNull();
+    expect(localStorage.getItem('jagawarga:history')).toBeNull();
+  });
+  it('handles a corrupt history payload without crashing the dashboard', () => {
+    localStorage.setItem('jagawarga:history:v2', '{"wrong":"shape"}');
     expect(getHistory()).toEqual([]);
   });
 });

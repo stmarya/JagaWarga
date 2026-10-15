@@ -1,285 +1,107 @@
 'use client';
-
 import Link from 'next/link';
-import { FormEvent, useEffect, useState } from 'react';
-import { Icon, type IconName } from '@/components/icon';
+import { useEffect, useState } from 'react';
 import { ProgressBreadcrumb } from '@/components/page-navigation';
 import { severityFor } from '@/lib/security/severity-policy';
-
-type Evidence = {
-  provider: string;
-  verdict?: string;
-  confidence?: number;
-  reasonCodes: string[];
-  fetchedAt: string;
-  freshness?: string;
-  details?: Record<string, unknown>;
-};
-
-type Result = {
-  historyId?: string;
-  analysisKind?: string;
-  requestId: string;
-  risk: number;
-  verdict: string;
-  confidence?: string;
-  indicator?: { type: string; displayValue: string };
-  evidence?: Evidence[];
-  checkedAt?: string;
-  partial?: boolean;
-  reasonCodes?: string[];
-  actions?: string[];
-};
-
-const reasonLabels: Record<string, string> = {
-  VT_MULTIPLE_MALICIOUS_DETECTIONS: 'Beberapa mesin keamanan mendeteksi ancaman.',
-  VT_SINGLE_MALICIOUS_DETECTION: 'Satu mesin keamanan mendeteksi ancaman.',
-  VT_SUSPICIOUS_DETECTION: 'Sumber reputasi menandai objek sebagai mencurigakan.',
-  VT_NO_NEGATIVE_DETECTIONS: 'Belum ditemukan deteksi negatif.',
-  VT_NO_ANALYSIS: 'Sumber reputasi belum memiliki analisis yang cukup.',
-  VT_NO_RECORD: 'Objek belum tercatat pada sumber reputasi.',
-  DNS_RESOLVES: 'Domain aktif, tetapi status aktif bukan bukti aman.',
-  DNS_NO_ANSWER: 'Domain tidak memberikan jawaban DNS saat diperiksa.',
-  PROVIDER_ERROR: 'Salah satu sumber gagal merespons.',
-  PROVIDER_CIRCUIT_OPEN: 'Sumber dihentikan sementara untuk mencegah kegagalan berulang.',
-  PROVIDER_BUDGET_EXHAUSTED: 'Batas pemeriksaan salah satu sumber sedang habis.',
-  URGENCY: 'Pesan mendorong tindakan sangat mendesak.',
-  CREDENTIAL_REQUEST: 'Pesan meminta kata sandi, PIN, OTP, atau kode rahasia.',
-  MONEY_REQUEST: 'Pesan meminta uang atau transaksi.',
-  PRIZE_OR_REFUND: 'Pesan menawarkan hadiah atau pengembalian dana yang perlu diverifikasi.',
-  IMPERSONATION: 'Pesan mengaku sebagai pihak yang dipercaya.',
-  SHORT_LINK: 'Tautan pendek menyembunyikan alamat tujuan sebenarnya.',
-};
-
-function contextualActions(result: Result, reasons: string[]) {
-  const codes = new Set(reasons);
-  const steps: string[] = [];
-  if (result.risk >= 70) steps.push('Hentikan interaksi. Jangan buka tautan, lampiran, atau aplikasi dari sumber ini.');
-  else if (result.risk >= 40) steps.push('Tunda tindakan sampai identitas pengirim dan tujuan berhasil diverifikasi.');
-  else steps.push('Tetap periksa alamat pengirim dan konteks sebelum memasukkan data pribadi.');
-  if (codes.has('CREDENTIAL_REQUEST')) steps.push('Jangan kirim OTP, PIN, atau kata sandi. Jika sudah diberikan, segera ganti kredensial dari perangkat tepercaya.');
-  if (codes.has('MONEY_REQUEST')) steps.push('Jangan transfer. Hubungi bank atau penerima melalui kanal resmi yang Anda cari sendiri.');
-  if (codes.has('IMPERSONATION')) steps.push('Konfirmasi kepada pihak yang ditiru menggunakan nomor atau aplikasi resmi, bukan kontak dari pesan.');
-  if (codes.has('SHORT_LINK')) steps.push('Jangan buka tautan pendek sebelum alamat tujuan sebenarnya diketahui.');
-  if (codes.has('VT_MULTIPLE_MALICIOUS_DETECTIONS') || codes.has('VT_SINGLE_MALICIOUS_DETECTION')) steps.push('Isolasi berkas atau alamat ini dan jangan teruskan kepada perangkat lain.');
-  if (result.partial) steps.push('Ulangi pemeriksaan nanti karena sebagian sumber belum memberikan data.');
-  steps.push('Simpan bukti seperti alamat, nama akun, waktu, dan tangkapan layar tanpa menyebarkan data pribadi.');
-  if (result.risk >= 40) steps.push('Laporkan melalui kanal resmi platform atau pihak berwenang agar pengguna lain dapat dilindungi.');
-  return [...new Set([...(result.actions ?? []), ...steps])].slice(0, 7);
-}
-
-function possibleThreats(result: Result, reasons: string[]) {
-  const codes = new Set(reasons);
-  const threats: Array<{ title: string; detail: string; action: string; icon: IconName }> = [];
-  const add = (title: string, detail: string, action: string, icon: IconName) => {
-    if (!threats.some((item) => item.title === title)) threats.push({ title, detail, action, icon });
-  };
-  if (codes.has('CREDENTIAL_REQUEST') || ['phishing', 'high-risk'].includes(result.verdict)) add('Akun dapat diambil alih', 'Kata sandi, OTP, atau sesi login dapat dicuri dan dipakai pelaku.', 'Jangan masukkan data login; ganti sandi jika sudah terlanjur.', 'key');
-  if (codes.has('MONEY_REQUEST') || result.risk >= 70) add('Kerugian uang', 'Pelaku dapat mengarahkan transfer, pembayaran palsu, atau pencurian saldo.', 'Tunda transaksi dan hubungi bank melalui kanal resmi.', 'transaction');
-  if (codes.has('IMPERSONATION') || codes.has('PRIZE_OR_REFUND')) add('Penyamaran identitas', 'Nama lembaga, kurir, atasan, atau keluarga dapat dipakai untuk membangun kepercayaan palsu.', 'Konfirmasi menggunakan kontak yang sudah Anda simpan.', 'privacy');
-  if (codes.has('SHORT_LINK')) add('Tujuan tautan disembunyikan', 'Tautan pendek dapat mengarahkan Anda ke situs berbeda dari yang terlihat.', 'Jangan buka sebelum alamat tujuan diketahui.', 'link');
-  if (result.indicator?.type === 'url' || result.indicator?.type === 'domain') {
-    add('Situs tiruan atau phishing', 'Halaman dapat meniru bank, marketplace, login, atau layanan pemerintah.', 'Periksa ejaan domain dan buka layanan dari aplikasi resmi.', 'link');
-    add('Pelacakan dan pengalihan', 'Alamat dapat mencatat perangkat lalu mengalihkan Anda ke halaman berbahaya.', 'Jangan izinkan notifikasi, unduhan, atau akses lokasi.', 'network');
-  }
-  if (result.indicator?.type === 'hash' || codes.has('VT_MULTIPLE_MALICIOUS_DETECTIONS') || codes.has('VT_SINGLE_MALICIOUS_DETECTION')) {
-    add('Malware pada berkas', 'APK, dokumen, atau arsip dapat mencuri data, merekam layar, atau mengunci perangkat.', 'Jangan pasang atau buka; isolasi dan hapus berkas jika tidak dipercaya.', 'file');
-  }
-  if (result.indicator?.type === 'ipv4' || result.indicator?.type === 'ipv6') {
-    add('Server pengendali serangan', 'Alamat IP dapat digunakan untuk mengendalikan malware, botnet, atau pemindaian jaringan.', 'Blokir alamat pada firewall dan periksa log koneksi.', 'network');
-  }
-  if (result.analysisKind === 'message') add('Rekayasa sosial', 'Isi pesan dapat memancing panik, penasaran, atau rasa percaya agar Anda bertindak cepat.', 'Berhenti, baca ulang, lalu konfirmasi kepada pihak terkait.', 'message');
-  if (result.analysisKind === 'email-header') add('Email palsu', 'Alamat pengirim dapat dipalsukan atau diarahkan ke alamat balasan yang berbeda.', 'Jangan balas; hubungi organisasi melalui situs resminya.', 'email');
-  return threats.slice(0, 6);
-}
-
-function statPresentation(name: string) {
-  const key = name.toLowerCase();
-  if (key === 'malicious') return { label: 'Berbahaya', tone: 'danger' };
-  if (key === 'suspicious') return { label: 'Mencurigakan', tone: 'warning' };
-  if (key === 'harmless') return { label: 'Tidak terdeteksi', tone: 'safe' };
-  if (key === 'undetected') return { label: 'Belum dinilai', tone: 'neutral' };
-  if (key === 'timeout') return { label: 'Tidak merespons', tone: 'timeout' };
-  return { label: name.replaceAll('_', ' '), tone: 'neutral' };
-}
-
-function contextualFindings(result: Result, reasons: string[]) {
-  const findings = [...new Set(reasons)].map((code) => ({
-    code,
-    title: reasonLabels[code] ?? code.replaceAll('_', ' ').toLowerCase(),
-    detail: code.startsWith('VT_')
-      ? 'Kesimpulan berasal dari agregasi mesin keamanan pada sumber reputasi eksternal.'
-      : code.startsWith('DNS_')
-        ? 'Sinyal DNS menunjukkan kondisi teknis domain, bukan jaminan aman.'
-        : 'Sinyal ditemukan dari pola dan konteks input yang Anda berikan.',
-    level: ['VT_MULTIPLE_MALICIOUS_DETECTIONS', 'CREDENTIAL_REQUEST', 'MONEY_REQUEST'].includes(code) ? 'high' : 'medium',
-  }));
-  for (const evidence of result.evidence ?? []) {
-    if (!evidence.details || evidence.provider !== 'virustotal') continue;
-    const attributes = evidence.details.attributes as Record<string, unknown> | undefined;
-    const stats = attributes?.last_analysis_stats as Record<string, number> | undefined;
-    const threatClass = attributes?.popular_threat_classification as { suggested_threat_label?: string } | undefined;
-    const meaningfulName = attributes?.meaningful_name as string | undefined;
-
-    if (threatClass?.suggested_threat_label) {
-      findings.unshift({
-        code: 'THREAT_FAMILY',
-        title: `Keluarga Ancaman: ${threatClass.suggested_threat_label}`,
-        detail: 'Label klasifikasi ancaman berdasarkan konsensus intelijen keamanan global.',
-        level: 'high',
-      });
-    }
-    if (meaningfulName) {
-      findings.unshift({
-        code: 'DETECTED_FILENAME',
-        title: `Nama Berkas: ${meaningfulName}`,
-        detail: 'Nama berkas yang terasosiasi dengan sidik jari ini di jaringan keamanan.',
-        level: 'medium',
-      });
-    }
-    if (stats && (stats.malicious || stats.suspicious)) {
-      findings.unshift({
-        code: 'REPUTATION_SUMMARY',
-        title: `${stats.malicious ?? 0} deteksi berbahaya dan ${stats.suspicious ?? 0} deteksi mencurigakan`,
-        detail: 'Jumlah tersebut merupakan hasil mesin keamanan yang tersedia pada saat pemeriksaan.',
-        level: (stats.malicious ?? 0) > 1 ? 'high' : 'medium',
-      });
-    }
-  }
-  return findings.slice(0, 8);
-}
+import { resultActions, resultFindings, resultLimitations, type DisplayResult } from '@/lib/presentation/result';
+import { publicationIndicator } from '@/lib/publication';
+import { savePublicationReceipt } from '@/lib/client/publications';
 
 export default function ResultPage() {
-  const [result, setResult] = useState<Result | null>(null);
-  const [feedback, setFeedback] = useState('');
-  const [comment, setComment] = useState('');
-  const [sending, setSending] = useState(false);
-
+  const [result, setResult] = useState<DisplayResult | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notice, setNotice] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [communityEnabled, setCommunityEnabled] = useState(false);
+  const [consent, setConsent] = useState(false);
+  const [published, setPublished] = useState(false);
   useEffect(() => {
-    const local = sessionStorage.getItem('jagawarga:last-result');
-    if (local) setResult(JSON.parse(local));
-  }, []);
-
-  async function sendFeedback(helpful: boolean) {
-    if (!result || sending) return;
-    setSending(true);
-    const response = await fetch('/api/feedback', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ helpful, category: result.verdict }),
-    });
-    setFeedback(response.ok
-      ? helpful
-        ? 'Masukan tersimpan. Anda dapat membuka bukti teknis atau materi edukasi terkait.'
-        : 'Masukan tersimpan. Tambahkan konteks agar hasil berikutnya lebih mudah dipahami.'
-      : 'Masukan belum terkirim. Silakan coba lagi.');
-    setSending(false);
-  }
-
-  async function addComment(event: FormEvent) {
-    event.preventDefault();
-    if (!result?.historyId || !comment.trim()) return;
-    setSending(true);
-    const response = await fetch('/api/history', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: result.historyId, message: comment }),
-    });
-    if (response.ok) {
-      setComment('');
-      setFeedback('Komentar tersimpan di riwayat komunitas.');
-    } else setFeedback('Komentar belum tersimpan. Silakan coba lagi.');
-    setSending(false);
-  }
-
-  if (!result) return (
-    <main className="compact-page">
-      <div className="empty-card"><h1>Hasil tidak ditemukan</h1><p>Mulai pemeriksaan baru untuk melihat hasil.</p><Link className="primary-action" href="/#scanner">Mulai cek</Link></div>
-    </main>
-  );
-
-  const severity = severityFor(result);
-  const reasons = result.evidence?.flatMap((item) => item.reasonCodes) ?? result.reasonCodes ?? [];
-  const findings = contextualFindings(result, reasons);
-  const actions = contextualActions(result, reasons);
-  const threats = possibleThreats(result, reasons);
-  const urgent = ['high-risk', 'phishing'].includes(result.verdict);
-  const reputation = result.evidence?.find((item) => item.provider === 'virustotal');
-  const attributes = (reputation?.details?.attributes ?? {}) as Record<string, unknown>;
-  const stats = (attributes.last_analysis_stats ?? {}) as Record<string, number>;
-  const scoreLevel = result.risk >= 70 ? 'high' : result.risk >= 40 ? 'medium' : result.risk >= 15 ? 'guarded' : 'low';
-  const warningText = `Peringatan JagaWarga: ${result.indicator?.displayValue ?? 'indikator ini'} mendapat status “${severity.label}”. Jangan membuka, mengisi data, atau melakukan transfer sebelum diverifikasi melalui kanal resmi.`;
-
-  async function shareResult() {
-    if (navigator.share) {
+    const controller = new AbortController();
+    const id = new URLSearchParams(window.location.search).get('id');
+    async function load() {
       try {
-        await navigator.share({ title: 'Peringatan JagaWarga', text: warningText });
-        return;
-      } catch {
-        return;
-      }
+        if (id) {
+          const response = await fetch(`/api/history?id=${encodeURIComponent(id)}`, { signal: controller.signal });
+          if (!response.ok) throw new Error();
+          const item = await response.json(); setResult({ ...item.result, historyId: item.id });
+        } else {
+          const raw = sessionStorage.getItem('jagawarga:last-result');
+          if (raw) { const parsed = JSON.parse(raw); if (typeof parsed.risk === 'number' && typeof parsed.verdict === 'string') { const { historyId: legacyPublication, ...privateResult } = parsed; setResult(privateResult); } }
+        }
+      } catch { if (!controller.signal.aborted) setNotice('Hasil tidak tersedia, kedaluwarsa, atau sesi tidak valid.'); }
+      finally { if (!controller.signal.aborted) setLoading(false); }
     }
-    window.open(`https://wa.me/?text=${encodeURIComponent(warningText)}`, '_blank', 'noopener,noreferrer');
+    load();
+    fetch('/api/policy', { signal: controller.signal }).then((r) => r.json()).then((p) => setCommunityEnabled(p.features?.communityReporting === true)).catch(() => {});
+    return () => controller.abort();
+  }, []);
+  async function feedback(helpful: boolean) {
+    if (!result || busy) return; setBusy(true);
+    try {
+      const response = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ helpful, category: result.verdict }) });
+      setNotice(response.ok ? 'Masukan tersimpan tanpa isi pesan atau indikator.' : 'Masukan belum terkirim. Coba lagi.');
+    } catch { setNotice('Jaringan bermasalah. Masukan belum terkirim.'); } finally { setBusy(false); }
   }
-
-  return (
-    <main className="compact-page result-page">
-      <ProgressBreadcrumb current="result" />
-      <section className={`summary-card tone-${severity.tone}`}>
-        <div>
-          <p className="step-label">LANGKAH 2 DARI 3 · HASIL UMUM</p>
-          <div className="severity-heading"><span className={`severity-dot severity-${severity.level}`} /><div><span className="severity-answer">{severity.answer}</span><h1>{severity.label}</h1></div></div>
-          <p className="result-lead">{severity.summary}</p>
-          {result.indicator && <p className="indicator-value">{result.indicator.type.toUpperCase()} · {result.indicator.displayValue}</p>}
-        </div>
-        <aside className={`severity-panel severity-panel-${scoreLevel}`} aria-label={`Status ${severity.answer}, skor risiko ${result.risk}`}>
-          <span className="severity-panel-kicker">STATUS PEMERIKSAAN</span>
-          <strong>{severity.answer}</strong>
-          <div className="severity-score-row"><span>Skor risiko</span><b>{result.risk}</b></div>
-          <div className="severity-meter"><i style={{ width: `${Math.max(4, result.risk)}%` }} /></div>
-        </aside>
-      </section>
-
-      {threats.length > 0 && <section className="threat-section"><div className="section-heading-simple"><p className="step-label">DAMPAK YANG MUNGKIN TERJADI</p><h2>Mengapa Anda perlu berhati-hati?</h2></div><div className="threat-grid">{threats.map((threat) => <article key={threat.title}><span><Icon name={threat.icon} /></span><div><strong>{threat.title}</strong><p>{threat.detail}</p><small><Icon name="shield" size={13} /> {threat.action}</small></div></article>)}</div></section>}
-
-      {urgent && <aside className="emergency-callout">
-        <div><strong><Icon name="alert" /> Sudah terlanjur klik atau transfer uang?</strong><p>Jangan panik. Putuskan interaksi dan ikuti langkah pertolongan pertama.</p></div>
-        <Link className="primary-action" href="/emergency">Buka panduan darurat <Icon name="arrow" /></Link>
-      </aside>}
-
-      <section className="result-grid">
-        <article className="content-card">
-          <h2>Apa yang ditemukan?</h2>
-          <div className="finding-list">{findings.length ? findings.map((finding) => <article className={`finding finding-${finding.level}`} key={finding.code}><span className="finding-signal" /><div><strong>{finding.title}</strong><p>{finding.detail}</p></div></article>) : <article className="finding finding-low"><span className="finding-signal" /><div><strong>Belum ada pola risiko kuat</strong><p>Sumber yang diperiksa belum menemukan sinyal negatif yang cukup. Tetap periksa konteks.</p></div></article>}</div>
-          {result.partial && <p className="inline-alert">Sebagian sumber belum tersedia. Perlakukan hasil sebagai data parsial.</p>}
-        </article>
-        <aside className={`action-card action-${scoreLevel}`}>
-          <h2>Langkah yang disarankan</h2>
-          <ol>{actions.map((step) => <li key={step}>{step}</li>)}</ol>
-        </aside>
-      </section>
-
-      {reputation && <details className="quick-technical">
-        <summary>Lihat ringkasan mesin keamanan</summary>
-        <div className="quick-stats">
-          {Object.keys(stats).length ? Object.entries(stats).map(([name, count]) => { const view = statPresentation(name); return <span className={`quick-stat quick-stat-${view.tone}`} key={name}><strong>{count}</strong><b>{view.label}</b><small>{name}</small></span>; }) : <p>Sumber reputasi belum memiliki statistik analisis.</p>}
-        </div>
-        <p>Metadata dan hasil setiap mesin tersedia pada halaman detail.</p>
-      </details>}
-
-      <section className="detail-cta">
-        <div><p className="step-label">LANGKAH 3 · OPSIONAL</p><h2>Butuh seluruh detail IoC?</h2><p>Lihat statistik mesin, metadata, kategori, dan bukti dari seluruh sumber.</p></div>
-        <Link className="primary-action" href={result.historyId ? `/details?id=${encodeURIComponent(result.historyId)}` : '/details'}>Cek detail <Icon name="arrow" /></Link>
-      </section>
-
-      <section className="feedback-card">
-        <div><h2>Apakah hasil ini membantu?</h2><p>Pilihan Anda membantu memperbaiki penjelasan, bukan mengubah skor.</p></div>
-        <div className="feedback-buttons"><button onClick={() => sendFeedback(true)} disabled={sending}>Ya, membantu</button><button className="secondary-action" onClick={() => sendFeedback(false)} disabled={sending}>Belum</button></div>
-        {result.historyId && <form onSubmit={addComment}><label htmlFor="comment">Tambahkan konteks untuk warga lain (opsional)</label><div className="comment-row"><input id="comment" value={comment} onChange={(event) => setComment(event.target.value)} maxLength={500} placeholder="Contoh: dikirim lewat WhatsApp dan meminta OTP" /><button disabled={!comment.trim() || sending}>Kirim komentar</button></div></form>}
-        {feedback && <p className="feedback-response" role="status">{feedback}</p>}
-      </section>
-
-      <button className="floating-share" type="button" onClick={shareResult} aria-label="Bagikan hasil pemeriksaan" title="Bagikan hasil pemeriksaan"><Icon name="share" size={20} /><span className="sr-only">Bagikan</span></button>
-    </main>
-  );
+  let candidate = '';
+  try { if (result?.indicator) candidate = publicationIndicator(result.indicator.displayValue); } catch { /* Sensitive or unsupported indicator cannot be published. */ }
+  async function publish() {
+    if (!consent || !candidate || busy || published) return; setBusy(true);
+    try {
+      const response = await fetch('/api/history', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ indicator: candidate, consent: true }) });
+      if (!response.ok) throw new Error(response.status === 403 ? 'Publikasi komunitas belum diaktifkan operator.' : 'Publikasi belum berhasil. Tidak ada hasil lokal yang dihapus.');
+      const saved = await response.json(); setPublished(true);
+      try {
+        savePublicationReceipt({ id: saved.item.id, deletionToken: saved.deletionToken, expiresAt: saved.item.expiresAt });
+        setNotice('Dipublikasikan maksimal 24 jam. Anda dapat menghapusnya melalui tab Riwayat komunitas atau halaman Privasi.');
+      } catch {
+        // No deletion capability may be lost silently: immediately roll back publication.
+        const rollback = await fetch('/api/history', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: saved.item.id, deletionToken: saved.deletionToken }) });
+        setPublished(!rollback.ok);
+        setNotice(rollback.ok ? 'Publikasi dibatalkan karena bukti penghapusan tidak dapat disimpan di browser.' : 'Publikasi berlaku maksimal 24 jam; bukti penghapusan lokal gagal disimpan dan rollback belum berhasil.');
+      }
+    } catch (e) { setNotice(e instanceof Error ? e.message : 'Publikasi gagal.'); } finally { setBusy(false); }
+  }
+  async function share() {
+    if (!result) return;
+    const text = `Hasil JagaWarga: ${result.indicator?.displayValue ?? 'analisis pola'} — ${result.verdict}. Bukan jaminan aman; periksa bukti dan konteks.`;
+    try { if (navigator.share) await navigator.share({ title: 'Hasil pemeriksaan JagaWarga', text }); else { await navigator.clipboard.writeText(text); setNotice('Ringkasan disalin. Tinjau indikator sebelum membagikan.'); } }
+    catch { setNotice('Berbagi dibatalkan atau tidak didukung.'); }
+  }
+  if (loading) return <main className="compact-page batch-page"><p role="status">Memuat hasil…</p></main>;
+  if (!result) return <main className="compact-page batch-page"><section className="batch-card"><h1>Hasil tidak ditemukan</h1><p>{notice || 'Sesi tidak memiliki hasil pemeriksaan.'}</p><Link className="batch-primary" href="/periksa">Mulai pemeriksaan</Link></section></main>;
+  const severity = severityFor(result);
+  const findings = resultFindings(result);
+  const isLookup = Boolean(result.indicator && result.evidence);
+  return <main className="compact-page batch-page result-v2">
+    <ProgressBreadcrumb current="result" />
+    <section className={`batch-card result-summary result-${severity.tone}`}>
+      <p className="batch-eyebrow">HASIL PEMERIKSAAN · {result.historyId ? 'PUBLIKASI KOMUNITAS' : 'SESI PRIBADI'}</p>
+      <h1>{severity.level === 'low' ? 'Belum ada indikasi ancaman' : severity.label}</h1>
+      <p>{severity.summary}</p>
+      {result.indicator && <p className="batch-indicator">{result.indicator.type.toUpperCase()} · {result.indicator.displayValue}</p>}
+      <dl className="batch-facts"><div><dt>Skor sinyal</dt><dd>{result.risk}/100 · bukan probabilitas</dd></div><div><dt>Confidence</dt><dd>{result.confidence ?? 'Tidak tersedia'}</dd></div><div><dt>Waktu pemeriksaan</dt><dd>{result.checkedAt ?? 'Tidak tersedia'}</dd></div></dl>
+      {result.partial && <p className="batch-alert">Hasil parsial: sebagian sumber belum tersedia. Jangan anggap hasil lengkap.</p>}
+      {result.storageNotice && <p className="batch-alert">{result.storageNotice}</p>}
+    </section>
+    <section className="batch-card batch-action"><p className="batch-eyebrow">LAKUKAN TERLEBIH DAHULU</p><h2>Langkah yang disarankan</h2><ol>{resultActions(result).map((step) => <li key={step}>{step}</li>)}</ol>
+      <div className="batch-actions"><Link className="batch-primary" href="/periksa">Periksa objek lain</Link><Link className="batch-secondary" href="/emergency">Saya sudah terlanjur</Link></div>
+    </section>
+    <section className="batch-card"><h2>Bukti yang ditemukan</h2><p>Berikut observasi pada data yang diperiksa, bukan dugaan berdasarkan tipe URL, IP, atau berkas.</p>
+      {findings.length ? <ul className="batch-evidence">{findings.map((f, i) => <li key={`${f.source}-${i}`}><strong>{f.source}</strong><p>{f.text || 'Tidak ada alasan tambahan dari sumber.'}</p><small>Status sumber: {f.status} · freshness: {f.freshness}{f.fetchedAt ? ` · diambil ${f.fetchedAt}` : ''}</small></li>)}</ul> : <p>Belum ada bukti teknis yang cukup. Ini tidak membuktikan objek aman.</p>}
+    </section>
+    <section className="batch-card"><h2>Apa yang belum dapat disimpulkan?</h2><ul>{resultLimitations(result).map((text) => <li key={text}>{text}</li>)}</ul>
+      <details><summary>Risiko umum untuk dipahami — bukan temuan pada objek ini</summary><p>Phishing, penyamaran, dan malware merupakan risiko umum. Jenis input saja tidak membuktikan salah satunya terjadi. Keputusan harus mengacu pada bukti di atas dan konteks Anda.</p></details>
+    </section>
+    {isLookup && <section className="batch-card"><h2>Butuh detail teknis?</h2><p>Lihat metadata dan sumber lengkap, atau buka evidence explorer di Mode Analis.</p><div className="batch-actions"><Link className="batch-secondary" href={result.historyId ? `/details?id=${encodeURIComponent(result.historyId)}` : '/details'}>Buka detail IoC</Link>{!result.historyId && <Link className="batch-secondary" href="/analyst?session=1">Buka Mode Analis</Link>}</div></section>}
+    {isLookup && !result.historyId && <section className="batch-card"><h2>Berbagi ke komunitas (opsional)</h2>
+      {!communityEnabled ? <p>Fitur komunitas belum diaktifkan operator. Hasil ini tidak dipublikasikan otomatis.</p> : !candidate ? <p>Indikator ini tidak dapat dipublikasikan. Hapus parameter sensitif sebelum pemeriksaan baru.</p> : <>
+        <p>Preview publik: <strong className="batch-indicator">{candidate}</strong>. Untuk URL, hanya host yang dibagikan—tanpa path, query, atau fragmen.</p>
+        <p>Server akan melakukan lookup ulang objek publik tersebut. Hasilnya dapat berbeda dari hasil sesi ini. Indikator dan evidence ternormalisasi dapat dibaca orang lain maksimal 24 jam. Nama file, pesan, header, dan metadata mentah tidak dipublikasikan.</p>
+        <label className="batch-check"><input type="checkbox" checked={consent} disabled={busy || published} onChange={(e) => setConsent(e.target.checked)} /> Saya telah meninjau preview, menghapus data sensitif, dan menyetujui publikasi selama maksimal 24 jam.</label>
+        <button className="batch-secondary" type="button" disabled={!consent || busy || published} onClick={publish}>{published ? 'Sudah dipublikasikan' : 'Publikasikan setelah persetujuan'}</button>
+      </>}
+    </section>}
+    <section className="batch-card"><h2>Apakah penjelasan ini membantu?</h2><div className="batch-actions"><button type="button" disabled={busy} onClick={() => feedback(true)}>Ya, membantu</button><button type="button" disabled={busy} onClick={() => feedback(false)}>Belum membantu</button><button type="button" onClick={share}>Bagikan ringkasan secara manual</button></div><p>Berbagi manual mengikuti pilihan Anda; tidak menambahkan hasil ke riwayat komunitas.</p></section>
+    <p className="batch-notice" role="status" aria-live="polite">{notice}</p>
+  </main>;
 }

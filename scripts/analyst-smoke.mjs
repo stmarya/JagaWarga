@@ -124,8 +124,8 @@ try {
   await page.waitForFunction(() => [...document.querySelectorAll('button')].filter((b) => b.textContent === 'Investigasi fixture').length === 1);
   assert.equal(await page.getByRole('button', { name: 'Investigasi fixture', exact: true }).count(), 1);
   await page.goto(`${baseURL}/privacy`);
-  await page.getByRole('button', { name: /Bersihkan Semua Data Lokal/ }).click();
-  await page.getByText(/Semua data lokal dan riwayat sesi/).waitFor();
+  await page.getByRole('button', { name: 'Hapus data lokal dan sesi', exact: true }).click();
+  await page.getByText(/Data persisten di browser ini/).waitFor();
   await page.goto(`${baseURL}/analyst/cases`);
   await page.getByText('Belum ada kasus tersimpan.').waitFor();
 

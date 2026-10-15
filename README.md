@@ -6,7 +6,7 @@
 
 [![Production](https://img.shields.io/badge/Production-jagawarga.cloud-22c55e?style=for-the-badge&logo=googlechrome&logoColor=white)](https://jagawarga.cloud)
 [![Version](https://img.shields.io/badge/version-v0.13.0--rc.4-blue?style=for-the-badge)](package.json)
-[![Tests](https://img.shields.io/badge/tests-137%20passed-success?style=for-the-badge&logo=vitest&logoColor=white)](vitest.config.mjs)
+[![Tests](https://img.shields.io/badge/tests-165%20passed-success?style=for-the-badge&logo=vitest&logoColor=white)](vitest.config.mjs)
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 
@@ -58,6 +58,13 @@ Perangkat pembantu investigasi praktis:
 - **URL Unshortener**: Membongkar rantai pengalihan (*redirect hops*) tautan pendek seperti `bit.ly`, `tinyurl.com`, `s.id` lengkap dengan validasi anti-SSRF ketat (blokir IP privat/link-local).
 - **Email Header Analyzer**: Membedah header email mentah untuk memvalidasi autentikasi pengirim: SPF (*Sender Policy Framework*), DKIM (*DomainKeys Identified Mail*), dan DMARC.
 - **Standalone QR Decoder & Hasher**.
+
+### Privasi & UI/UX Batch 1 — Unreleased
+- Pemeriksaan privat secara default: hasil tidak otomatis dikirim ke riwayat komunitas. Riwayat IoC lokal membutuhkan pilihan pengguna.
+- Halaman hasil mendahulukan tindakan, bukti, dan keterbatasan; tipe IP/URL/hash tidak dijadikan bukti otomatis adanya serangan.
+- Dashboard memisahkan riwayat pribadi dan komunitas. Publikasi tetap nonaktif secara default; bila diaktifkan operator, diperlukan preview dan consent, dengan retensi maksimal 24 jam serta bukti penghapusan khusus pembuatnya.
+- Untuk URL, hanya host yang dibagikan dan diperiksa ulang oleh server. Ekspor/penghapusan lokal mencakup kasus IndexedDB; tidak menghapus publikasi server atau file yang sudah diunduh.
+- **Sebelum deployment:** riwayat server v1 perlu dibersihkan melalui migrasi yang disetujui operator. Tidak ada cleanup production otomatis. Panduan: [Batch 1 privacy/UX](docs/BATCH-1-PRIVACY-UX.md).
 
 ### Mode Analis Advanced — Unreleased MVP (`/analyst`)
 - **Bulk IoC triage**: preview lokal, normalisasi dan deduplikasi hingga 20 indikator; lookup berurutan setelah persetujuan pengiriman ke provider, dengan jeda/batal dan hasil parsial.
@@ -212,7 +219,7 @@ Seluruh endpoint terstandarisasi OpenAPI 3.1 dan dapat diakses di `/openapi.json
 | `POST` | `/api/tools/unshorten` | Membuka rantai pengalihan URL dengan anti-SSRF |
 | `POST` | `/api/ai/chat` | AI Security Assistant dengan grounded knowledge |
 | `GET` | `/api/education` | Mengambil katalog topik edukasi literasi siber |
-| `GET/POST`| `/api/history` | Riwayat anonim lookup komunitas (opsional) |
+| `GET/POST/DELETE`| `/api/history` | Publikasi komunitas dengan consent (nonaktif secara default; TTL 24 jam) |
 | `GET` | `/api/health` | Healthcheck kesiapan aplikasi |
 | `GET` | `/api/live` | Process liveness probe |
 | `GET` | `/api/ready` | Kesiapan runtime & koneksi Redis |

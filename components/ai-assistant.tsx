@@ -90,6 +90,7 @@ function ReplyCard({ reply, onFeedback, feedbackSent }: { reply: AiReply; onFeed
 
 export function AiAssistant() {
   const pathname = usePathname() || '/';
+  const inlineLauncher = ['/periksa', '/result', '/dashboard', '/privacy'].includes(pathname);
   const [isOpen, setIsOpen] = useState(false);
   const [items, setItems] = useState<ConversationItem[]>([{ role: 'assistant', reply: WELCOME }]);
   const [input, setInput] = useState('');
@@ -168,9 +169,10 @@ export function AiAssistant() {
     }).catch(() => undefined);
   }
 
-  return <aside className="ai-assistant-wrapper no-print" aria-label="Pendamping keamanan digital">
+  return <aside className={`ai-assistant-wrapper no-print ${inlineLauncher && !isOpen ? 'ai-inline-launcher' : ''}`} aria-label="Pendamping keamanan digital">
     {!isOpen && <button ref={launcherRef} type="button" className="ai-fab-btn" onClick={() => setIsOpen(true)} aria-label="Buka pendamping keamanan digital" title="Tanya JagaWarga — Pendamping Keamanan">
       <span className="ai-brand-mark" aria-hidden="true">JW</span>
+      {inlineLauncher && <span>Tanya pendamping JagaWarga</span>}
       <span className="ai-live-pulse-dot" aria-hidden="true" />
       <span className="sr-only">Tanya JagaWarga — Pendamping Keamanan</span>
     </button>}

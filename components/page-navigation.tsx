@@ -1,12 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Icon } from './icon';
 
 export function ProgressBreadcrumb({ current }: { current: 'result' | 'detail' }) {
   const steps = [
-    { id: 'history', label: 'Riwayat', href: '/dashboard' },
+    { id: 'input', label: 'Periksa', href: '/periksa' },
     { id: 'result', label: 'Hasil', href: '/result' },
     { id: 'detail', label: 'Bukti teknis', href: '#' },
   ];
@@ -15,6 +16,8 @@ export function ProgressBreadcrumb({ current }: { current: 'result' | 'detail' }
 }
 
 export function ScrollToTop() {
+  const pathname = usePathname();
+  const inline = ['/periksa', '/result', '/dashboard', '/privacy'].includes(pathname ?? '');
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 500);
@@ -23,5 +26,5 @@ export function ScrollToTop() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
   if (!visible) return null;
-  return <button className="scroll-top" type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="Kembali ke atas"><Icon name="arrow" /></button>;
+  return <button className={`scroll-top ${inline ? 'batch-scroll-top' : ''}`} type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="Kembali ke atas"><Icon name="arrow" />{inline && <span>Kembali ke atas</span>}</button>;
 }

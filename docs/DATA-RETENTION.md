@@ -1,21 +1,46 @@
 # Data Retention
 
-- Raw anonymous indicators: not persisted.
-- Messages and email headers: analyzed in memory and not persisted.
-- Files and QR images: processed in the browser.
-- Local history/watchlist/progress: controlled by the user in local storage.
-- Advanced case workspaces: saved only after explicit save/import, in browser
-  IndexedDB (`jagawarga-analyst-v1`, `cases`). Retained until user deletion or
-  browser eviction; no automatic server copy or automatic expiry. Case deletion,
-  delete-all, and `/privacy` clear controls remove these records.
-- Case notes, hypotheses and exports are not application-encrypted. Do not use
-  shared devices or enter secrets. Normalized evidence excludes raw provider
-  attributes/source URLs; indicators and user-authored notes still require
-  manual review before sharing. Exported files require separate user deletion.
-- In-memory runtime state is cleared on process restart.
-- Redis rate limits, budgets, cache, and circuits use bounded TTLs. Aggregate
-  operational and feedback metrics contain no raw indicators and expire after
-  30 days.
-- Structured logs: must not include raw indicators, message content, headers, tokens, or file names.
+## Private checks
 
-Any future persistence requires a privacy review, a deletion workflow, a documented TTL, and explicit user consent.
+- Lookup indicators are sent to the server and active lookup providers, not
+  automatically published. Operational caches use bounded TTLs.
+- Messages and email headers: analyzed in memory, not persisted as community
+  history. Files and QR images: processed in the browser.
+- Current result/AI context: temporary browser session storage. Do not enter
+  secrets; output context may be sent to a configured model with redaction.
+- Local IoC history: explicit opt-in, up to 50 restricted snapshots in browser
+  localStorage. Watchlist/progress and IndexedDB cases are browser-local.
+- Local data persists until user deletion or browser eviction. Case save/import
+  is explicit. Cases do not automatically sync to server or AI. Local data and
+  exports are not application-encrypted; use a personal device.
+
+## Consented community publications (unreleased Batch 1)
+
+- Off by default under existing feature governance. No automatic publication.
+- Explicit preview/consent; URL hosts only; server-derived normalized lookup
+  evidence. No raw provider attributes, file names, free-text comments, messages,
+  email headers, file bytes or QR images.
+- v2 public records and private deletion hashes expire within 24 hours. Each
+  Redis record has an individual TTL; memory records expire and are bounded.
+- Publisher-only deletion capabilities enable server deletion before expiry.
+  Public responses and ordinary privacy exports do not include capabilities.
+- Clearing local storage does not delete server publications and can discard
+  the capability. Delete shared records first. Existing downloaded copies cannot
+  be recalled.
+- v1 legacy server data is hidden but requires explicit operator-approved purge
+  before deployment; upgrading does not add TTL to old keys. See
+  `BATCH-1-PRIVACY-UX.md` and `npm run privacy:legacy-history`.
+
+## Operations and deletion
+
+- In-memory runtime state clears on restart. Redis operational rate limits,
+  budgets, caches and circuits use bounded TTLs. Aggregate operational/feedback
+  metrics contain no raw indicators and expire after 30 days.
+- Logs must not include raw indicators, messages, headers, capabilities, API
+  credentials, file names, or user-authored case notes.
+- `/privacy` local clear removes known storage generations, cases, preferences,
+  receipts and this tab's stored AI/result session. Close/reload other tabs to
+  remove their memory copies. Delete exported files separately.
+- New persistence requires privacy review, explicit purpose/consent, a bounded
+  retention policy and deletion workflow. Public-release approval remains a
+  separate gate; this implementation is not legal certification.

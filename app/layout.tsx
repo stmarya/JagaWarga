@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import './refine.css';
+import './batch1.css';
 import { ServiceWorkerRegister } from './sw-register';
 import { SiteFooter, SiteHeader } from './site-header';
 import { ScrollToTop } from '@/components/page-navigation';

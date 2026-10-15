@@ -1,265 +1,70 @@
 'use client';
-
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Icon } from '@/components/icon';
 import { deleteAllCases, listCases } from '@/lib/analyst/cases';
-import { clearAllLocalData, getHistory } from '@/lib/client/storage';
+import { downloadJson } from '@/lib/analyst/snapshot';
+import { clearAllLocalData, exportLocalData, getHistory, getProgress, getWatchlist, remembersHistory, setRememberHistory } from '@/lib/client/storage';
+import { deletePublication, getPublicationReceipts, type PublicationReceipt } from '@/lib/client/publications';
 
 export default function PrivacyPage() {
-  const [localHistoryCount, setLocalHistoryCount] = useState<number>(0);
-  const [hasAiSession, setHasAiSession] = useState<boolean>(false);
-  const [clearedNotice, setClearedNotice] = useState<string>('');
-  const [caseCount, setCaseCount] = useState(0);
-  const [clearing, setClearing] = useState(false);
-
-  useEffect(() => {
+  const [counts, setCounts] = useState({ history: 0, watchlist: 0, cases: 0, xp: 0 });
+  const [receipts, setReceipts] = useState<PublicationReceipt[]>([]);
+  const [remember, setRemember] = useState(false); const [busy, setBusy] = useState(false); const [notice, setNotice] = useState('');
+  async function refresh() {
+    setCounts({ history: getHistory().length, watchlist: getWatchlist().length, cases: (await listCases()).length, xp: getProgress().xp });
+    setReceipts(getPublicationReceipts()); setRemember(remembersHistory());
+  }
+  useEffect(() => { refresh().catch(() => setNotice('Sebagian penyimpanan browser tidak tersedia. Ekspor lengkap memerlukan akses ke penyimpanan lokal dan IndexedDB.')); }, []);
+  async function exportAll() {
+    setBusy(true);
     try {
-      setLocalHistoryCount(getHistory().length);
-      listCases().then((cases) => setCaseCount(cases.length)).catch(() => {});
-      const historyStr = localStorage.getItem('jagawarga:history');
-      if (historyStr) {
-        const parsed = JSON.parse(historyStr);
-        if (Array.isArray(parsed)) setLocalHistoryCount((count) => count + parsed.length);
-      }
-      const aiSession = sessionStorage.getItem('jagawarga:ai-assistant:v1');
-      if (aiSession) setHasAiSession(true);
-    } catch {
-      // Storage access may be restricted
+      const cases = await listCases();
+      const sharedPublications = getPublicationReceipts().map(({ id, expiresAt }) => ({ id, expiresAt }));
+      downloadJson('jagawarga-private-data.json', { exportSchemaVersion: 1, exportedAt: new Date().toISOString(),
+        local: JSON.parse(exportLocalData()), cases, sharedPublications,
+        note: 'Bukti penghapusan/token, percakapan AI, dan hasil sesi sementara tidak diekspor. File ini tidak dienkripsi; tinjau sebelum berbagi.' });
+      setNotice('Data lokal dan kasus diekspor. Token penghapusan tidak disertakan; jangan hapus browser sebelum menghapus publikasi server bila diperlukan.');
+    } catch { setNotice('Ekspor lengkap gagal. Data tidak dihapus; periksa akses penyimpanan browser.'); }
+    finally { setBusy(false); }
+  }
+  async function clearLocal() {
+    const active = getPublicationReceipts().length;
+    if (!window.confirm(`Hapus data lokal, kasus, pengaturan, dan sesi tab ini? ${active ? `${active} bukti penghapusan publikasi akan hilang. Hapus publikasi server terlebih dahulu; jika tidak, record tetap berlaku maksimal 24 jam.` : 'Publikasi server dan file ekspor tidak ikut dihapus.'}`)) return;
+    setBusy(true);
+    try {
+      await deleteAllCases(); clearAllLocalData();
+      ['jagawarga:ai-assistant:v1', 'jagawarga:ai-conversation', 'jagawarga:last-result'].forEach((key) => sessionStorage.removeItem(key));
+      await refresh(); setNotice('Data persisten di browser ini dan sesi tersimpan pada tab ini dihapus. Muat ulang/ tutup tab lain untuk menghapus salinan memori. Publikasi server dan file ekspor tidak ikut dihapus.');
+    } catch { setNotice('Penghapusan belum lengkap. Periksa penyimpanan browser dan coba lagi.'); } finally { setBusy(false); }
+  }
+  async function clearShared() {
+    if (!window.confirm('Hapus publikasi server yang masih memiliki bukti penghapusan di browser ini? Salinan yang sudah diunduh orang lain tidak dapat ditarik kembali.')) return;
+    setBusy(true); let removed = 0; let failed = 0;
+    for (const receipt of getPublicationReceipts()) {
+      try { await deletePublication(receipt); removed += 1; } catch { failed += 1; }
     }
-  }, []);
-
-  const handleClearLocalData = async () => {
-    if (!window.confirm('Hapus semua data lokal termasuk kasus investigasi? Ekspor terlebih dahulu bila diperlukan.')) return;
-    setClearing(true);
-    try {
-      await deleteAllCases();
-      clearAllLocalData();
-      localStorage.removeItem('jagawarga:history');
-      localStorage.removeItem('jagawarga:user-xp');
-      sessionStorage.removeItem('jagawarga:ai-assistant:v1');
-      sessionStorage.removeItem('jagawarga:last-result');
-      setLocalHistoryCount(0);
-      setHasAiSession(false);
-      setCaseCount(0);
-      setClearedNotice('Semua data lokal dan riwayat sesi browser berhasil dibersihkan!');
-      setTimeout(() => setClearedNotice(''), 4000);
-    } catch {
-      setClearedNotice('Gagal menghapus penyimpanan lokal browser.');
-    } finally { setClearing(false); }
-  };
-
-  const handleExportData = () => {
-    try {
-      const data = {
-        exportedAt: new Date().toISOString(),
-        history: JSON.parse(localStorage.getItem('jagawarga:history') || '[]'),
-        xp: localStorage.getItem('jagawarga:user-xp') || '0',
-        platform: 'JagaWarga Security Suite',
-      };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `jagawarga-data-${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      alert('Tidak ada data riwayat yang dapat diekspor.');
-    }
-  };
-
-  return (
-    <main className="compact-page privacy-page">
-      <Link className="back-link" href="/">
-        ← Kembali ke Beranda
-      </Link>
-
-      <header className="page-heading">
-        <div>
-          <p className="kicker">KEBIJAKAN & TRANSPARANSI PRIVASI</p>
-          <h1>Privasi Mutlak untuk Keamanan Warga</h1>
-          <p>
-            JagaWarga dibangun dengan filosofi <strong>Privacy by Design</strong>: kami tidak membuat profil pengguna, tidak melacak identitas, dan memproses data secara anonim dengan kontrol penuh di tangan Anda.
-          </p>
-        </div>
-      </header>
-
-      {/* Control Panel: User Data Status */}
-      <section className="content-card" style={{ marginBottom: '24px', borderLeft: '4px solid var(--ui-blue)' }}>
-        <div className="section-title">
-          <div>
-            <p className="step-label">KONTROL DATA MANDIRI</p>
-            <h2 style={{ margin: '0 0 4px', fontSize: '1.25rem' }}>Data yang Tersimpan di Browser Anda</h2>
-            <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--ui-muted)' }}>
-              Riwayat tersimpan di browser; kasus analis disimpan di IndexedDB sampai Anda menghapusnya. Kasus tidak disinkronkan ke server.
-            </p>
-          </div>
-        </div>
-
-        <div className="facts-grid" style={{ margin: '18px 0 16px' }}>
-          <div>
-            <span>Riwayat Pencarian Lokal</span>
-            <strong>{localHistoryCount} pemeriksaan tersimpan</strong>
-          </div>
-          <div>
-            <span>Sesi Chat AI Asisten</span>
-            <strong>{hasAiSession ? 'Tersimpan sementara di tab ini' : 'Kosong / Tidak ada sesi'}</strong>
-          </div>
-          <div>
-            <span>Pelacak Pihak Ketiga</span>
-            <strong style={{ color: '#08795a' }}>0 Pelacak (Bebas Iklan/Tracker)</strong>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            className="secondary-action"
-            onClick={handleClearLocalData}
-            disabled={clearing}
-          >
-            <Icon name="close" size={16} /> Bersihkan Semua Data Lokal
-          </button>
-          <button
-            type="button"
-            className="secondary-action"
-            onClick={handleExportData}
-            disabled={localHistoryCount === 0}
-          >
-            <Icon name="file" size={16} /> Ekspor Data Saya (JSON)
-          </button>
-        </div>
-        <p>{caseCount} kasus investigasi lokal. <Link href="/analyst/cases">Ekspor paket kasus melalui Case Workspace</Link>. Catatan dan ekspor tidak dienkripsi oleh aplikasi.</p>
-
-        {clearedNotice && (
-          <p className="inline-alert" style={{ marginTop: '12px', color: '#08795a', fontWeight: 700 }}>
-            ✓ {clearedNotice}
-          </p>
-        )}
-      </section>
-
-      {/* Transparency Matrix */}
-      <section className="content-card" style={{ marginBottom: '24px' }}>
-        <div className="section-title">
-          <div>
-            <p className="step-label">MATRIKS TRANSPARANSI</p>
-            <h2 style={{ margin: '0 0 6px', fontSize: '1.3rem' }}>Bagaimana Setiap Fitur Mengelola Data</h2>
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gap: '14px', marginTop: '16px' }}>
-          <article style={{ padding: '16px', borderRadius: '8px', background: '#f8f9fb', border: '1px solid #e2e6ed' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <span style={{ color: 'var(--ui-blue)' }}><Icon name="search" size={20} /></span>
-              <strong style={{ fontSize: '0.95rem' }}>Pemindai Indikator (URL, Domain, IP)</strong>
-            </div>
-            <p style={{ margin: '0 0 8px', fontSize: '0.82rem', color: '#334155' }}>
-              <strong>Data yang dikirim:</strong> Hanya string indikator yang Anda ketik. Alamat IP asli Anda tidak diteruskan ke penyedia pihak ketiga (VirusTotal atau DNS); semua kueri dilakukan melalui proksi server JagaWarga.
-            </p>
-            <small style={{ color: 'var(--ui-muted)', fontSize: '0.74rem' }}>
-              Penyimpanan: Hasil di-cache sementara di memori Redis dengan masa berlaku (TTL) maksimal 15 menit untuk efisiensi beban.
-            </small>
-          </article>
-
-          <article style={{ padding: '16px', borderRadius: '8px', background: '#f8f9fb', border: '1px solid #e2e6ed' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <span style={{ color: 'var(--ui-blue)' }}><Icon name="hash" size={20} /></span>
-              <strong style={{ fontSize: '0.95rem' }}>Pemeriksaan Berkas (Hash SHA-256) & Kode QR</strong>
-            </div>
-            <p style={{ margin: '0 0 8px', fontSize: '0.82rem', color: '#334155' }}>
-              <strong>100% Pemrosesan Lokal:</strong> Berkas dokumen, APK, atau gambar QR Anda <em>TIDAK PERNAH</em> diunggah ke server kami. Penghitungan sidik jari SHA-256 dan dekode barcode dikerjakan langsung oleh mesin peramban Anda menggunakan Web Crypto API.
-            </p>
-            <small style={{ color: 'var(--ui-muted)', fontSize: '0.74rem' }}>
-              Penyimpanan: Nol bit disimpan di server JagaWarga.
-            </small>
-          </article>
-
-          <article style={{ padding: '16px', borderRadius: '8px', background: '#f8f9fb', border: '1px solid #e2e6ed' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <span style={{ color: 'var(--ui-blue)' }}><Icon name="message" size={20} /></span>
-              <strong style={{ fontSize: '0.95rem' }}>Analisis Pesan & Header Email</strong>
-            </div>
-            <p style={{ margin: '0 0 8px', fontSize: '0.82rem', color: '#334155' }}>
-              <strong>Diproses Sementara:</strong> Teks chat atau header email dianalisis secara in-memory untuk mendeteksi indikasi rekayasa sosial atau verifikasi SPF/DKIM, dan langsung dibuang dari memori saat hasil dikirimkan.
-            </p>
-            <small style={{ color: 'var(--ui-muted)', fontSize: '0.74rem' }}>
-              Penyimpanan: Tanpa penyimpanan di disk atau basis data log percakapan.
-            </small>
-          </article>
-
-          <article style={{ padding: '16px', borderRadius: '8px', background: '#f8f9fb', border: '1px solid #e2e6ed' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <span style={{ color: 'var(--ui-blue)' }}><Icon name="spark" size={20} /></span>
-              <strong style={{ fontSize: '0.95rem' }}>AI Asisten Siaga (Groq Cloud)</strong>
-            </div>
-            <p style={{ margin: '0 0 8px', fontSize: '0.82rem', color: '#334155' }}>
-              <strong>Sanitasi Otomatis:</strong> Sistem kami menerapkan filter keamanan otomatis untuk menyamarkan nomor rekening, nomor telepon, dan pola NIK sebelum dikirim ke model AI. Percakapan hanya disimpan di sesi peramban Anda selama tab aktif.
-            </p>
-            <small style={{ color: 'var(--ui-muted)', fontSize: '0.74rem' }}>
-              Peringatan: Jangan pernah menuliskan PIN, kode OTP, atau kata sandi Anda ke dalam kolom chat.
-            </small>
-          </article>
-        </div>
-      </section>
-
-      {/* UU Perlindungan Data Pribadi (PDP) */}
-      <section className="content-card" style={{ marginBottom: '24px' }}>
-        <div className="section-title">
-          <div>
-            <p className="step-label">KEPATUHAN HUKUM</p>
-            <h2 style={{ margin: '0 0 6px', fontSize: '1.25rem' }}>Kepatuhan terhadap UU Perlindungan Data Pribadi (UU No. 27/2022)</h2>
-          </div>
-        </div>
-        <p style={{ fontSize: '0.84rem', color: '#334155', lineHeight: 1.6 }}>
-          Sebagai platform keamanan publik di Indonesia, JagaWarga menghormati dan menjunjung hak-hak subjek data sesuai amanat Undang-Undang Nomor 27 Tahun 2022 tentang Perlindungan Data Pribadi:
-        </p>
-        <ul style={{ margin: '12px 0 0', paddingLeft: '22px', fontSize: '0.82rem', color: '#475569', lineHeight: 1.6 }}>
-          <li><strong>Hak Mendapatkan Kejelasan:</strong> Anda berhak mengetahui tujuan spesifik pemrosesan data (dijelaskan secara transparan di halaman ini).</li>
-          <li><strong>Hak Menghapus Data:</strong> Anda dapat menghapus seluruh jejak riwayat lokal seketika melalui tombol di atas.</li>
-          <li><strong>Minimisasi Data:</strong> Kami tidak meminta nama lengkap, NIK, alamat rumah, atau data perbankan untuk menggunakan seluruh layanan pemeriksaan.</li>
-          <li><strong>Keamanan Transmisi:</strong> Seluruh komunikasi dilindungi enkripsi standar industri HTTPS / TLS 1.3 dengan kebijakan keamanan HTTP ketat (CSP, HSTS, no-sniff, deny-iframe).</li>
-        </ul>
-      </section>
-
-      {/* FAQ Privasi */}
-      <section className="content-card">
-        <div className="section-title">
-          <div>
-            <p className="step-label">PERTANYAAN UMUM</p>
-            <h2 style={{ margin: '0 0 12px', fontSize: '1.25rem' }}>Tanya Jawab Mengenai Privasi Anda</h2>
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gap: '12px' }}>
-          <details style={{ background: '#f8f9fb', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e6ed' }}>
-            <summary style={{ fontWeight: 800, cursor: 'pointer', fontSize: '0.86rem' }}>
-              Apakah pihak bank atau pengirim tautan tahu bahwa saya memeriksa mereka di JagaWarga?
-            </summary>
-            <p style={{ margin: '8px 0 0', fontSize: '0.8rem', color: '#475569', lineHeight: 1.5 }}>
-              <strong>Tidak.</strong> JagaWarga tidak pernah menghubungi server pemilik situs secara langsung dengan identitas peramban Anda. Kami memeriksa catatan publik (DNS global, basis data reputasi ancaman). Pemilik domain tidak akan menerima notifikasi bahwa domain mereka sedang diperiksa.
-            </p>
-          </details>
-
-          <details style={{ background: '#f8f9fb', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e6ed' }}>
-            <summary style={{ fontWeight: 800, cursor: 'pointer', fontSize: '0.86rem' }}>
-              Apakah JagaWarga meminta izin lokasi ponsel (GPS)?
-            </summary>
-            <p style={{ margin: '8px 0 0', fontSize: '0.8rem', color: '#475569', lineHeight: 1.5 }}>
-              <strong>Tidak sama sekali.</strong> Kebijakan keamanan peramban kami secara aktif menolak akses ke sensor lokasi, kamera latar, dan mikrofon melalui header HTTP <code>Permissions-Policy: geolocation=(), camera=()</code>. Kamera hanya diakses bila Anda secara sukarela menggunakan fitur Pembaca QR.
-            </p>
-          </details>
-
-          <details style={{ background: '#f8f9fb', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e6ed' }}>
-            <summary style={{ fontWeight: 800, cursor: 'pointer', fontSize: '0.86rem' }}>
-              Bagaimana cara memastikan data saya benar-benar bersih?
-            </summary>
-            <p style={{ margin: '8px 0 0', fontSize: '0.8rem', color: '#475569', lineHeight: 1.5 }}>
-              Cukup tekan tombol <strong>"Bersihkan Semua Data Lokal"</strong> di bagian atas halaman ini, atau hapus cache dan cookies browser Anda. Seluruh catatan riwayat di perangkat Anda akan seketika terhapus permanen.
-            </p>
-          </details>
-        </div>
-      </section>
-    </main>
-  );
+    try { await refresh(); } catch { /* Report deletion outcomes even if another storage is unavailable. */ }
+    setNotice(`${removed} publikasi dihapus dari server; ${failed} belum berhasil. Bukti yang gagal tetap disimpan. Record kedaluwarsa otomatis maksimal 24 jam.`); setBusy(false);
+  }
+  return <main className="compact-page batch-page privacy-v2">
+    <header className="batch-heading"><p className="batch-eyebrow">PRIVASI & KONTROL DATA</p><h1>Ketahui data Anda. Tentukan apa yang disimpan.</h1><p>Pemeriksaan tidak dipublikasikan otomatis. “Tidak mengunggah file” bukan berarti tidak ada data yang dikirim: lookup tetap mengirim indikator ke server dan provider aktif.</p></header>
+    <section className="batch-card"><h2>Data pada browser ini</h2><dl className="batch-facts"><div><dt>Riwayat pribadi</dt><dd>{counts.history} pemeriksaan</dd></div><div><dt>Watchlist lokal</dt><dd>{counts.watchlist} indikator</dd></div><div><dt>Kasus investigasi</dt><dd>{counts.cases} kasus</dd></div><div><dt>Progres belajar</dt><dd>{counts.xp} XP</dd></div></dl>
+      <label className="batch-check"><input type="checkbox" checked={remember} disabled={busy} onChange={(e) => {
+        try { setRememberHistory(e.target.checked); setRemember(e.target.checked); setNotice('Preferensi riwayat lokal diperbarui; hasil yang sudah tersimpan tidak otomatis dihapus.'); }
+        catch { setNotice('Preferensi tidak dapat disimpan.'); }
+      }} /> Simpan hasil IoC berikutnya di browser ini (opsional, tidak terenkripsi)</label>
+      <p>Riwayat, watchlist, progres, dan kasus bertahan sampai Anda menghapusnya atau browser menghapus data. Hasil sesi/percakapan tersimpan sementara pada tab. Jangan gunakan perangkat bersama untuk data sensitif.</p>
+      <div className="batch-actions"><button className="batch-primary" type="button" disabled={busy} onClick={exportAll}>Ekspor seluruh data lokal</button><button className="batch-danger-text" type="button" disabled={busy} onClick={clearLocal}>Hapus data lokal dan sesi</button><Link className="batch-secondary" href="/analyst/cases">Kelola kasus</Link></div>
+      <p>Ekspor menyertakan riwayat, watchlist, progres, data legacy yang masih ada, dan kasus. Tidak menyertakan token penghapusan atau chat AI. File tidak dienkripsi; hapus file ekspor secara terpisah.</p>
+    </section>
+    <section className="batch-card"><h2>Publikasi server berbeda dari data lokal</h2><p>Publikasi komunitas memerlukan fitur operator aktif, preview, dan persetujuan eksplisit. Untuk URL, hanya host yang dipublikasikan. Server melakukan lookup ulang; hasil dapat berbeda dari pemeriksaan URL lengkap.</p><p>Publikasi baru berlaku maksimal 24 jam. Bukti penghapusan hanya ada pada browser pembuatnya. Menghapus data lokal tidak menghapus record server dan dapat menghilangkan bukti tersebut.</p><p>{receipts.length} publikasi masih memiliki bukti penghapusan pada browser ini.</p><div className="batch-actions"><button type="button" className="batch-danger-text" disabled={busy || !receipts.length} onClick={clearShared}>Hapus publikasi server saya</button><Link className="batch-secondary" href="/dashboard">Lihat riwayat saya dan komunitas</Link></div></section>
+    <section className="batch-card"><h2>Bagaimana setiap fitur mengelola data?</h2><dl className="privacy-data-flow">
+      <div><dt>URL, domain, IP, hash</dt><dd>Indikator dikirim ke server JagaWarga dan provider lookup aktif. Cache operasional memiliki TTL. Tidak ada file mentah atau submission analisis baru. Publikasi terpisah dan opsional.</dd></div>
+      <div><dt>Pesan dan header email</dt><dd>Isi dianalisis sementara di server, tidak disimpan sebagai riwayat komunitas. Hapus informasi pribadi yang tidak diperlukan. Pembacaan autentikasi header bukan verifikasi DKIM independen.</dd></div>
+      <div><dt>File dan gambar QR</dt><dd>Hash/dekode dilakukan di browser. Saat Anda memilih lookup lanjutan, hash atau indikator hasil dekode dikirim seperti lookup biasa.</dd></div>
+      <div><dt>Asisten AI</dt><dd>Percakapan dan konteks yang diizinkan dapat dikirim ke model eksternal jika aktif, dengan redaksi pola rahasia. Redaksi tidak mendeteksi semua rahasia. Kasus lokal tidak otomatis dikirim ke AI.</dd></div>
+    </dl></section>
+    <section className="batch-card"><h2>Batas kontrol dan perlindungan</h2><ul><li>Penyimpanan lokal dan file ekspor tidak dienkripsi oleh aplikasi.</li><li>Menghapus record server tidak menghapus salinan yang sudah dibagikan atau diunduh.</li><li>Salinan dalam memori tab lain perlu dihapus dengan menutup atau memuat ulang tab tersebut.</li><li>Kebijakan ini bukan jaminan keamanan mutlak atau sertifikasi kepatuhan hukum.</li></ul><p><Link href="/transparency">Transparansi</Link> · <Link href="/methodology">Metode pemeriksaan</Link> · <Link href="/support">Bantuan dan laporan masalah</Link></p></section>
+    <p className="batch-notice" role="status" aria-live="polite">{notice}</p>
+  </main>;
 }

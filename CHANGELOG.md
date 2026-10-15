@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+- Batch 1: checks are private by default; local history is opt-in, results lead with actions/evidence/limitations, and personal/public history is separated.
+- Replaced automatic community storage with operator-gated consent, host-only preview, server-derived normalized evidence, 24-hour per-record TTL, publisher-only deletion capabilities, and an explicit legacy purge migration.
+- Unified privacy export/local clear with IndexedDB cases; clarified server/model flows and removed absolute privacy claims.
 - Added an advanced analyst MVP: consent-gated sequential bulk IoC lookup, evidence explorer, and IndexedDB case workspaces with versioned import/export/delete.
 - Fixed suspicious evidence being downgraded by confidence multiplication; versioned severity independently of confidence and exposed provider coverage/conflicts.
 - Added analyst unit/regression tests and fixture-based browser smoke coverage. No production deployment or external-provider acceptance is implied.

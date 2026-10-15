@@ -29,7 +29,10 @@
     "release:manifest": "node scripts/release-manifest.mjs",
     "security:secrets": "node scripts/check-secrets.mjs",
     "security:audit": "npm audit --omit=dev --audit-level=high",
-    "test:analyst": "node scripts/analyst-smoke.mjs"
+    "test:analyst": "node scripts/analyst-smoke.mjs",
+    "privacy:legacy-history": "tsx scripts/purge-legacy-community-history.ts",
+    "test:batch1": "node scripts/batch1-smoke.mjs",
+    "test:batch1-api": "node scripts/batch1-api-smoke.mjs"
   },
   "dependencies": {
     "ipaddr.js": "2.2.0",

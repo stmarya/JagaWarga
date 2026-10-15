@@ -20,7 +20,8 @@ fail-closed, or removed from launch scope.
 
 ## Explicitly deferred and fail-closed
 
-- Community reporting.
+- Community reporting remains off by default. Batch 1 adds an unreleased,
+  operator-gated explicit consent/TTL/deletion contract; it is not a launch promise.
 - External notifications.
 - Organization workspaces and server-side membership/audit persistence.
 - File upload and URL submission.
@@ -56,3 +57,13 @@ The release acceptance baseline is the current stable Chromium engine on mobile
 and desktop viewports. Firefox and Safari are best-effort until their automated
 runners are added. QR decoding depends on the browser `BarcodeDetector` API and
 shows an explicit unsupported-browser message instead of uploading the image.
+## Batch 1 privacy/UX (unreleased)
+
+- Private checks by default, explicit local history opt-in, and no automatic
+  community POST from scanner or dashboard.
+- Evidence-first result hierarchy; private and public history are separate.
+- Unified archive/export and local deletion including IndexedDB cases.
+- Public v2 publications require operator gates and consent; 24-hour TTL,
+  normalized server-rechecked host/IoC evidence, and publisher-only deletion.
+- Mandatory operator-approved legacy v1 cleanup before deployment.
+- Scope, migration, and acceptance limits: `BATCH-1-PRIVACY-UX.md`.

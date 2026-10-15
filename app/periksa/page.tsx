@@ -3,7 +3,7 @@
 import { ChangeEvent, DragEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { classifySmartInput } from '@/lib/input';
-import { addHistory, addXp } from '@/lib/client/storage';
+import { addXp, rememberLookup, remembersHistory, setRememberHistory } from '@/lib/client/storage';
 import { Icon } from '@/components/icon';
 
 type BarcodeDetectorType = new (options: { formats: string[] }) => {
@@ -26,6 +26,7 @@ export default function ScannerPage() {
   const [fileName, setFileName] = useState('');
   const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
+  const [saveLocal, setSaveLocal] = useState(false);
   const [inputMode, setInputMode] = useState<'link' | 'message' | 'file' | 'qr'>('link');
   const fileInput = useRef<HTMLInputElement>(null);
   const qrInput = useRef<HTMLInputElement>(null);
@@ -34,6 +35,7 @@ export default function ScannerPage() {
   const canSubmit = Boolean(value.trim()) && indicator.endpoint !== null && !loading;
 
   useEffect(() => {
+    try { setSaveLocal(remembersHistory()); } catch { /* Keep session-only default. */ }
     const params = new URLSearchParams(window.location.search);
     const shared = params.get('ioc') ?? [params.get('url'), params.get('text'), params.get('title')].filter(Boolean).join('\n').trim();
     if (shared) {
@@ -83,11 +85,11 @@ export default function ScannerPage() {
     }
   }
 
-  function chooseMode(mode: 'link' | 'message' | 'file' | 'qr') {
+  function chooseMode(mode: 'link' | 'message' | 'file' | 'qr', focusInput = true) {
     setInputMode(mode);
     setFileName('');
     setNotice('');
-    if (mode === 'link' || mode === 'message') window.setTimeout(() => document.getElementById('indicator')?.focus(), 0);
+    if (focusInput && (mode === 'link' || mode === 'message')) window.setTimeout(() => document.getElementById('indicator')?.focus(), 0);
   }
 
   function useExample(kind: 'link' | 'message') {
@@ -137,27 +139,17 @@ export default function ScannerPage() {
       const data = await response.json().catch(() => ({ error: 'LOOKUP_FAILED' }));
       if (!response.ok) throw new Error(data.error ?? 'LOOKUP_FAILED');
 
-      let historyId = '';
       if (endpoint === '/api/lookups') {
-        const shared = await fetch('/api/history', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ result: data }),
-        });
-        if (shared.ok) historyId = (await shared.json()).id;
-        addHistory({
-          id: historyId || crypto.randomUUID(),
-          type: data.indicator.type,
-          displayValue: data.indicator.displayValue,
-          verdict: data.verdict,
-          checkedAt: data.checkedAt,
-        });
-        addXp(10);
+        if (saveLocal) {
+          try { rememberLookup(data); }
+          catch { data.storageNotice = 'Hasil sesi tersedia, tetapi riwayat lokal tidak disimpan (penyimpanan terbatas atau indikator mengandung parameter sensitif).'; }
+        }
+        try { addXp(10); } catch { /* Optional progress must not block a result. */ }
       } else {
-        addXp(15);
+        try { addXp(15); } catch { /* Optional progress must not block a result. */ }
       }
-      sessionStorage.setItem('jagawarga:last-result', JSON.stringify({ ...data, historyId, analysisKind: indicator.endpoint }));
-      router.push(historyId ? `/result?id=${encodeURIComponent(historyId)}` : '/result');
+      sessionStorage.setItem('jagawarga:last-result', JSON.stringify({ ...data, analysisKind: indicator.endpoint }));
+      router.push('/result');
     } catch (error) {
       const code = error instanceof Error ? error.message : 'LOOKUP_FAILED';
       setNotice(errors[code] ?? 'Pemeriksaan gagal. Coba kembali.');
@@ -175,7 +167,7 @@ export default function ScannerPage() {
         <ul>
           <li>Tanpa submission otomatis</li>
           <li>File diubah menjadi hash di perangkat</li>
-          <li>Hasil dapat dibandingkan dengan riwayat warga</li>
+          <li>Hasil privat; publikasi komunitas adalah pilihan terpisah</li>
         </ul>
       </section>
 
@@ -188,13 +180,22 @@ export default function ScannerPage() {
           <p className="step-label">LANGKAH 1 DARI 3 · MASUKKAN INDIKATOR</p>
           <h2>Apa yang ingin diperiksa?</h2>
           <p className="muted">Pilih jenisnya atau langsung tempel—kami tetap mengenalinya otomatis.</p>
-          <div className="intake-tabs" role="tablist" aria-label="Jenis pemeriksaan">
-            <button type="button" role="tab" aria-selected={inputMode === 'link'} onClick={() => chooseMode('link')}><Icon name="link" /> <span>Tautan / IoC</span></button>
-            <button type="button" role="tab" aria-selected={inputMode === 'message'} onClick={() => chooseMode('message')}><Icon name="message" /> <span>Teks pesan</span></button>
-            <button type="button" role="tab" aria-selected={inputMode === 'file'} onClick={() => chooseMode('file')}><Icon name="file" /> <span>Berkas / APK</span></button>
-            <button type="button" role="tab" aria-selected={inputMode === 'qr'} onClick={() => chooseMode('qr')}><Icon name="qr" /> <span>Kode QR</span></button>
+          <div className="intake-tabs" role="tablist" aria-label="Jenis pemeriksaan" onKeyDown={(event) => {
+            const modes = ['link', 'message', 'file', 'qr'] as const;
+            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+            event.preventDefault();
+            const index = modes.indexOf(inputMode);
+            const next = event.key === 'Home' ? 0 : event.key === 'End' ? 3
+              : (index + (event.key === 'ArrowRight' ? 1 : 3)) % modes.length;
+            chooseMode(modes[next], false);
+            (event.currentTarget.querySelectorAll<HTMLButtonElement>('[role=tab]')[next]).focus();
+          }}>
+            <button id="intake-link" type="button" role="tab" aria-controls="scanner-panel" tabIndex={inputMode === 'link' ? 0 : -1} aria-selected={inputMode === 'link'} onClick={() => chooseMode('link')}><Icon name="link" /> <span>Tautan / IoC</span></button>
+            <button id="intake-message" type="button" role="tab" aria-controls="scanner-panel" tabIndex={inputMode === 'message' ? 0 : -1} aria-selected={inputMode === 'message'} onClick={() => chooseMode('message')}><Icon name="message" /> <span>Teks pesan</span></button>
+            <button id="intake-file" type="button" role="tab" aria-controls="scanner-panel" tabIndex={inputMode === 'file' ? 0 : -1} aria-selected={inputMode === 'file'} onClick={() => chooseMode('file')}><Icon name="file" /> <span>Berkas / APK</span></button>
+            <button id="intake-qr" type="button" role="tab" aria-controls="scanner-panel" tabIndex={inputMode === 'qr' ? 0 : -1} aria-selected={inputMode === 'qr'} onClick={() => chooseMode('qr')}><Icon name="qr" /> <span>Kode QR</span></button>
           </div>
-          <form onSubmit={submit} onDrop={dropFile} onDragOver={(event) => event.preventDefault()}>
+          <form id="scanner-panel" role="tabpanel" aria-labelledby={`intake-${inputMode}`} onSubmit={submit} onDrop={dropFile} onDragOver={(event) => event.preventDefault()}>
             {(inputMode === 'link' || inputMode === 'message') && <>
               <label htmlFor="indicator">{inputMode === 'message' ? 'Tempel isi pesan yang ingin dianalisis' : 'Masukkan URL, domain, IP, atau hash'}</label>
               {inputMode === 'message' ? <textarea
@@ -243,6 +244,11 @@ export default function ScannerPage() {
               <input ref={cameraInput} type="file" accept="image/*" capture="environment" onChange={selectFile} hidden />
             </div>}
 
+            <p className="scanner-disclosure">Indikator lookup dikirim ke JagaWarga dan provider yang aktif. Pesan/header diproses sementara di server. File dan gambar QR diproses lokal. Tidak ada publikasi komunitas otomatis.</p>
+            <label className="local-history-option"><input type="checkbox" checked={saveLocal} onChange={(event) => {
+              setSaveLocal(event.target.checked);
+              try { setRememberHistory(event.target.checked); } catch { /* Current check still applies to this session. */ }
+            }} /> Simpan hasil IoC di riwayat browser ini (opsional, tidak terenkripsi)</label>
             <div className="scanner-actions">
               <span className="scanner-privacy"><Icon name="shield" /> Diproses dengan data minimal</span>
               <button type="submit" disabled={!canSubmit}>{loading ? 'Memeriksa…' : <>Periksa sekarang <Icon name="arrow" /></>}</button>
